@@ -12,7 +12,7 @@
     <h1 class="logo">Super Fans</h1>
     <div class="header-actions">
       <div class="mode-badge" id="mode" style="display: none;">Loading</div>
-      <button class="quit-btn" id="quit-btn" onclick="confirmQuit()">QUIT</button>
+      <button class="quit-btn" id="quit-btn" onclick="confirmQuit()">HOME</button>
     </div>
   </header>
 
@@ -61,65 +61,103 @@
     <div id="choice-sec" style="display:none"><div class="ogrid" id="ogrid"></div></div>
     <div class="items" id="items">
       <button class="item" id="choice-btn" onclick="toChoice()"><span class="ic">🆘</span><span class="tx"><b>改選擇題</b><small id="choice-sub">金幣打折</small></span></button>
-      <button class="item" id="pause-btn" onclick="doPause()"><span class="ic">⏸</span><span class="tx"><b>暫停一下</b><small id="pause-sub">每場 1 次</small></span></button>
+      <button class="item" id="pause-btn" onclick="doPause()"><span class="ic">⏸</span><span class="tx"><b>暫停</b><small id="pause-sub">每場 1 次</small></span></button>
     </div>
     <div id="next-sec" style="display:none"></div>
   </div>
 </div>
 
-<div class="ov" id="m-start" style="display:flex"><div class="mc">
-  <div class="mt">遊戲規則</div>
-  <button class="bevel btn-sm" style="background:#6c5ce7; color:#fff; border-color:#4a3db8;" onclick="testResult()">🎨 預覽結算畫面</button>
-  <div class="rules">
-    <p><b>🎵 猜歌：</b>聽 10 首歌曲，輸入完整歌名</p>
-    <p><b>🪙 計分：</b>速度越快金幣越多，連續答對再加碼</p>
-    <p><b>🎒 道具1-選擇卡：</b>讓題目變簡單！獲得的金幣也會變少喔</p>
-    <p><b>🎒 道具2-暫停卡：</b>爭取時間！每局可暫停 1 次，不扣金幣</p>
+<div class="ov" id="m-start" style="display:flex">
+  <div class="mc">
+
+    <div class="logo">Super Fans</div>
+
+    <!-- 我的戰績 -->
+    <section class="history-panel">
+      <div class="history-heading">🏆 我的戰績</div>
+      <ul class="hist" id="hist"></ul>
+    </section>
+
+    <!-- 開始遊戲 -->
+    <div class="col">
+      <button class="bevel go btn-lg" onclick="toTheme()">GAME START ➔</button>
+      <button class="bevel" onclick="startDemo()">試玩模式</button>
+    </div>
+
+    <!-- 遊戲規則入口 -->
+    <button class="rules-open" onclick="show('m-rules')">
+      ✧ 遊戲規則 ✧
+    </button>
+
+    <!-- 開發測試按鈕 -->
+    <button class="bevel btn-sm"
+      style="background:#eeedf1; color:#4a3db8;"
+      onclick="testResult()">
+      [test] 預覽結算畫面
+    </button>
+
   </div>
-  <div class="col">
-    <button class="bevel go btn-lg" onclick="toTheme()">直接開始，選歌單 ➔</button>
-    <button class="bevel" onclick="startDemo()">🎧 先試玩 3 題</button>
+</div>
+
+<!-- 遊戲規則彈出視窗 -->
+<div class="ov" id="m-rules">
+  <div class="mc rules-dialog">
+
+    <button class="x" onclick="hide('m-rules')">✖</button>
+
+    <div class="rules-title">✧ 遊戲規則 ✧</div>
+
+    <div class="rules">
+      <p><b>🎵 猜歌：</b>聽 10 首歌曲，輸入完整歌名</p>
+      <p><b>🪙 計分：</b>速度越快金幣越多，連續答對再加碼</p>
+      <p><b>🎒 道具 1－選擇卡：</b>讓題目變簡單！獲得的金幣也會變少喔</p>
+      <p><b>🎒 道具 2－暫停卡：</b>爭取時間！每局可暫停 1 次，不扣金幣</p>
+    </div>
+
+    <button class="bevel go btn-lg" onclick="hide('m-rules')">
+      知道了！
+    </button>
+
   </div>
-  <div style="text-align:left;font-weight:800;font-size:var(--fs-sm)">高分紀錄 (Top 3)</div>
-  <ul class="hist" id="hist"></ul>
-</div></div>
+</div>
 
 <div class="ov" id="m-theme"><div class="mc">
-  <div class="mt">選一個你喜歡的歌單</div>
+    <div class="logo">Super Fans</div>
   <div class="col">
-    <button class="tb sel" data-k="vagabond" onclick="pickTheme('vagabond')">𖦞𖠁 2026 浪人祭｜百年好運・億載千秋 𖠁𖦞</button>
-    <button class="tb" data-k="drama" onclick="pickTheme('drama')">📺 經典偶像劇金曲</button>
-    <button class="tb" data-k="she" onclick="pickTheme('she')">🍀 S.H.E 特輯</button>
-    <button class="tb" data-k="fish" onclick="pickTheme('fish')">🐟 梁靜茹特輯</button>
+    <button class="tb sel" data-k="drama" onclick="pickTheme('drama')">經典偶像劇金曲 ✬</button>
+    <button class="tb" data-k="she" onclick="pickTheme('she')">S.H.E 特輯 ✬✬✬</button>
+    <button class="tb" data-k="fish" onclick="pickTheme('fish')">梁靜茹特輯 ✬✬✬✬✬</button>
+    <button class="tb" data-k="vagabond" onclick="pickTheme('vagabond')">2026 浪人祭 ✬✬✬✬✬✬✬✬✬</button>
   </div>
-  <button class="bevel go btn-lg" onclick="startGame()">🚀 選好了，開玩！</button>
+
+  <button class="bevel go btn-lg" onclick="startGame()">START</button>
 </div></div>
 
 <div class="ov" id="m-demo"><div class="mc">
-  <div class="mt" style="color:var(--magenta)">🎧 試玩結束</div>
-  <p style="line-height:1.6;color:var(--text-sub)">手感還順利嗎？準備好迎接正式 10 題了嗎？</p>
-  <div class="col"><button class="bevel go" onclick="toTheme()">🚀 準備好了，選歌單！</button><button class="bevel" onclick="startDemo()">再試玩 3 題</button></div>
+  <div class="mt" style="color:var(--magenta)">試玩結束</div>
+  <p style="line-height:1.6;color:var(--text-sub)">比賽模式一場 10 首歌，可以挑歌單。準備好正式開始了嗎？</p>
+  <div class="col"><button class="bevel go" onclick="toTheme()">GAME START</button><button class="bevel" onclick="startDemo()">再試玩 3 首</button></div>
 </div></div>
 
 <div class="ov" id="m-half"><div class="mc">
-  <div class="mt">☕ 中場休息</div>
-  <p style="color:var(--text-sub)">休息一下，準備好就進入第 6 題！</p>
+  <div class="mt">中場休息</div>
+  <p style="color:var(--text-sub)">休息一下，讓你喝水上廁所</p>
   <div class="stats"><div>目前金幣<br><span id="h-score" style="font-size:var(--fs-lg);color:var(--magenta)">0</span></div><div>目前連擊<br><span id="h-combo" style="font-size:var(--fs-lg);color:var(--cobalt)">0</span></div></div>
   <button class="bevel go btn-lg" onclick="resumeHalf()">▶ 繼續下半場</button>
 </div></div>
 
 <div class="ov" id="m-pause"><div class="mc">
   <div class="mt">⏸ 暫停中</div>
-  <p id="pause-note" style="color:var(--magenta);font-weight:700"></p>
+  <p id="pause-note" style="color:var(--text-sub);font-weight:700"></p>
   <button class="bevel go btn-lg" onclick="resumePause()">▶ 繼續遊戲</button>
 </div></div>
 
 <div class="ov" id="m-confirm"><div class="mc" style="max-width:340px;">
-  <div class="mt" style="color:var(--magenta)">🚨 放棄遊戲？</div>
-  <p style="font-weight:700;color:var(--text-sub);font-size:var(--fs-sm);">確定要放棄目前的進度並返回主選單嗎？</p>
+  <div class="mt" style="color:var(--magenta)">確定中斷嗎？</div>
+  <p style="font-weight:700;color:var(--text-sub);font-size:var(--fs-sm);">即將返回主選單，本次積分不會保留。</p>
   <div class="col" style="grid-template-columns:1fr 1fr;display:grid;gap:var(--sp-2);">
-    <button class="bevel" onclick="cancelQuit()">繼續遊玩</button>
-    <button class="bevel go" onclick="doQuit()">確定放棄</button>
+    <button class="bevel go" onclick="doQuit()">回主選單</button>
+    <button class="bevel" onclick="cancelQuit()">繼續玩</button>
   </div>
 </div></div>
 
@@ -132,15 +170,15 @@
   <!-- 簡約版：三個數據水平一排平鋪 -->
   <div class="result-inline-box">
     <div class="stat-item">
-      <span class="label">🪙 獲得金幣</span>
+      <span class="label">🪙Score</span>
       <span class="val" id="r-score">0</span>
     </div>
     <div class="stat-item">
-      <span class="label">🔥 Combo</span>
+      <span class="label">🔥Combo</span>
       <span class="val" id="r-combo" style="color:var(--cobalt);">0</span>
     </div>
     <div class="stat-item rocket-item">
-      <span class="label">🚀 PR值</span>
+      <span class="label">PR值</span>
       <div class="mini-track">
         <div class="mini-fill" id="rocket-fill"></div>
         <div class="mini-rocket" id="rocket-icon">🚀</div>
@@ -149,10 +187,9 @@
     </div>
   </div>
 
-  <div style="text-align:left;font-size:var(--fs-sm);font-weight:700;color:var(--text-sub)">💿 成果紀念牆</div>
-  <div class="gal" id="gal"></div>
   <p id="r-desc" style="font-size:var(--fs-sm);color:var(--text-sub)"></p>
-  <div class="col"><button class="bevel go" onclick="startGame()">再玩一次</button><button class="bevel" onclick="toTheme()">🎵 切換其他歌單</button></div>
+  <div class="gal" id="gal"></div>
+  <div class="col"><button class="bevel go" onclick="startGame()">再玩一次</button><button class="bevel" onclick="toTheme()">換其他歌單</button></div>
 </div></div>
 <div id="cdown">3</div>
 <script src="js/playlists.js"></script>
@@ -390,7 +427,7 @@ function doPause() {
   audio.pause();
   $('disc').classList.remove('spin');
 
-  $('pause-note').textContent = `稍等一下！歌名就快想起來了！`;
+  $('pause-note').textContent = `長頸鹿跟河馬去逛街買新衣服試穿時，長頸鹿問河馬：「我適合嗎？」河馬說：「你是長頸鹿，我才是河馬。」`;
   show('m-pause');
 }
 
@@ -522,7 +559,6 @@ function tag(side, t, c, delay = 0) {
 
 // 倒數畫面
 function countdown(cb) {
-  document.querySelectorAll('.ov').forEach(m => m.style.display = 'none');
 
   const o = $('cdown');
   o.style.display = 'flex';
@@ -563,7 +599,8 @@ function pickTheme(k) {
 // 開始遊戲的共同流程
 function begin(demo) {
   unlockAudio();
-
+  
+  document.querySelectorAll('.ov').forEach(m => m.style.display = 'none');
   isDemo = demo;
   total = demo ? 3 : 10;
 
@@ -596,7 +633,11 @@ function begin(demo) {
 
   startAt = Date.now();
 
+  if (demo) {
+  loadQuestion();
+} else {
   countdown(loadQuestion);
+}
 }
 
 // 開始正式遊戲
@@ -1009,17 +1050,34 @@ function loadHistory() {
     );
   } catch (e) {}
 
-  $('hist').innerHTML = h.length
-    ? h.map((x, i) =>
-        `<li class="hi">
+  // 固定顯示三個名額
+  $('hist').innerHTML = Array.from({length: 3}, (_, i) => {
+    const x = h[i];
+
+    // 有紀錄：顯示成績
+    if (x) {
+      return `
+        <li class="hi">
           <span>
             <span class="g">${x.grade}級</span>
             <b>🪙${x.score}</b> [${x.title}]
           </span>
-          <span>🔥${x.combo} · ${x.playlist}</span>
-        </li>`
-      ).join('')
-    : '<li class="hi" style="justify-content:center">尚無高分紀錄</li>';
+          <span>🔥${x.combo} · ⏱️${x.time} · ${x.playlist}</span>
+        </li>
+      `;
+    }
+
+    // 沒紀錄：保留空位
+    return `
+      <li class="hi empty">
+        <span>
+          <span class="rank">0${i + 1}</span>
+          <span>尚無紀錄</span>
+        </span>
+        <span>──────</span>
+      </li>
+    `;
+  }).join('');
 }
 
 // 顯示結算畫面

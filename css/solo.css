@@ -417,6 +417,7 @@ body {
 .logo {
   position: relative;
   display: inline-block;
+  width: fit-content;
 
   font-family: var(--serif);
   font-style: italic;
@@ -466,6 +467,13 @@ body {
     drop-shadow(1px 2px 0 #3C101D)
     drop-shadow(0 0 3px rgba(255,255,255,.45))
     drop-shadow(0 0 8px rgba(213,31,59,.4));
+}
+
+#m-start .logo,
+#m-theme .logo {
+  margin-left: auto;
+  margin-right: auto;
+  font-size: 48px;
 }
 
 /* 小型星芒 */
@@ -1256,19 +1264,30 @@ body {
 }
 
 /* 關閉按鈕 */
-
 .x {
   position: absolute;
   top: var(--sp-2);
   left: var(--sp-3);
-  background: none;
-  border: none;
+  z-index: 2;
+
+  width: 30px;
+  height: 30px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  background: rgba(0,0,0,.05);
+  border: 0;
+  border-radius: 50%;
   box-shadow: none;
-  font-size: var(--fs-lg);
-  font-weight: 900;
-  color: var(--text-sub);
+
+  color: #777078;
+  font-size: 16px;
+  font-weight: 600;
+  line-height: 1;
+
   cursor: pointer;
-  transition: color var(--t-fast);
+  transition: background var(--t-fast), color var(--t-fast);
 }
 
 /* 歷史紀錄 */
@@ -1609,9 +1628,10 @@ body {
     filter: brightness(1.03);
   }
 
-  .x:hover {
-    color: var(--red);
-  }
+.x:hover {
+  background: rgba(0,0,0,.1);
+  color: #777078;
+}
 
   .hi:hover {
     filter: brightness(1.03);
@@ -1628,4 +1648,285 @@ button:focus-visible {
   outline-offset: 3px;
 }
 
+/* ========================================
+   15. MAIN MENU｜復古閃亮舞台
+   Y2K POP × 酒紅 × 香檳金 × 珍珠銀
+======================================== */
 
+/* 主選單面板 */
+#m-start .mc {
+  background:
+    radial-gradient(
+      ellipse at 50% 0%,
+      rgba(218,177,111,.2),
+      transparent 55%
+    ),
+    linear-gradient(
+      145deg,
+      #49303F 0%,
+      #30212F 48%,
+      #211A26 100%
+    );
+
+  border: 1px solid rgba(231,205,158,.55);
+  border-radius: 12px;
+
+  box-shadow:
+    inset 0 1px 2px rgba(255,239,208,.2),
+    inset 0 0 24px rgba(196,139,157,.08),
+    0 0 0 1px rgba(0,0,0,.4),
+    0 12px 30px rgba(0,0,0,.45);
+
+  padding: 24px;
+  gap: 16px;
+}
+
+/* Logo */
+#m-start .logo {
+  margin-bottom: 8px;
+}
+
+/* 操作按鈕 */
+#m-start .col {
+  width: 100%;
+  gap: 12px;
+}
+
+#m-start .col button {
+  width: 100%;
+  text-align: center;
+}
+
+/* 次要按鈕：珍珠銀金屬 */
+#m-start .col button:not(.go) {
+  color: #503B49;
+  background:
+    linear-gradient(
+      180deg,
+      #FFF9EC 0%,
+      #E5D7C7 45%,
+      #C8B7B7 100%
+    );
+
+  border: 1px solid #F4E5D0;
+
+  box-shadow:
+    inset 0 1px 2px rgba(255,255,255,.9),
+    0 2px 0 #927A7E,
+    2px 4px 7px rgba(0,0,0,.3);
+}
+
+/* 戰績區 */
+#m-start .history-panel {
+  background:
+    linear-gradient(
+      135deg,
+      rgba(255,230,198,.08),
+      rgba(255,255,255,.02)
+    ),
+    #30232F;
+
+  border: 1px solid rgba(218,177,111,.4);
+  border-radius: 8px;
+  padding: 14px;
+  text-align: left;
+
+  box-shadow:
+    inset 0 1px 1px rgba(255,255,255,.08),
+    0 4px 10px rgba(0,0,0,.2);
+}
+
+/* 戰績標題 */
+#m-start .history-heading {
+  color: #F0D6A4;
+  font-size: var(--fs-md);
+  font-weight: 900;
+  margin-bottom: 12px;
+  letter-spacing: 1px;
+  text-shadow: 0 1px 5px rgba(240,214,164,.25);
+}
+
+#m-start .history-heading::before {
+  content: "✦ ";
+  color: #E9BFCB;
+}
+
+#m-start .history-heading::after {
+  content: " ✦";
+  color: #E9BFCB;
+}
+
+/* 戰績項目：取消厚重卡片感 */
+#m-start .hist {
+  gap: 0;
+}
+
+#m-start .hi {
+  background: transparent;
+  border: 0;
+  border-bottom: 1px solid rgba(218,177,111,.2);
+  border-radius: 0;
+  padding: 9px 4px;
+  color: #E8DCE0;
+  box-shadow: none;
+  gap: 5px;
+}
+
+#m-start .hi:last-child {
+  border-bottom: 0;
+}
+
+#m-start .hi .g {
+  color: #E9A8B9;
+  box-shadow: none;
+}
+
+#m-start .hi b {
+  color: #F0D6A4;
+}
+
+#m-start .hi > span:last-child {
+  color: #C8B8BF;
+  text-align: right;
+}
+
+/* 遊戲規則 */
+#m-start .rules-toggle {
+  border-top: 1px solid rgba(218,177,111,.35);
+  padding-top: 12px;
+  color: #F0E4E5;
+  text-align: left;
+}
+
+#m-start .rules-toggle summary {
+  cursor: pointer;
+  font-weight: 800;
+  list-style: none;
+}
+
+#m-start .rules-toggle summary::-webkit-details-marker {
+  display: none;
+}
+
+#m-start .rules-toggle summary::after {
+  content: "✧";
+  float: right;
+  color: #E9C58D;
+  font-size: 18px;
+}
+
+#m-start .rules-toggle[open] summary::after {
+  content: "✦";
+}
+
+#m-start .rules {
+  margin-top: 12px;
+  background: rgba(255,240,225,.06);
+  color: #E8DCE0;
+  border: 1px solid rgba(218,177,111,.2);
+  box-shadow: none;
+}
+
+/* 測試按鈕 */
+#m-start > .mc > .btn-sm {
+  align-self: center;
+  opacity: .55;
+}
+
+/* ========================================
+   16. MENU UPDATE｜主選單與規則視窗
+======================================== */
+
+/* 主選單：戰績在前、開始按鈕在後 */
+#m-start .mc {
+  max-height: none;
+  overflow: visible;
+  gap: 14px;
+  padding: 22px 20px;
+}
+
+/* 戰績區 */
+#m-start .history-panel {
+  margin-bottom: 2px;
+}
+
+#m-start .hist {
+  gap: 0;
+}
+
+/* 名次編號 */
+#m-start .hi .rank {
+  display: inline-block;
+  width: 30px;
+  color: #E9C58D;
+  font-weight: 900;
+  letter-spacing: 1px;
+}
+
+/* 空白戰績 */
+#m-start .hi.empty {
+  color: rgba(232,220,224,.45);
+}
+
+#m-start .hi.empty .rank {
+  color: rgba(233,197,141,.55);
+}
+
+/* 規則入口 */
+#m-start .rules-open {
+  align-self: center;
+  border: 0;
+  background: transparent;
+  color: #E9C58D;
+  font-size: 15px;
+  font-weight: 800;
+  letter-spacing: 1px;
+  padding: 6px 16px;
+  cursor: pointer;
+  text-shadow: 0 1px 5px rgba(233,197,141,.2);
+}
+
+#m-start .rules-open:hover {
+  filter: brightness(1.2);
+}
+
+/* 規則彈出視窗 */
+#m-rules {
+  z-index: 100;
+}
+
+#m-rules .rules-dialog {
+  width: 100%;
+  max-width: 400px;
+  max-height: none;
+  overflow: visible;
+  gap: 18px;
+  padding: 28px 22px 22px;
+  position: relative;
+}
+
+/* 規則標題 */
+.rules-title {
+  color: #713B50;
+  font-size: 23px;
+  font-weight: 900;
+  letter-spacing: 2px;
+  text-align: center;
+}
+
+/* 規則內容 */
+#m-rules .rules {
+  width: 100%;
+  margin: 0;
+  padding: 16px;
+  line-height: 1.8;
+  text-align: left;
+}
+
+#m-rules .rules p {
+  margin: 0 0 12px;
+}
+
+#m-rules .rules p:last-child {
+  margin-bottom: 0;
+}
