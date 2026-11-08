@@ -135,8 +135,28 @@
 <script src="js/playlists.js"></script>
 
 <script>
-const CFG={BASE:60,SPEED:50,FULL_AT:15,COMBO_STEP:11,COMBO_MAX:99,CHOICE_SPEED_RATE:.3,CHOICE_COMBO_RATE:.5,CHOICE_BASE_RATE:.75,PAUSE_MAX:1,CHOICE_COST:0,MAX_TIME:20,REVEAL_MS:5000};
-const GRADES=[
+
+/* ==========================================
+   01. 遊戲設定 CONFIG
+   管理遊戲參數、計分比例、時間限制、評級門檻
+========================================== */
+
+const CFG = {
+  BASE: 60,
+  SPEED: 50,
+  FULL_AT: 15,
+  COMBO_STEP: 11,
+  COMBO_MAX: 99,
+  CHOICE_SPEED_RATE: .3,
+  CHOICE_COMBO_RATE: .5,
+  CHOICE_BASE_RATE: .75,
+  PAUSE_MAX: 1,
+  CHOICE_COST: 0,
+  MAX_TIME: 20,
+  REVEAL_MS: 5000
+};
+
+const GRADES = [
   {k:'SSS',min:.90,clean:true,title:'絕頂聰明猜歌王',desc:'前奏一下就秒殺全場，猜歌王非你莫屬！'},
   {k:'SS', min:.80,clean:true,title:'行動點歌機',desc:'聽歌量深不可測，你每天聽歌聽滿 24 小時嗎？'},
   {k:'S',  min:.65,clean:true,title:'資深歌迷',desc:'你是常出沒在搖滾區的鐵粉吧！'},
@@ -145,282 +165,901 @@ const GRADES=[
   {k:'B',  min:1e-9,title:'猜歌初心者',desc:'多聽幾首就能踏出新手村了！'},
   {k:'F',  min:0,title:'耳朵還在暖機',desc:'聽著聽著就忘記作答了，再挑戰一次吧！'}
 ];
-function calcScore(isChoice,tLeft,comboNow,lostCombo){
-  const base=Math.round(CFG.BASE*(isChoice?CFG.CHOICE_BASE_RATE:1));
-  const speed=Math.round(CFG.SPEED*Math.min(1,tLeft/CFG.FULL_AT)*(isChoice?CFG.CHOICE_SPEED_RATE:1));
-  const bonus=lostCombo?0:Math.round(Math.min(CFG.COMBO_MAX,Math.max(0,comboNow-1)*CFG.COMBO_STEP)*(isChoice?CFG.CHOICE_COMBO_RATE:1));
-  return{speed,bonus,total:base+speed+bonus};
+
+
+/* ==========================================
+   02. 遊戲狀態 STATE
+   記錄目前遊戲進行到哪裡、玩家的狀態
+========================================== */
+
+// 遊戲進度
+let theme = 'drama',
+    queue = [],
+    qPtr = 0,
+    qDone = 0,
+    total = 10,
+    cur = null;
+
+// 遊戲模式與答題狀態
+let active = false,
+    isDemo = false,
+    halfPassed = false,
+    choiceUsed = false,
+    choiceMiss = false,
+    usedChoice = false;
+
+// 分數與連擊
+let score = 0,
+    shown = 0,
+    combo = 0,
+    maxCombo = 0,
+    cds = [];
+
+// 計時與暫停
+let reqId = 0,
+    startAt = 0,
+    timeLeft = CFG.MAX_TIME,
+    endAt = 0,
+    tick = null,
+    isPaused = false,
+    nextT = null,
+    pauseLeft = 0,
+    wasRunning = false;
+
+// 選擇題選項
+let opts = [];
+
+
+/* ==========================================
+   03. 共用工具 UTILITIES
+   放置可以重複使用的小工具
+========================================== */
+
+// 取得網頁元素
+const $ = id => document.getElementById(id);
+
+// 顯示與隱藏元素
+const show = id => $(id).style.display = 'flex';
+const hide = id => $(id).style.display = 'none';
+
+// 去除重複資料
+function uniq(a) {
+  return [...new Set(a)];
 }
 
-const $=id=>document.getElementById(id);
-const show=id=>$(id).style.display='flex', hide=id=>$(id).style.display='none';
-const SILENT='data:audio/wav;base64,UklGRiQAAABXQVZFZm10IBAAAAABAAEARKwAAIhYAQACABAAZGF0YQAAAAA=';
-const audio=new Audio();audio.preload='auto';
-let theme='drama',queue=[],qPtr=0,qDone=0,total=10,cur=null,active=false,isDemo=false,halfPassed=false,choiceUsed=false,choiceMiss=false,usedChoice=false;
-let score=0,shown=0,combo=0,maxCombo=0,cds=[],reqId=0,startAt=0;
-let timeLeft=CFG.MAX_TIME,endAt=0,tick=null,isPaused=false,nextT=null,pauseLeft=0,wasRunning=false;
+// 隨機打亂陣列
+function shuffle(a) {
+  return a.sort(() => Math.random() - .5);
+}
 
-function unlockAudio(){audio.src=SILENT;const p=audio.play();if(p)p.then(()=>audio.pause()).catch(()=>{});}
-function toTheme(){['m-start','m-demo','m-result','m-confirm'].forEach(hide);show('m-theme');$('quit-btn').style.display='none';}
-function pickTheme(k){theme=k;document.querySelectorAll('.tb').forEach(b=>b.classList.toggle('sel',b.dataset.k===k));}
-function uniq(a){return[...new Set(a)];}
-function shuffle(a){return a.sort(()=>Math.random()-.5);}
+// 統一文字格式，方便比對歌名
+function sanitize(s) {
+  return (s || '').toLowerCase()
+    .replace(/\(.*?\)|（.*?）|\[.*?\]|【.*?】/g, '')
+    .replace(/[\s\-_()（）\[\]【】.,?!'"]/g, '');
+}
 
-function begin(demo){
-  unlockAudio();isDemo=demo;total=demo?3:10;
-  $('mode').textContent=demo?'🎧 試玩中':'🔥 正式挑戰';
-  $('quit-btn').style.display='block';
-  pauseLeft=CFG.PAUSE_MAX;usedChoice=false;updPauseBtn();
-  score=0;shown=0;combo=0;maxCombo=0;qDone=0;qPtr=0;cds=[];halfPassed=false;
-  queue=shuffle(uniq(demo?[...playlists.drama,...playlists.she,...playlists.fish]:playlists[theme]));
-  $('score').textContent='0';updCombo();renderProg();startAt=Date.now();
+
+/* ==========================================
+   04. 計分系統 SCORING
+   負責計算分數、連擊獎勵與玩家評級
+========================================== */
+
+function calcScore(isChoice, tLeft, comboNow, lostCombo) {
+  const base = Math.round(
+    CFG.BASE * (isChoice ? CFG.CHOICE_BASE_RATE : 1)
+  );
+
+  const speed = Math.round(
+    CFG.SPEED *
+    Math.min(1, tLeft / CFG.FULL_AT) *
+    (isChoice ? CFG.CHOICE_SPEED_RATE : 1)
+  );
+
+  const bonus = lostCombo ? 0 : Math.round(
+    Math.min(
+      CFG.COMBO_MAX,
+      Math.max(0, comboNow - 1) * CFG.COMBO_STEP
+    ) *
+    (isChoice ? CFG.CHOICE_COMBO_RATE : 1)
+  );
+
+  return {
+    speed,
+    bonus,
+    total: base + speed + bonus
+  };
+}
+
+// 計算本局理論最高分
+function maxScore(n = total) {
+  let m = n * (CFG.BASE + CFG.SPEED);
+
+  for (let i = 0; i < n; i++) {
+    m += Math.min(CFG.COMBO_MAX, i * CFG.COMBO_STEP);
+  }
+
+  return m;
+}
+
+// 根據得分比例判斷評級
+function grade(s) {
+  const mx = maxScore(),
+        r = mx > 0 ? s / mx : 0;
+
+  return GRADES.find(g => r >= g.min && (!g.clean || !usedChoice));
+}
+
+
+/* ==========================================
+   05. 音訊與計時 AUDIO & TIMER
+   負責音樂播放、暫停、倒數計時
+========================================== */
+
+// 靜音音訊：協助瀏覽器解鎖播放權限
+const SILENT = 'data:audio/wav;base64,UklGRiQAAABXQVZFZm10IBAAAAABAAEARKwAAIhYAQACABAAZGF0YQAAAAA=';
+const audio = new Audio();
+audio.preload = 'auto';
+
+function unlockAudio() {
+  audio.src = SILENT;
+  const p = audio.play();
+
+  if (p) p.then(() => audio.pause()).catch(() => {});
+}
+
+// 執行倒數計時
+function runTimer() {
+  clearInterval(tick);
+  endAt = Date.now() + timeLeft * 1000;
+
+  tick = setInterval(() => {
+    timeLeft = Math.max(0, (endAt - Date.now()) / 1000);
+
+    $('tbar').style.width = (timeLeft / CFG.MAX_TIME * 100) + '%';
+    $('tnum').textContent = Math.ceil(timeLeft) + 's';
+    $('trow').classList.toggle('danger', timeLeft <= 3);
+
+    if (timeLeft <= 0) {
+      clearInterval(tick);
+      timeout();
+    }
+  }, 50);
+}
+
+// 停止所有音訊與計時效果
+function stopAll() {
+  clearInterval(tick);
+  audio.pause();
+  $('disc').classList.remove('spin');
+  $('cd').classList.remove('on');
+  $('trow').classList.remove('danger');
+}
+
+// 播放目前歌曲
+function playNow() {
+  return audio.play()
+    .then(() => {
+      $('tap').style.display = 'none';
+      $('disc').classList.add('spin');
+      $('cd').classList.add('on');
+      runTimer();
+    })
+    .catch(() => {
+      $('tap').style.display = 'flex';
+    });
+}
+
+// 點擊播放按鈕
+$('tap').onclick = () => {
+  if (active && !isPaused) playNow();
+};
+
+// 暫停遊戲
+function doPause() {
+  if (!active || isPaused || pauseLeft <= 0) return;
+
+  pauseLeft--;
+  updPauseBtn();
+
+  isPaused = true;
+  clearInterval(tick);
+  audio.pause();
+  $('disc').classList.remove('spin');
+
+  $('pause-note').textContent = `稍等一下！歌名就快想起來了！`;
+  show('m-pause');
+}
+
+// 恢復遊戲
+function resumePause() {
+  isPaused = false;
+  hide('m-pause');
+  playNow();
+}
+
+// 更新暫停按鈕
+function updPauseBtn() {
+  $('pause-btn').disabled = pauseLeft <= 0;
+  $('pause-sub').textContent =
+    pauseLeft > 0 ? `每局 ${CFG.PAUSE_MAX} 次` : '已使用';
+}
+
+
+/* ==========================================
+   06. 畫面與動畫 DISPLAY
+   負責畫面呈現、分數動畫、文字提示
+========================================== */
+
+// 更新題目進度
+function renderProg() {
+  $('pgrid').innerHTML = Array.from({length:total}, (_, i) => {
+    const c = cds[i];
+
+    return c
+      ? `<div class="pslot ${c.cond}"><img src="${c.art}" alt=""></div>`
+      : `<div class="pslot ${i === qDone ? 'now' : ''}"></div>`;
+  }).join('');
+
+  $('qno').textContent = `第 ${Math.min(qDone + 1, total)} / ${total} 題`;
+}
+
+// 更新分數與分數動畫
+function setScore(v) {
+  const from = shown,
+        t0 = performance.now();
+
+  score = v;
+
+  const el = $('score');
+  el.classList.remove('bump');
+  void el.offsetWidth;
+  el.classList.add('bump');
+
+  (function f(t) {
+    const p = Math.min(1, (t - t0) / 500);
+
+    shown = Math.round(from + (v - from) * p);
+    el.textContent = shown;
+
+    if (p < 1) requestAnimationFrame(f);
+  })(t0);
+}
+
+// 更新連擊顯示
+function updCombo(pop) {
+  const c = $('combo');
+
+  c.textContent = `🔥 ${combo} COMBO`;
+  c.classList.toggle('on', combo > 0);
+
+  if (pop) {
+    c.classList.remove('pop');
+    void c.offsetWidth;
+    c.classList.add('pop');
+  }
+}
+
+// 分數飛行動畫
+function fly(txt) {
+  const a = $('case').getBoundingClientRect(),
+        b = $('score').getBoundingClientRect(),
+        e = document.createElement('div');
+
+  e.className = 'fly';
+  e.textContent = txt;
+  e.style.left = (a.left + a.width / 2) + 'px';
+  e.style.top = (a.top + a.height / 2) + 'px';
+  document.body.appendChild(e);
+
+  const dx = b.left + b.width / 2 - (a.left + a.width / 2),
+        dy = b.top + b.height / 2 - (a.top + a.height / 2);
+
+  requestAnimationFrame(() => {
+    e.style.transform = `translate(calc(-50% + ${dx}px),calc(-50% + ${dy}px)) scale(.5)`;
+    e.style.opacity = '.2';
+  });
+
+  setTimeout(() => e.remove(), 900);
+}
+
+// 顯示提示訊息
+function say(t, c) {
+  const e = $('msg');
+
+  e.textContent = t;
+  e.style.setProperty('--c', c);
+  e.classList.remove('show');
+  void e.offsetWidth;
+  e.classList.add('show');
+}
+
+// 顯示加分標籤
+function tag(side, t, c, delay = 0) {
+  setTimeout(() => {
+    const e = document.createElement('div');
+
+    e.className = 'tag';
+    e.textContent = t;
+    e.style.setProperty('--c', c);
+
+    $('tags-' + side).appendChild(e);
+
+    setTimeout(() => e.remove(), 1500);
+  }, delay);
+}
+
+// 倒數畫面
+function countdown(cb) {
+  document.querySelectorAll('.ov').forEach(m => m.style.display = 'none');
+
+  const o = $('cdown');
+  o.style.display = 'flex';
+
+  let c = 3;
+  o.textContent = c;
+
+  const t = setInterval(() => {
+    c--;
+
+    if (c > 0) {
+      o.textContent = c;
+    } else if (c === 0) {
+      o.textContent = 'GO!';
+    } else {
+      clearInterval(t);
+      o.style.display = 'none';
+      cb();
+    }
+  }, 750);
+}
+
+
+/* ==========================================
+   07. 遊戲入口與流程 GAME FLOW
+   負責開始遊戲、試玩、選擇主題、離開遊戲
+========================================== */
+
+// 選擇歌曲主題
+function pickTheme(k) {
+  theme = k;
+
+  document.querySelectorAll('.tb').forEach(b => {
+    b.classList.toggle('sel', b.dataset.k === k);
+  });
+}
+
+// 開始遊戲的共同流程
+function begin(demo) {
+  unlockAudio();
+
+  isDemo = demo;
+  total = demo ? 3 : 10;
+
+  $('mode').textContent = demo ? '🎧 試玩中' : '🔥 正式挑戰';
+  $('quit-btn').style.display = 'block';
+
+  pauseLeft = CFG.PAUSE_MAX;
+  usedChoice = false;
+  updPauseBtn();
+
+  score = 0;
+  shown = 0;
+  combo = 0;
+  maxCombo = 0;
+  qDone = 0;
+  qPtr = 0;
+  cds = [];
+  halfPassed = false;
+
+  queue = shuffle(uniq(
+    demo
+      ? [...playlists.drama, ...playlists.she, ...playlists.fish]
+      : playlists[theme]
+  ));
+
+  $('score').textContent = '0';
+  updCombo();
+  renderProg();
+
+  startAt = Date.now();
+
   countdown(loadQuestion);
 }
-function startGame(){begin(false);}
-function startDemo(){begin(true);}
 
-function confirmQuit(){
+// 開始正式遊戲
+function startGame() {
+  begin(false);
+}
+
+// 開始試玩
+function startDemo() {
+  begin(true);
+}
+
+// 返回主題選擇畫面
+function toTheme() {
+  ['m-start', 'm-demo', 'm-result', 'm-confirm'].forEach(hide);
+  show('m-theme');
+  $('quit-btn').style.display = 'none';
+}
+
+// 確認離開遊戲
+function confirmQuit() {
   wasRunning = active && !isPaused;
-  if(wasRunning){ clearInterval(tick); audio.pause(); $('disc').classList.remove('spin'); }
+
+  if (wasRunning) {
+    clearInterval(tick);
+    audio.pause();
+    $('disc').classList.remove('spin');
+  }
+
   show('m-confirm');
 }
-function cancelQuit(){
+
+// 取消離開
+function cancelQuit() {
   hide('m-confirm');
-  if(wasRunning){ playNow(); }
+
+  if (wasRunning) {
+    playNow();
+  }
 }
-function doQuit(){
+
+// 確定離開
+function doQuit() {
   stopAll();
   hide('m-confirm');
-  $('quit-btn').style.display='none';
+
+  $('quit-btn').style.display = 'none';
   show('m-start');
+
   loadHistory();
 }
 
-function countdown(cb){
-  document.querySelectorAll('.ov').forEach(m=>m.style.display='none');
-  const o=$('cdown');o.style.display='flex';let c=3;o.textContent=c;
-  const t=setInterval(()=>{c--;if(c>0)o.textContent=c;else if(c===0)o.textContent='GO!';else{clearInterval(t);o.style.display='none';cb();}},750);
+// 通過中場休息後繼續
+function resumeHalf() {
+  hide('m-half');
+  loadQuestion();
 }
 
-function renderProg(){
-  $('pgrid').innerHTML=Array.from({length:total},(_,i)=>{
-    const c=cds[i];
-    return c?`<div class="pslot ${c.cond}"><img src="${c.art}" alt=""></div>`:`<div class="pslot ${i===qDone?'now':''}"></div>`;
-  }).join('');
-  $('qno').textContent=`第 ${Math.min(qDone+1,total)} / ${total} 題`;
+// 進入下一題
+function next() {
+  if (!$('banner').classList.contains('show')) return;
+
+  clearTimeout(nextT);
+  $('banner').classList.remove('show');
+
+  qDone++;
+
+  if (qDone >= total) return finish();
+
+  if (!isDemo && qDone === 5 && !halfPassed) {
+    halfPassed = true;
+
+    stopAll();
+    renderProg();
+
+    $('h-score').textContent = score;
+    $('h-combo').textContent = combo + ' COMBO';
+
+    show('m-half');
+    return;
+  }
+
+  loadQuestion();
 }
 
-function setScore(v){
-  const from=shown,t0=performance.now();score=v;
-  const el=$('score');el.classList.remove('bump');void el.offsetWidth;el.classList.add('bump');
-  (function f(t){const p=Math.min(1,(t-t0)/500);shown=Math.round(from+(v-from)*p);el.textContent=shown;if(p<1)requestAnimationFrame(f);})(t0);
-}
-function updCombo(pop){
-  const c=$('combo');c.textContent=`🔥 ${combo} COMBO`;c.classList.toggle('on',combo>0);
-  if(pop){c.classList.remove('pop');void c.offsetWidth;c.classList.add('pop');}
-}
-function fly(txt){
-  const a=$('case').getBoundingClientRect(),b=$('score').getBoundingClientRect(),e=document.createElement('div');
-  e.className='fly';e.textContent=txt;e.style.left=(a.left+a.width/2)+'px';e.style.top=(a.top+a.height/2)+'px';document.body.appendChild(e);
-  const dx=b.left+b.width/2-(a.left+a.width/2),dy=b.top+b.height/2-(a.top+a.height/2);
-  requestAnimationFrame(()=>{e.style.transform=`translate(calc(-50% + ${dx}px),calc(-50% + ${dy}px)) scale(.5)`;e.style.opacity='.2';});
-  setTimeout(()=>e.remove(),900);
-}
-function say(t,c){const e=$('msg');e.textContent=t;e.style.setProperty('--c',c);e.classList.remove('show');void e.offsetWidth;e.classList.add('show');}
-function tag(side,t,c,delay=0){setTimeout(()=>{const e=document.createElement('div');e.className='tag';e.textContent=t;e.style.setProperty('--c',c);$('tags-'+side).appendChild(e);setTimeout(()=>e.remove(),1500);},delay);}
-
-function runTimer(){
-  clearInterval(tick);endAt=Date.now()+timeLeft*1000;
-  tick=setInterval(()=>{
-    timeLeft=Math.max(0,(endAt-Date.now())/1000);
-    $('tbar').style.width=(timeLeft/CFG.MAX_TIME*100)+'%';
-    $('tnum').textContent=Math.ceil(timeLeft)+'s';
-    $('trow').classList.toggle('danger',timeLeft<=3);
-    if(timeLeft<=0){clearInterval(tick);timeout();}
-  },50);
-}
-function stopAll(){clearInterval(tick);audio.pause();$('disc').classList.remove('spin');$('cd').classList.remove('on');$('trow').classList.remove('danger');}
-function playNow(){
-  return audio.play().then(()=>{$('tap').style.display='none';$('disc').classList.add('spin');$('cd').classList.add('on');runTimer();})
-    .catch(()=>{$('tap').style.display='flex';});
-}
-$('tap').onclick=()=>{if(active&&!isPaused)playNow();};
-
-async function loadQuestion(){
-  const my=++reqId;stopAll();clearTimeout(nextT);
-  active=false;cur=null;choiceUsed=false;choiceMiss=false;isPaused=false;
-  $('trow').classList.remove('done');$('banner').classList.remove('show');$('case').classList.remove('rev');$('art').removeAttribute('src');
-  $('type-sec').style.display='';$('choice-sec').style.display='none';$('next-sec').style.display='none';$('stage').classList.remove('rev');$('inp').value='';$('tap').style.display='none';
-  $('choice-btn').disabled=false;$('choice-sub').textContent=CFG.CHOICE_COST?`花 ${CFG.CHOICE_COST} 金幣`:'金幣打折';$('items').style.display='';
-  timeLeft=CFG.MAX_TIME;$('tbar').style.width='100%';$('tnum').textContent=CFG.MAX_TIME+'s';
+// 結束遊戲
+function finish() {
+  stopAll();
   renderProg();
-  const san=s=>sanitize(s);
-  while(qPtr<queue.length){
-    const term=queue[qPtr++],sp=term.indexOf(' '),artist=term.slice(0,sp),title=term.slice(sp+1);
-    try{
-      const r=await fetch(`https://itunes.apple.com/search?term=${encodeURIComponent(artist+' '+title)}&entity=song&limit=10&country=TW`);
-      const d=await r.json();if(my!==reqId)return;
-      const rs=(d.results||[]).filter(x=>x.previewUrl);
-      const t=rs.find(x=>x.artistName.toLowerCase().includes(artist.toLowerCase())&&san(x.trackName).includes(san(title)))||rs.find(x=>x.artistName.toLowerCase().includes(artist.toLowerCase()));
-      if(t){
-        cur={artist,title,art:t.artworkUrl100.replace('100x100','600x600'),album:t.collectionName||'',year:(t.releaseDate||'').slice(0,4)};
-        audio.src=t.previewUrl;audio.currentTime=0;active=true;playNow();return;
+
+  $('quit-btn').style.display = 'none';
+
+  if (isDemo) {
+    show('m-demo');
+    return;
+  }
+
+  saveHistory();
+  showResult();
+}
+
+
+/* ==========================================
+   08. 題目與答題 QUESTION
+   負責取得歌曲、顯示題目、判斷答案
+========================================== */
+
+// 載入下一首歌曲
+async function loadQuestion() {
+  const my = ++reqId;
+
+  stopAll();
+  clearTimeout(nextT);
+
+  active = false;
+  cur = null;
+  choiceUsed = false;
+  choiceMiss = false;
+  isPaused = false;
+
+  $('trow').classList.remove('done');
+  $('banner').classList.remove('show');
+  $('case').classList.remove('rev');
+  $('art').removeAttribute('src');
+
+  $('type-sec').style.display = '';
+  $('choice-sec').style.display = 'none';
+  $('next-sec').style.display = 'none';
+  $('stage').classList.remove('rev');
+  $('inp').value = '';
+  $('tap').style.display = 'none';
+
+  $('choice-btn').disabled = false;
+  $('choice-sub').textContent = CFG.CHOICE_COST
+    ? `花 ${CFG.CHOICE_COST} 金幣`
+    : '金幣打折';
+
+  $('items').style.display = '';
+
+  timeLeft = CFG.MAX_TIME;
+  $('tbar').style.width = '100%';
+  $('tnum').textContent = CFG.MAX_TIME + 's';
+
+  renderProg();
+
+  const san = s => sanitize(s);
+
+  while (qPtr < queue.length) {
+    const term = queue[qPtr++],
+          sp = term.indexOf(' '),
+          artist = term.slice(0, sp),
+          title = term.slice(sp + 1);
+
+    try {
+      const r = await fetch(
+        `https://itunes.apple.com/search?term=${encodeURIComponent(artist + ' ' + title)}&entity=song&limit=10&country=TW`
+      );
+
+      const d = await r.json();
+
+      if (my !== reqId) return;
+
+      const rs = (d.results || []).filter(x => x.previewUrl);
+
+      const t = rs.find(x =>
+        x.artistName.toLowerCase().includes(artist.toLowerCase()) &&
+        san(x.trackName).includes(san(title))
+      ) || rs.find(x =>
+        x.artistName.toLowerCase().includes(artist.toLowerCase())
+      );
+
+      if (t) {
+        cur = {
+          artist,
+          title,
+          art: t.artworkUrl100.replace('100x100', '600x600'),
+          album: t.collectionName || '',
+          year: (t.releaseDate || '').slice(0, 4)
+        };
+
+        audio.src = t.previewUrl;
+        audio.currentTime = 0;
+
+        active = true;
+        playNow();
+
+        return;
       }
-    }catch(e){if(my!==reqId)return;}
+
+    } catch (e) {
+      if (my !== reqId) return;
+    }
   }
-  total=qDone;finish();
+
+  total = qDone;
+  finish();
 }
 
-function sanitize(s){return(s||'').toLowerCase().replace(/\(.*?\)|（.*?）|\[.*?\]|【.*?】/g,'').replace(/[\s\-_()（）\[\]【】.,?!'"]/g,'');}
+// 提交文字答案
+function submitAnswer() {
+  if (!active || isPaused) return;
 
-function submitAnswer(){
-  if(!active||isPaused)return;
-  const v=$('inp').value.trim();if(!v)return;
-  if(sanitize(v)===sanitize(cur.title))correct(false);
-  else{
+  const v = $('inp').value.trim();
+
+  if (!v) return;
+
+  if (sanitize(v) === sanitize(cur.title)) {
+    correct(false);
+  } else {
     setScore(Math.max(0, score - 10));
-    say('❌ 答錯了！扣 10 分','#d6246e');
-    $('inp').value='';
-    const b=$('ibox');b.classList.remove('shake');void b.offsetWidth;b.classList.add('shake');
+
+    say('❌ 答錯了！扣 10 分', '#d6246e');
+
+    $('inp').value = '';
+
+    const b = $('ibox');
+    b.classList.remove('shake');
+    void b.offsetWidth;
+    b.classList.add('shake');
   }
 }
 
-let opts=[];
-function toChoice(){
-  if(!active||isPaused||choiceUsed)return;
-  choiceUsed=true;usedChoice=true;$('choice-btn').disabled=true;
-  if(CFG.CHOICE_COST){setScore(Math.max(0,score-CFG.CHOICE_COST));tag('l','使用錦囊 🪙'+CFG.CHOICE_COST,'#ffc857');}
-  const pool=uniq((isDemo?[...playlists.drama,...playlists.she,...playlists.fish]:playlists[theme]).map(s=>s.slice(s.indexOf(' ')+1))).filter(t=>sanitize(t)!==sanitize(cur.title));
-  opts=shuffle([...shuffle(pool).slice(0,3),cur.title]);
-  $('ogrid').innerHTML=opts.map((o,i)=>`<button class="opt" data-i="${i}"></button>`).join('');
-  $('ogrid').querySelectorAll('.opt').forEach((b,i)=>{b.textContent=opts[i];});
-  $('type-sec').style.display='none';$('choice-sec').style.display='block';
+// 使用選擇題提示
+function toChoice() {
+  if (!active || isPaused || choiceUsed) return;
+
+  choiceUsed = true;
+  usedChoice = true;
+
+  $('choice-btn').disabled = true;
+
+  if (CFG.CHOICE_COST) {
+    setScore(Math.max(0, score - CFG.CHOICE_COST));
+    tag('l', '使用錦囊 🪙' + CFG.CHOICE_COST, '#ffc857');
+  }
+
+  const pool = uniq(
+    (isDemo
+      ? [...playlists.drama, ...playlists.she, ...playlists.fish]
+      : playlists[theme]
+    ).map(s => s.slice(s.indexOf(' ') + 1))
+  ).filter(t => sanitize(t) !== sanitize(cur.title));
+
+  opts = shuffle([
+    ...shuffle(pool).slice(0, 3),
+    cur.title
+  ]);
+
+  $('ogrid').innerHTML = opts.map((o, i) =>
+    `<button class="opt" data-i="${i}"></button>`
+  ).join('');
+
+  $('ogrid').querySelectorAll('.opt').forEach((b, i) => {
+    b.textContent = opts[i];
+  });
+
+  $('type-sec').style.display = 'none';
+  $('choice-sec').style.display = 'block';
 }
 
-$('ogrid').onclick=e=>{
-  const b=e.target.closest('.opt');if(!b||!active||isPaused)return;
-  if(opts[+b.dataset.i]===cur.title)correct(true);
-  else{
+// 選擇題點擊事件
+$('ogrid').onclick = e => {
+  const b = e.target.closest('.opt');
+
+  if (!b || !active || isPaused) return;
+
+  if (opts[+b.dataset.i] === cur.title) {
+    correct(true);
+  } else {
     setScore(Math.max(0, score - 10));
-    say('😢 選錯了！扣 10 分','#d6246e');b.disabled=true;b.textContent+=' ✖';
-    if(!choiceMiss){choiceMiss=true;combo=0;updCombo();}
+
+    say('😢 選錯了！扣 10 分', '#d6246e');
+
+    b.disabled = true;
+    b.textContent += ' ✖';
+
+    if (!choiceMiss) {
+      choiceMiss = true;
+      combo = 0;
+      updCombo();
+    }
   }
 };
 
-function reveal(){
-  active=false;clearInterval(tick);$('trow').classList.remove('danger');$('trow').classList.add('done');
-  $('art').src=cur.art;$('case').classList.add('rev');$('stage').classList.add('rev');
-  $('b-title').textContent=cur.title;$('b-artist').textContent=cur.artist;
-  $('b-meta').textContent=[cur.album,cur.year].filter(Boolean).join(' · ');
-  $('banner').classList.add('show');
-  $('type-sec').style.display='none';$('choice-sec').style.display='none';$('items').style.display='none';
-  const n=$('next-sec');n.style.display='block';
-  n.innerHTML=`<button class="bevel go big nbtn" style="width:100%" onclick="next()"><i style="animation-duration:${CFG.REVEAL_MS}ms"></i><span>${qDone+1>=total?'看結算':'下一題'} ➔</span></button>`;
-  clearTimeout(nextT);nextT=setTimeout(next,CFG.REVEAL_MS);
-}
-function correct(isChoice){
-  combo++;maxCombo=Math.max(maxCombo,combo);
-  const s=calcScore(isChoice,timeLeft,combo,choiceMiss);
-  let cond='near-mint';
-  if(timeLeft>=10)cond='gem-mint';else if(timeLeft<5)cond='good'; cds.push({art:cur.art,cond});
-  setScore(score+s.total);updCombo(true);fly('+'+s.total);
-  say('🎉 Bravo!','#4caf7d');
-  if(s.speed)tag('r',`⚡ 速度 +${s.speed}`,'#4fd6ff',700);
-  if(s.bonus)tag('r',`🔥 連擊 +${s.bonus}`,'#ff5ca8',900);
+// 答對歌曲
+function correct(isChoice) {
+  combo++;
+  maxCombo = Math.max(maxCombo, combo);
+
+  const s = calcScore(isChoice, timeLeft, combo, choiceMiss);
+
+  let cond = 'near-mint';
+
+  if (timeLeft >= 10) {
+    cond = 'gem-mint';
+  } else if (timeLeft < 5) {
+    cond = 'good';
+  }
+
+  cds.push({art:cur.art, cond});
+
+  setScore(score + s.total);
+  updCombo(true);
+  fly('+' + s.total);
+
+  say('🎉 Bravo!', '#4caf7d');
+
+  if (s.speed) tag('r', `⚡ 速度 +${s.speed}`, '#4fd6ff', 700);
+  if (s.bonus) tag('r', `🔥 連擊 +${s.bonus}`, '#ff5ca8', 900);
+
   reveal();
 }
-function timeout(){
-  combo=0;updCombo();say('⏰ 時間到！','#d6246e');
-  cds.push({art:cur.art,cond:'poor'});reveal();
-}
-function next(){
-  if(!$('banner').classList.contains('show'))return;
-  clearTimeout(nextT);$('banner').classList.remove('show');qDone++;
-  if(qDone>=total)return finish();
-  if(!isDemo&&qDone===5&&!halfPassed){halfPassed=true;stopAll();renderProg();$('h-score').textContent=score;$('h-combo').textContent=combo+' COMBO';show('m-half');return;}
-  loadQuestion();
-}
-function resumeHalf(){hide('m-half');loadQuestion();}
 
-function updPauseBtn(){
-  $('pause-btn').disabled=pauseLeft<=0;
-  $('pause-sub').textContent=pauseLeft>0?`每局 ${CFG.PAUSE_MAX} 次`:'已使用';
-}
-function doPause(){
-  if(!active||isPaused||pauseLeft<=0)return;
-  pauseLeft--;updPauseBtn();
-  isPaused=true;clearInterval(tick);audio.pause();$('disc').classList.remove('spin');
-  $('pause-note').textContent=`稍等一下！歌名就快想起來了！`;show('m-pause');
-}
-function resumePause(){isPaused=false;hide('m-pause');playNow();}
+// 時間到
+function timeout() {
+  combo = 0;
+  updCombo();
 
-function finish(){
-  stopAll();renderProg();
-  $('quit-btn').style.display='none';
-  if(isDemo){show('m-demo');return;}
-  saveHistory();showResult();
+  say('⏰ 時間到！', '#d6246e');
+
+  cds.push({art:cur.art, cond:'poor'});
+
+  reveal();
 }
 
-function maxScore(n=total){
-  let m=n*(CFG.BASE+CFG.SPEED);
-  for(let i=0;i<n;i++)m+=Math.min(CFG.COMBO_MAX,i*CFG.COMBO_STEP);
-  return m;
-}
-function grade(s){
-  const mx=maxScore(),r=mx>0?s/mx:0;
-  return GRADES.find(g=>r>=g.min&&(!g.clean||!usedChoice));
+// 揭曉答案
+function reveal() {
+  active = false;
+
+  clearInterval(tick);
+
+  $('trow').classList.remove('danger');
+  $('trow').classList.add('done');
+
+  $('art').src = cur.art;
+  $('case').classList.add('rev');
+  $('stage').classList.add('rev');
+
+  $('b-title').textContent = cur.title;
+  $('b-artist').textContent = cur.artist;
+  $('b-meta').textContent = [cur.album, cur.year].filter(Boolean).join(' · ');
+
+  $('banner').classList.add('show');
+
+  $('type-sec').style.display = 'none';
+  $('choice-sec').style.display = 'none';
+  $('items').style.display = 'none';
+
+  const n = $('next-sec');
+  n.style.display = 'block';
+
+  n.innerHTML = `
+    <button class="bevel go big nbtn" style="width:100%" onclick="next()">
+      <i style="animation-duration:${CFG.REVEAL_MS}ms"></i>
+      <span>${qDone + 1 >= total ? '看結算' : '下一題'} ➔</span>
+    </button>
+  `;
+
+  clearTimeout(nextT);
+  nextT = setTimeout(next, CFG.REVEAL_MS);
 }
 
-function saveHistory(){
-  const sec=Math.floor((Date.now()-startAt)/1000),t=String(Math.floor(sec/60)).padStart(2,'0')+':'+String(sec%60).padStart(2,'0');
-  const gObj=grade(score);
-  try{
-    let h=JSON.parse(localStorage.getItem('song_king_solo_history')||'[]');
-    h.push({grade:gObj.k,title:gObj.title,score,combo:maxCombo,time:t,playlist:names[theme]});
-    h.sort((a,b)=>b.score-a.score);
-    localStorage.setItem('song_king_solo_history',JSON.stringify(h.slice(0,3)));
-  }catch(e){}
+
+/* ==========================================
+   09. 紀錄與結算 RESULT & HISTORY
+   負責儲存歷史成績、顯示最終結果
+========================================== */
+
+// 儲存遊戲紀錄
+function saveHistory() {
+  const sec = Math.floor((Date.now() - startAt) / 1000),
+        t = String(Math.floor(sec / 60)).padStart(2, '0') +
+            ':' + String(sec % 60).padStart(2, '0');
+
+  const gObj = grade(score);
+
+  try {
+    let h = JSON.parse(
+      localStorage.getItem('song_king_solo_history') || '[]'
+    );
+
+    h.push({
+      grade: gObj.k,
+      title: gObj.title,
+      score,
+      combo: maxCombo,
+      time: t,
+      playlist: names[theme]
+    });
+
+    h.sort((a, b) => b.score - a.score);
+
+    localStorage.setItem(
+      'song_king_solo_history',
+      JSON.stringify(h.slice(0, 3))
+    );
+
+  } catch (e) {}
+
   loadHistory();
 }
 
-function loadHistory(){
-  let h=[];try{h=JSON.parse(localStorage.getItem('song_king_solo_history')||'[]');}catch(e){}
-  $('hist').innerHTML=h.length?h.map((x,i)=>`<li class="hi"><span><span class="g">${x.grade}級</span><b>🪙${x.score}</b> [${x.title}]</span><span>🔥${x.combo} · ${x.playlist}</span></li>`).join(''):'<li class="hi" style="justify-content:center">尚無高分紀錄</li>';
+// 讀取歷史紀錄
+function loadHistory() {
+  let h = [];
+
+  try {
+    h = JSON.parse(
+      localStorage.getItem('song_king_solo_history') || '[]'
+    );
+  } catch (e) {}
+
+  $('hist').innerHTML = h.length
+    ? h.map((x, i) =>
+        `<li class="hi">
+          <span>
+            <span class="g">${x.grade}級</span>
+            <b>🪙${x.score}</b> [${x.title}]
+          </span>
+          <span>🔥${x.combo} · ${x.playlist}</span>
+        </li>`
+      ).join('')
+    : '<li class="hi" style="justify-content:center">尚無高分紀錄</li>';
 }
 
-function showResult(){
-  const g=grade(score),b=g.k,t=g.title;show('m-result');
+// 顯示結算畫面
+function showResult() {
+  const g = grade(score),
+        b = g.k,
+        t = g.title;
+
+  show('m-result');
+
   const mx = maxScore(total);
   const ratio = mx > 0 ? Math.round((score / mx) * 100) : 0;
-  
+
   $('r-score').textContent = score;
   $('r-combo').textContent = maxCombo;
   $('r-badge').textContent = b;
   $('r-title').textContent = t;
   $('rocket-pr-val').textContent = `PR ${ratio}`;
-  
+
   setTimeout(() => {
     $('rocket-fill').style.height = ratio + '%';
     $('rocket-icon').style.bottom = ratio + '%';
   }, 100);
 
-  const card=$('res-card'),cf=$('conf');cf.innerHTML='';card.classList.toggle('gold',b==='SS'||b==='SSS');
-  if(['SSS','SS','S','A+','A'].includes(b)){const cs=['#d6246e','#f5c518','#19a7d8','#4caf7d','#fff'];
-    for(let i=0;i<35;i++){const c=document.createElement('div');c.className='cf';c.style.setProperty('--c',cs[i%5]);c.style.left=Math.random()*100+'%';c.style.animationDuration=1.2+Math.random()*1.5+'s';c.style.animationDelay=Math.random()*.6+'s';cf.appendChild(c);}}
-  $('gal').innerHTML=cds.map(c=>`<div class="gp ${c.cond}"><img src="${c.art}" alt=""></div>`).join('');
-  let d=g.desc;
-  if(usedChoice&&score/maxScore()>=GRADES.find(x=>x.k==='S').min)d+='（本場使用了選擇題，評級上限為 A+）';
-  $('r-desc').textContent=d;
-}
-loadHistory();
+  const card = $('res-card'),
+        cf = $('conf');
 
-// 測試專用：一鍵直接預覽結算畫面（包含 10 張模擬 CD）
+  cf.innerHTML = '';
+  card.classList.toggle('gold', b === 'SS' || b === 'SSS');
+
+  if (['SSS', 'SS', 'S', 'A+', 'A'].includes(b)) {
+    const cs = ['#d6246e', '#f5c518', '#19a7d8', '#4caf7d', '#fff'];
+
+    for (let i = 0; i < 35; i++) {
+      const c = document.createElement('div');
+
+      c.className = 'cf';
+      c.style.setProperty('--c', cs[i % 5]);
+      c.style.left = Math.random() * 100 + '%';
+      c.style.animationDuration = 1.2 + Math.random() * 1.5 + 's';
+      c.style.animationDelay = Math.random() * .6 + 's';
+
+      cf.appendChild(c);
+    }
+  }
+
+  $('gal').innerHTML = cds.map(c =>
+    `<div class="gp ${c.cond}"><img src="${c.art}" alt=""></div>`
+  ).join('');
+
+  let d = g.desc;
+
+  if (usedChoice && score / maxScore() >= GRADES.find(x => x.k === 'S').min) {
+    d += '（本場使用了選擇題，評級上限為 A+）';
+  }
+
+  $('r-desc').textContent = d;
+}
+
+
+/* ==========================================
+   10. 開發測試 TESTING
+   開發期間使用的測試功能
+========================================== */
+
+// 一鍵直接預覽結算畫面（包含 10 張模擬 CD）
 function testResult() {
   score = 1280;
   maxCombo = 12;
   startAt = Date.now() - 102000; // 模擬 1分42秒
-  
-  // 10張模擬專輯縮圖與不同稀有度狀態
+
+  // 10 張模擬專輯縮圖與不同稀有度狀態
   cds = [
     { art: 'https://is1-ssl.mzstatic.com/image/thumb/Music112/v4/2b/86/0a/2b860a48-4e89-137a-bc12-4c6e9a651912/mzi.vjldzjxy.jpg/600x600bb.jpg', cond: 'gem-mint' },
     { art: 'https://is1-ssl.mzstatic.com/image/thumb/Music126/v4/7d/51/23/7d512345-6789-abcd-ef01-23456789abcd/source/600x600bb.jpg', cond: 'near-mint' },
@@ -435,9 +1074,19 @@ function testResult() {
   ];
 
   stopAll();
+
   document.querySelectorAll('.ov').forEach(m => m.style.display = 'none');
+
   showResult();
 }
+
+
+/* ==========================================
+   11. 初始化 INITIALIZATION
+   網頁載入後先讀取歷史紀錄
+========================================== */
+
+loadHistory();
 </script>
 </body>
 </html>
