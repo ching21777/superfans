@@ -596,6 +596,14 @@ body {
   transition: transform var(--t-fast);
 }
 
+.score.penalty {
+  animation: score-penalty .4s ease;
+  color: #E04455;
+  text-shadow:
+    2px 2px 0 #650D20,
+    4px 4px 0 rgba(0,0,0,.65);
+}
+
 .combo {
   margin-top: var(--sp-2);
   font-size: var(--fs-sm);
@@ -660,6 +668,46 @@ body {
 .timer-row.danger .timer-number { color: var(--red-light); }
 .timer-row.done { opacity: .3; }
 
+/* 時間到 */
+.timeout-overlay {
+  position: absolute;
+  inset: 0;
+  z-index: 10;
+  display: none;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  gap: 8px;
+  background: rgba(12, 10, 16, .82);
+  border-radius: var(--r-lg);
+  color: #F5C857;
+  text-align: center;
+  animation: timeout-in .35s ease both;
+}
+
+.timeout-title {
+  font-size: clamp(32px, 8vw, 54px);
+  font-weight: 900;
+  letter-spacing: 3px;
+  text-shadow: 3px 3px 0 #7B172D;
+}
+
+.timeout-sub {
+  font-size: 20px;
+  font-weight: 800;
+  color: #FFFFFF;
+}
+
+@keyframes timeout-in {
+  from {
+    opacity: 0;
+    transform: scale(.92);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
 
 /* ========================================
    07. STAGE｜唱片舞台
@@ -857,22 +905,22 @@ body {
 
 .feedback-tags {
   position: absolute;
-  top: 50%;
-  transform: translateY(-50%);
+  top: 60%;
+  transform: translateY(-20%);
   display: flex;
   flex-direction: column;
-  gap: 2px;
+  gap: 6px;
   pointer-events: none;
 }
 
 .feedback-tags.r {
-  left: 100%;
+  left: 115%;
   margin-left: var(--sp-3);
   align-items: flex-start;
 }
 
 .feedback-tags.l {
-  right: 100%;
+  right: 115%;
   margin-right: var(--sp-3);
   align-items: flex-end;
 }
@@ -955,8 +1003,6 @@ body {
   gap: var(--sp-2);
 }
 
-.ibox.shake { animation: shake .3s 1; }
-
 .irow { display: flex; gap: var(--sp-2); }
 
 .irow input {
@@ -973,6 +1019,7 @@ body {
     inset 0 2px 4px rgba(0,0,0,.16),
     inset 0 1px 1px rgba(0,0,0,.08),
     0 1px 0 rgba(255,255,255,.7);
+  transition: box-shadow .2s ease;
 }
 
 .irow input:focus {
@@ -980,6 +1027,14 @@ body {
     inset 0 2px 4px rgba(0,0,0,.16),
     0 0 0 2px rgba(164,154,209,.6),
     0 0 10px rgba(164,154,209,.25);
+}
+
+.irow input.shake {
+  animation: shake .3s ease;
+  box-shadow:
+    inset 0 2px 4px rgba(0,0,0,.16),
+    0 0 0 2px #E87982,
+    0 0 10px rgba(224,68,85,.25);
 }
 
 .ogrid {
@@ -1026,8 +1081,7 @@ body {
 }
 
 .opt:active:not(:disabled) {
-  background: linear-gradient(180deg,#D96B7A,#9E263C);
-  color: var(--white);
+  filter: brightness(1.25);
   transform: translateY(3px);
   box-shadow:
     inset 0 2px 4px rgba(0,0,0,.25),
@@ -1036,8 +1090,8 @@ body {
 
 .opt:disabled {
   background: linear-gradient(180deg,#B8B8BB,#89898E);
-  color: var(--text-faint);
-  opacity: .5;
+  color: var(--white);
+  opacity: 1;
   box-shadow: 0 2px 0 #55555A;
   cursor: not-allowed;
 }
@@ -1422,9 +1476,43 @@ body {
   }
 }
 
+@keyframes score-penalty {
+  0% {
+    transform: scale(1);
+  }
+  15% {
+    transform: scale(1.15) translateX(-2px);
+  }
+  30% {
+    transform: scale(1.15) translateX(2px);
+  }
+  45% {
+    transform: scale(1.12) translateX(-2px);
+  }
+  60% {
+    transform: scale(1.12) translateX(2px);
+  }
+  75% {
+  transform: scale(1.15);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
 @keyframes shake {
-  25% { transform: translateX(-4px); }
-  75% { transform: translateX(4px); }
+  0%, 100% {
+    transform: translateX(0);
+  }
+  25% {
+    transform: translateX(-4px);
+  }
+  50% {
+    transform: translateX(4px);
+  }
+  75% {
+    transform: translateX(-4px);
+  }
 }
 
 @keyframes spin {
@@ -1506,7 +1594,7 @@ body {
   }
 
   .opt:hover:not(:disabled) {
-    filter: brightness(1.08);
+    filter: brightness(1.25);
   }
 
   .item:hover:not(:disabled) {
@@ -1539,3 +1627,5 @@ button:focus-visible {
   outline: 2px solid var(--purple-light);
   outline-offset: 3px;
 }
+
+

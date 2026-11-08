@@ -3,13 +3,13 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover, interactive-widget=resizes-content">
-<title>Who's the Song King｜誰是猜歌王</title>
+<title>Super Fans｜鐵粉猜歌王</title>
 <link rel="stylesheet" href="css/solo.css">
 </head>
 <body>
 <div class="app">
   <header class="header">
-    <h1 class="logo">Who's the Song King</h1>
+    <h1 class="logo">Super Fans</h1>
     <div class="header-actions">
       <div class="mode-badge" id="mode" style="display: none;">Loading</div>
       <button class="quit-btn" id="quit-btn" onclick="confirmQuit()">QUIT</button>
@@ -42,6 +42,10 @@
       <div class="cd" id="cd"><div class="disc" id="disc"></div></div>
       <div class="case" id="case"><div class="q">?</div><img id="art" alt=""></div>
     </div></div>
+    <div class="timeout-overlay" id="timeout-overlay">
+  <div class="timeout-title">TIME'S UP!</div>
+  <div class="timeout-sub">時間到！</div>
+</div>
     <div class="banner" id="banner" onclick="next()"><b id="b-title"></b><span id="b-artist"></span><small id="b-meta"></small></div>
     <div class="tap" id="tap"><button class="bevel go">🔊 點一下開始播放</button></div>
   </div>
@@ -185,7 +189,6 @@ const GRADES = [
   {k:'F',  min:0,title:'耳朵還在暖機',desc:'聽著聽著就忘記作答了，再挑戰一次吧！'}
 ];
 
-
 /* ==========================================
    02. 遊戲狀態 STATE
    記錄目前遊戲進行到哪裡、玩家的狀態
@@ -213,6 +216,7 @@ let score = 0,
     combo = 0,
     maxCombo = 0,
     cds = [];
+let scoreRAF = null;
 
 // 計時與暫停
 let reqId = 0,
@@ -425,24 +429,55 @@ function renderProg() {
 
 // 更新分數與分數動畫
 function setScore(v) {
-  const from = shown,
-        t0 = performance.now();
+  const from = shown;
+  const el = $('score');
+
+  // 取消尚未完成的分數動畫
+  if (scoreRAF !== null) {
+    cancelAnimationFrame(scoreRAF);
+    scoreRAF = null;
+  }
 
   score = v;
 
-  const el = $('score');
-  el.classList.remove('bump');
+  el.classList.remove('bump', 'penalty');
   void el.offsetWidth;
-  el.classList.add('bump');
 
-  (function f(t) {
+  if (v > from) {
+  el.classList.add('bump');
+  }
+
+  // 扣分：直接跳轉
+  if (v < from || (v === 0 && from === 0)) {
+    shown = v;
+    el.textContent = v;
+
+    el.classList.add('penalty');
+
+    setTimeout(() => {
+      el.classList.remove('penalty');
+    }, 500);
+
+    return;
+  }
+
+  // 加分：保留數字動畫
+  const t0 = performance.now();
+
+  function f(t) {
     const p = Math.min(1, (t - t0) / 500);
 
     shown = Math.round(from + (v - from) * p);
     el.textContent = shown;
 
-    if (p < 1) requestAnimationFrame(f);
-  })(t0);
+    if (p < 1) {
+      scoreRAF = requestAnimationFrame(f);
+    } else {
+      scoreRAF = null;
+    }
+  }
+
+  scoreRAF = requestAnimationFrame(f);
 }
 
 // 更新連擊顯示
@@ -457,29 +492,6 @@ function updCombo(pop) {
     void c.offsetWidth;
     c.classList.add('pop');
   }
-}
-
-// 分數飛行動畫
-function fly(txt) {
-  const a = $('case').getBoundingClientRect(),
-        b = $('score').getBoundingClientRect(),
-        e = document.createElement('div');
-
-  e.className = 'fly';
-  e.textContent = txt;
-  e.style.left = (a.left + a.width / 2) + 'px';
-  e.style.top = (a.top + a.height / 2) + 'px';
-  document.body.appendChild(e);
-
-  const dx = b.left + b.width / 2 - (a.left + a.width / 2),
-        dy = b.top + b.height / 2 - (a.top + a.height / 2);
-
-  requestAnimationFrame(() => {
-    e.style.transform = `translate(calc(-50% + ${dx}px),calc(-50% + ${dy}px)) scale(.5)`;
-    e.style.opacity = '.2';
-  });
-
-  setTimeout(() => e.remove(), 900);
 }
 
 // 顯示提示訊息
@@ -707,6 +719,7 @@ async function loadQuestion() {
 
   $('trow').classList.remove('done');
   $('banner').classList.remove('show');
+  $('timeout-overlay').style.display = 'none';
   $('case').classList.remove('rev');
   $('art').removeAttribute('src');
 
@@ -715,6 +728,8 @@ async function loadQuestion() {
   $('next-sec').style.display = 'none';
   $('stage').classList.remove('rev');
   $('inp').value = '';
+  $('inp').classList.remove('shake');
+  $('inp').focus();
   $('tap').style.display = 'none';
 
   $('choice-btn').disabled = false;
@@ -796,11 +811,9 @@ function submitAnswer() {
   } else {
     setScore(Math.max(0, score - 10));
 
-    say('❌ 答錯了！扣 10 分', '#d6246e');
-
     $('inp').value = '';
 
-    const b = $('ibox');
+    const b = $('inp');
     b.classList.remove('shake');
     void b.offsetWidth;
     b.classList.add('shake');
@@ -856,8 +869,6 @@ $('ogrid').onclick = e => {
   } else {
     setScore(Math.max(0, score - 10));
 
-    say('😢 選錯了！扣 10 分', '#d6246e');
-
     b.disabled = true;
     b.textContent += ' ✖';
 
@@ -888,12 +899,9 @@ function correct(isChoice) {
 
   setScore(score + s.total);
   updCombo(true);
-  fly('+' + s.total);
 
-  say('🎉 Bravo!', '#4caf7d');
-
-  if (s.speed) tag('r', `⚡ 速度 +${s.speed}`, '#4fd6ff', 700);
-  if (s.bonus) tag('r', `🔥 連擊 +${s.bonus}`, '#ff5ca8', 900);
+  if (s.speed) tag('r', `⚡ 速度 +${s.speed}`, '#4fd6ff', 0);
+  if (s.bonus) tag('r', `🔥 連擊 +${s.bonus}`, '#ff5ca8', 100);
 
   reveal();
 }
@@ -903,11 +911,15 @@ function timeout() {
   combo = 0;
   updCombo();
 
-  say('⏰ 時間到！', '#d6246e');
-
   cds.push({art:cur.art, cond:'poor'});
 
-  reveal();
+  active = false;
+  $('timeout-overlay').style.display = 'flex';
+
+  setTimeout(() => {
+    $('timeout-overlay').style.display = 'none';
+    reveal();
+  }, 1200);
 }
 
 // 揭曉答案
