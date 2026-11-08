@@ -1,0 +1,443 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover, interactive-widget=resizes-content">
+<title>Who's the Song King｜誰是猜歌王</title>
+<link rel="stylesheet" href="css/solo.css">
+</head>
+<body>
+<div class="app">
+  <header class="mast">
+    <h1 class="logo">Who's the Song King</h1>
+    <div class="mast-right">
+      <button class="quit-btn" id="quit-btn" onclick="confirmQuit()">放棄返回</button>
+      <div class="mode-badge" id="mode">準備中</div>
+    </div>
+  </header>
+  <div class="prog"><div class="qno" id="qno">&nbsp;</div><div class="pgrid" id="pgrid"></div></div>
+  <div class="hud"><div class="srow"><div class="tags l" id="tags-l"></div><div class="score" id="score">0</div><div class="tags r" id="tags-r"></div></div><div class="combo" id="combo">🔥 0 COMBO</div></div>
+  <div class="trow" id="trow"><div class="tbox"><div class="tbar" id="tbar"></div></div><div class="tnum" id="tnum">20s</div></div>
+  <div class="stage" id="stage">
+    <div class="cwrap"><div class="cw">
+      <div class="cd" id="cd"><div class="disc" id="disc"></div></div>
+      <div class="case" id="case"><div class="q">?</div><img id="art" alt=""></div>
+    </div></div>
+    <div class="banner" id="banner" onclick="next()"><b id="b-title"></b><span id="b-artist"></span><small id="b-meta"></small></div>
+    <div class="tap" id="tap"><button class="bevel go">🔊 點一下開始播放</button></div>
+  </div>
+  <div class="ibox" id="ibox">
+    <div class="msg" id="msg"></div>
+    <div id="type-sec">
+      <div class="irow">
+        <input type="text" id="inp" placeholder="輸入完整歌名（不分大小寫、空格）" autocomplete="off" onkeydown="if(event.key==='Enter')submitAnswer()">
+        <button class="bevel go" style="padding:0 18px;font-size:1rem" onclick="submitAnswer()">送出</button>
+      </div>
+    </div>
+    <div id="choice-sec" style="display:none"><div class="ogrid" id="ogrid"></div></div>
+    <div class="items" id="items">
+      <button class="item" id="choice-btn" onclick="toChoice()"><span class="ic">🆘</span><span class="tx"><b>改選擇題</b><small id="choice-sub">金幣打折</small></span></button>
+      <button class="item" id="pause-btn" onclick="doPause()"><span class="ic">⏸</span><span class="tx"><b>暫停一下</b><small id="pause-sub">每場 1 次</small></span></button>
+    </div>
+    <div id="next-sec" style="display:none"></div>
+  </div>
+</div>
+
+<div class="ov" id="m-start" style="display:flex"><div class="mc">
+  <div class="mt">遊戲規則</div>
+  <button class="bevel" style="font-size:.75rem; padding:4px 10px; background:#6c5ce7; color:#fff; border-color:#4a3db8;" onclick="testResult()">🎨 預覽結算畫面</button>
+  <div class="rules">
+    <p><b>🎵 猜歌：</b>聽 10 首歌曲，輸入完整歌名</p>
+    <p><b>🪙 計分：</b>速度越快金幣越多，連續答對再加碼</p>
+    <p><b>🎒 道具1-選擇卡：</b>讓題目變簡單！獲得的金幣也會變少喔</p>
+    <p><b>🎒 道具2-暫停卡：</b>爭取時間！每局可暫停 1 次，不扣金幣</p>
+  </div>
+  <div class="col">
+    <button class="bevel go" style="padding:13px;font-size:1.05rem" onclick="toTheme()">直接開始，選歌單 ➔</button>
+    <button class="bevel" onclick="startDemo()">🎧 先試玩 3 題</button>
+  </div>
+  <div style="text-align:left;font-weight:800;font-size:.85rem">高分紀錄 (Top 3)</div>
+  <ul class="hist" id="hist"></ul>
+</div></div>
+
+<div class="ov" id="m-theme"><div class="mc">
+  <div class="mt">選一個你喜歡的歌單</div>
+  <div class="col">
+    <button class="tb sel" data-k="vagabond" onclick="pickTheme('vagabond')">𖦞𖠁 2026 浪人祭｜百年好運・億載千秋 𖠁𖦞</button>
+    <button class="tb" data-k="drama" onclick="pickTheme('drama')">📺 經典偶像劇金曲</button>
+    <button class="tb" data-k="she" onclick="pickTheme('she')">🍀 S.H.E 特輯</button>
+    <button class="tb" data-k="fish" onclick="pickTheme('fish')">🐟 梁靜茹特輯</button>
+  </div>
+  <button class="bevel go" style="padding:12px;font-size:1.1rem" onclick="startGame()">🚀 選好了，開玩！</button>
+</div></div>
+
+<div class="ov" id="m-demo"><div class="mc">
+  <div class="mt" style="color:var(--magenta)">🎧 試玩結束</div>
+  <p style="line-height:1.6;color:#444">手感還順利嗎？準備好迎接正式 10 題了嗎？</p>
+  <div class="col"><button class="bevel go" style="padding:12px" onclick="toTheme()">🚀 準備好了，選歌單！</button><button class="bevel" onclick="startDemo()">再試玩 3 題</button></div>
+</div></div>
+
+<div class="ov" id="m-half"><div class="mc">
+  <div class="mt">☕ 中場休息</div>
+  <p style="color:#555">休息一下，準備好就進入第 6 題！</p>
+  <div class="stats"><div>目前金幣<br><span id="h-score" style="font-size:1.2rem;color:var(--magenta)">0</span></div><div>目前連擊<br><span id="h-combo" style="font-size:1.2rem;color:var(--cobalt)">0</span></div></div>
+  <button class="bevel go" style="padding:11px;font-size:1.1rem" onclick="resumeHalf()">▶ 繼續下半場</button>
+</div></div>
+
+<div class="ov" id="m-pause"><div class="mc">
+  <div class="mt">⏸ 暫停中</div>
+  <p id="pause-note" style="color:#e85d04;font-weight:700"></p>
+  <button class="bevel go" style="padding:11px;font-size:1.1rem" onclick="resumePause()">▶ 繼續遊戲</button>
+</div></div>
+
+<div class="ov" id="m-confirm"><div class="mc" style="max-width:340px;">
+  <div class="mt" style="color:var(--magenta)">🚨 放棄遊戲？</div>
+  <p style="font-weight:700;color:#555;font-size:.9rem;">確定要放棄目前的進度並返回主選單嗎？</p>
+  <div class="col" style="grid-template-columns:1fr 1fr;display:grid;gap:8px;">
+    <button class="bevel" onclick="cancelQuit()">繼續遊玩</button>
+    <button class="bevel go" onclick="doQuit()">確定放棄</button>
+  </div>
+</div></div>
+
+<div class="ov" id="m-result"><div class="mc" id="res-card">
+  <button class="x" onclick="show('m-start');hide('m-result');loadHistory()">✖</button>
+  <div class="conf" id="conf"></div>
+  <div class="badge" id="r-badge">SSS</div>
+  <div class="mt" id="r-title"></div>
+  
+  <!-- 簡約版：三個數據水平一排平鋪 -->
+  <div class="result-inline-box">
+    <div class="stat-item">
+      <span class="label">🪙 獲得金幣</span>
+      <span class="val" id="r-score">0</span>
+    </div>
+    <div class="stat-item">
+      <span class="label">🔥 Combo</span>
+      <span class="val" id="r-combo" style="color:var(--cobalt);">0</span>
+    </div>
+    <div class="stat-item rocket-item">
+      <span class="label">🚀 PR值</span>
+      <div class="mini-track">
+        <div class="mini-fill" id="rocket-fill"></div>
+        <div class="mini-rocket" id="rocket-icon">🚀</div>
+      </div>
+      <span class="val" id="rocket-pr-val" style="font-size: 1rem;">PR 0</span>
+    </div>
+  </div>
+
+  <div style="text-align:left;font-size:.82rem;font-weight:700;color:#555">💿 成果紀念牆</div>
+  <div class="gal" id="gal"></div>
+  <p id="r-desc" style="font-size:.85rem;color:#555"></p>
+  <div class="col"><button class="bevel go" onclick="startGame()">再玩一次</button><button class="bevel" onclick="toTheme()">🎵 切換其他歌單</button></div>
+</div></div>
+<div id="cdown">3</div>
+
+<script src="js/playlists.js"></script>
+
+<script>
+const CFG={BASE:60,SPEED:50,FULL_AT:15,COMBO_STEP:11,COMBO_MAX:99,CHOICE_SPEED_RATE:.3,CHOICE_COMBO_RATE:.5,CHOICE_BASE_RATE:.75,PAUSE_MAX:1,CHOICE_COST:0,MAX_TIME:20,REVEAL_MS:5000};
+const GRADES=[
+  {k:'SSS',min:.90,clean:true,title:'絕頂聰明猜歌王',desc:'前奏一下就秒殺全場，猜歌王非你莫屬！'},
+  {k:'SS', min:.80,clean:true,title:'行動點歌機',desc:'聽歌量深不可測，你每天聽歌聽滿 24 小時嗎？'},
+  {k:'S',  min:.65,clean:true,title:'資深歌迷',desc:'你是常出沒在搖滾區的鐵粉吧！'},
+  {k:'A+', min:.55,title:'快手搶答王',desc:'旋律一響就知道，但歌名永遠卡在想不起來的那個字！'},
+  {k:'A',  min:.40,title:'音樂玩家',desc:'哎呦不錯喔，換個歌單玩看看吧！'},
+  {k:'B',  min:1e-9,title:'猜歌初心者',desc:'多聽幾首就能踏出新手村了！'},
+  {k:'F',  min:0,title:'耳朵還在暖機',desc:'聽著聽著就忘記作答了，再挑戰一次吧！'}
+];
+function calcScore(isChoice,tLeft,comboNow,lostCombo){
+  const base=Math.round(CFG.BASE*(isChoice?CFG.CHOICE_BASE_RATE:1));
+  const speed=Math.round(CFG.SPEED*Math.min(1,tLeft/CFG.FULL_AT)*(isChoice?CFG.CHOICE_SPEED_RATE:1));
+  const bonus=lostCombo?0:Math.round(Math.min(CFG.COMBO_MAX,Math.max(0,comboNow-1)*CFG.COMBO_STEP)*(isChoice?CFG.CHOICE_COMBO_RATE:1));
+  return{speed,bonus,total:base+speed+bonus};
+}
+
+const $=id=>document.getElementById(id);
+const show=id=>$(id).style.display='flex', hide=id=>$(id).style.display='none';
+const SILENT='data:audio/wav;base64,UklGRiQAAABXQVZFZm10IBAAAAABAAEARKwAAIhYAQACABAAZGF0YQAAAAA=';
+const audio=new Audio();audio.preload='auto';
+let theme='drama',queue=[],qPtr=0,qDone=0,total=10,cur=null,active=false,isDemo=false,halfPassed=false,choiceUsed=false,choiceMiss=false,usedChoice=false;
+let score=0,shown=0,combo=0,maxCombo=0,cds=[],reqId=0,startAt=0;
+let timeLeft=CFG.MAX_TIME,endAt=0,tick=null,isPaused=false,nextT=null,pauseLeft=0,wasRunning=false;
+
+function unlockAudio(){audio.src=SILENT;const p=audio.play();if(p)p.then(()=>audio.pause()).catch(()=>{});}
+function toTheme(){['m-start','m-demo','m-result','m-confirm'].forEach(hide);show('m-theme');$('quit-btn').style.display='none';}
+function pickTheme(k){theme=k;document.querySelectorAll('.tb').forEach(b=>b.classList.toggle('sel',b.dataset.k===k));}
+function uniq(a){return[...new Set(a)];}
+function shuffle(a){return a.sort(()=>Math.random()-.5);}
+
+function begin(demo){
+  unlockAudio();isDemo=demo;total=demo?3:10;
+  $('mode').textContent=demo?'🎧 試玩中':'🔥 正式挑戰';
+  $('quit-btn').style.display='block';
+  pauseLeft=CFG.PAUSE_MAX;usedChoice=false;updPauseBtn();
+  score=0;shown=0;combo=0;maxCombo=0;qDone=0;qPtr=0;cds=[];halfPassed=false;
+  queue=shuffle(uniq(demo?[...playlists.drama,...playlists.she,...playlists.fish]:playlists[theme]));
+  $('score').textContent='0';updCombo();renderProg();startAt=Date.now();
+  countdown(loadQuestion);
+}
+function startGame(){begin(false);}
+function startDemo(){begin(true);}
+
+function confirmQuit(){
+  wasRunning = active && !isPaused;
+  if(wasRunning){ clearInterval(tick); audio.pause(); $('disc').classList.remove('spin'); }
+  show('m-confirm');
+}
+function cancelQuit(){
+  hide('m-confirm');
+  if(wasRunning){ playNow(); }
+}
+function doQuit(){
+  stopAll();
+  hide('m-confirm');
+  $('quit-btn').style.display='none';
+  show('m-start');
+  loadHistory();
+}
+
+function countdown(cb){
+  document.querySelectorAll('.ov').forEach(m=>m.style.display='none');
+  const o=$('cdown');o.style.display='flex';let c=3;o.textContent=c;
+  const t=setInterval(()=>{c--;if(c>0)o.textContent=c;else if(c===0)o.textContent='GO!';else{clearInterval(t);o.style.display='none';cb();}},750);
+}
+
+function renderProg(){
+  $('pgrid').innerHTML=Array.from({length:total},(_,i)=>{
+    const c=cds[i];
+    return c?`<div class="pslot ${c.cond}"><img src="${c.art}" alt=""></div>`:`<div class="pslot ${i===qDone?'now':''}"></div>`;
+  }).join('');
+  $('qno').textContent=`第 ${Math.min(qDone+1,total)} / ${total} 題`;
+}
+
+function setScore(v){
+  const from=shown,t0=performance.now();score=v;
+  const el=$('score');el.classList.remove('bump');void el.offsetWidth;el.classList.add('bump');
+  (function f(t){const p=Math.min(1,(t-t0)/500);shown=Math.round(from+(v-from)*p);el.textContent=shown;if(p<1)requestAnimationFrame(f);})(t0);
+}
+function updCombo(pop){
+  const c=$('combo');c.textContent=`🔥 ${combo} COMBO`;c.classList.toggle('on',combo>0);
+  if(pop){c.classList.remove('pop');void c.offsetWidth;c.classList.add('pop');}
+}
+function fly(txt){
+  const a=$('case').getBoundingClientRect(),b=$('score').getBoundingClientRect(),e=document.createElement('div');
+  e.className='fly';e.textContent=txt;e.style.left=(a.left+a.width/2)+'px';e.style.top=(a.top+a.height/2)+'px';document.body.appendChild(e);
+  const dx=b.left+b.width/2-(a.left+a.width/2),dy=b.top+b.height/2-(a.top+a.height/2);
+  requestAnimationFrame(()=>{e.style.transform=`translate(calc(-50% + ${dx}px),calc(-50% + ${dy}px)) scale(.5)`;e.style.opacity='.2';});
+  setTimeout(()=>e.remove(),900);
+}
+function say(t,c){const e=$('msg');e.textContent=t;e.style.setProperty('--c',c);e.classList.remove('show');void e.offsetWidth;e.classList.add('show');}
+function tag(side,t,c,delay=0){setTimeout(()=>{const e=document.createElement('div');e.className='tag';e.textContent=t;e.style.setProperty('--c',c);$('tags-'+side).appendChild(e);setTimeout(()=>e.remove(),1500);},delay);}
+
+function runTimer(){
+  clearInterval(tick);endAt=Date.now()+timeLeft*1000;
+  tick=setInterval(()=>{
+    timeLeft=Math.max(0,(endAt-Date.now())/1000);
+    $('tbar').style.width=(timeLeft/CFG.MAX_TIME*100)+'%';
+    $('tnum').textContent=Math.ceil(timeLeft)+'s';
+    $('trow').classList.toggle('danger',timeLeft<=3);
+    if(timeLeft<=0){clearInterval(tick);timeout();}
+  },50);
+}
+function stopAll(){clearInterval(tick);audio.pause();$('disc').classList.remove('spin');$('cd').classList.remove('on');$('trow').classList.remove('danger');}
+function playNow(){
+  return audio.play().then(()=>{$('tap').style.display='none';$('disc').classList.add('spin');$('cd').classList.add('on');runTimer();})
+    .catch(()=>{$('tap').style.display='flex';});
+}
+$('tap').onclick=()=>{if(active&&!isPaused)playNow();};
+
+async function loadQuestion(){
+  const my=++reqId;stopAll();clearTimeout(nextT);
+  active=false;cur=null;choiceUsed=false;choiceMiss=false;isPaused=false;
+  $('trow').classList.remove('done');$('banner').classList.remove('show');$('case').classList.remove('rev');$('art').removeAttribute('src');
+  $('type-sec').style.display='';$('choice-sec').style.display='none';$('next-sec').style.display='none';$('stage').classList.remove('rev');$('inp').value='';$('tap').style.display='none';
+  $('choice-btn').disabled=false;$('choice-sub').textContent=CFG.CHOICE_COST?`花 ${CFG.CHOICE_COST} 金幣`:'金幣打折';$('items').style.display='';
+  timeLeft=CFG.MAX_TIME;$('tbar').style.width='100%';$('tnum').textContent=CFG.MAX_TIME+'s';
+  renderProg();
+  const san=s=>sanitize(s);
+  while(qPtr<queue.length){
+    const term=queue[qPtr++],sp=term.indexOf(' '),artist=term.slice(0,sp),title=term.slice(sp+1);
+    try{
+      const r=await fetch(`https://itunes.apple.com/search?term=${encodeURIComponent(artist+' '+title)}&entity=song&limit=10&country=TW`);
+      const d=await r.json();if(my!==reqId)return;
+      const rs=(d.results||[]).filter(x=>x.previewUrl);
+      const t=rs.find(x=>x.artistName.toLowerCase().includes(artist.toLowerCase())&&san(x.trackName).includes(san(title)))||rs.find(x=>x.artistName.toLowerCase().includes(artist.toLowerCase()));
+      if(t){
+        cur={artist,title,art:t.artworkUrl100.replace('100x100','600x600'),album:t.collectionName||'',year:(t.releaseDate||'').slice(0,4)};
+        audio.src=t.previewUrl;audio.currentTime=0;active=true;playNow();return;
+      }
+    }catch(e){if(my!==reqId)return;}
+  }
+  total=qDone;finish();
+}
+
+function sanitize(s){return(s||'').toLowerCase().replace(/\(.*?\)|（.*?）|\[.*?\]|【.*?】/g,'').replace(/[\s\-_()（）\[\]【】.,?!'"]/g,'');}
+
+function submitAnswer(){
+  if(!active||isPaused)return;
+  const v=$('inp').value.trim();if(!v)return;
+  if(sanitize(v)===sanitize(cur.title))correct(false);
+  else{
+    setScore(Math.max(0, score - 10));
+    say('❌ 答錯了！扣 10 分','#d6246e');
+    $('inp').value='';
+    const b=$('ibox');b.classList.remove('shake');void b.offsetWidth;b.classList.add('shake');
+  }
+}
+
+let opts=[];
+function toChoice(){
+  if(!active||isPaused||choiceUsed)return;
+  choiceUsed=true;usedChoice=true;$('choice-btn').disabled=true;
+  if(CFG.CHOICE_COST){setScore(Math.max(0,score-CFG.CHOICE_COST));tag('l','使用錦囊 🪙'+CFG.CHOICE_COST,'#ffc857');}
+  const pool=uniq((isDemo?[...playlists.drama,...playlists.she,...playlists.fish]:playlists[theme]).map(s=>s.slice(s.indexOf(' ')+1))).filter(t=>sanitize(t)!==sanitize(cur.title));
+  opts=shuffle([...shuffle(pool).slice(0,3),cur.title]);
+  $('ogrid').innerHTML=opts.map((o,i)=>`<button class="opt" data-i="${i}"></button>`).join('');
+  $('ogrid').querySelectorAll('.opt').forEach((b,i)=>{b.textContent=opts[i];});
+  $('type-sec').style.display='none';$('choice-sec').style.display='block';
+}
+
+$('ogrid').onclick=e=>{
+  const b=e.target.closest('.opt');if(!b||!active||isPaused)return;
+  if(opts[+b.dataset.i]===cur.title)correct(true);
+  else{
+    setScore(Math.max(0, score - 10));
+    say('😢 選錯了！扣 10 分','#d6246e');b.disabled=true;b.textContent+=' ✖';
+    if(!choiceMiss){choiceMiss=true;combo=0;updCombo();}
+  }
+};
+
+function reveal(){
+  active=false;clearInterval(tick);$('trow').classList.remove('danger');$('trow').classList.add('done');
+  $('art').src=cur.art;$('case').classList.add('rev');$('stage').classList.add('rev');
+  $('b-title').textContent=cur.title;$('b-artist').textContent=cur.artist;
+  $('b-meta').textContent=[cur.album,cur.year].filter(Boolean).join(' · ');
+  $('banner').classList.add('show');
+  $('type-sec').style.display='none';$('choice-sec').style.display='none';$('items').style.display='none';
+  const n=$('next-sec');n.style.display='block';
+  n.innerHTML=`<button class="bevel go big nbtn" style="width:100%" onclick="next()"><i style="animation-duration:${CFG.REVEAL_MS}ms"></i><span>${qDone+1>=total?'看結算':'下一題'} ➔</span></button>`;
+  clearTimeout(nextT);nextT=setTimeout(next,CFG.REVEAL_MS);
+}
+function correct(isChoice){
+  combo++;maxCombo=Math.max(maxCombo,combo);
+  const s=calcScore(isChoice,timeLeft,combo,choiceMiss);
+  let cond='near-mint';
+  if(timeLeft>=10)cond='gem-mint';else if(timeLeft<5)cond='good'; cds.push({art:cur.art,cond});
+  setScore(score+s.total);updCombo(true);fly('+'+s.total);
+  say('🎉 Bravo!','#4caf7d');
+  if(s.speed)tag('r',`⚡ 速度 +${s.speed}`,'#4fd6ff',700);
+  if(s.bonus)tag('r',`🔥 連擊 +${s.bonus}`,'#ff5ca8',900);
+  reveal();
+}
+function timeout(){
+  combo=0;updCombo();say('⏰ 時間到！','#d6246e');
+  cds.push({art:cur.art,cond:'poor'});reveal();
+}
+function next(){
+  if(!$('banner').classList.contains('show'))return;
+  clearTimeout(nextT);$('banner').classList.remove('show');qDone++;
+  if(qDone>=total)return finish();
+  if(!isDemo&&qDone===5&&!halfPassed){halfPassed=true;stopAll();renderProg();$('h-score').textContent=score;$('h-combo').textContent=combo+' COMBO';show('m-half');return;}
+  loadQuestion();
+}
+function resumeHalf(){hide('m-half');loadQuestion();}
+
+function updPauseBtn(){
+  $('pause-btn').disabled=pauseLeft<=0;
+  $('pause-sub').textContent=pauseLeft>0?`每局 ${CFG.PAUSE_MAX} 次`:'已使用';
+}
+function doPause(){
+  if(!active||isPaused||pauseLeft<=0)return;
+  pauseLeft--;updPauseBtn();
+  isPaused=true;clearInterval(tick);audio.pause();$('disc').classList.remove('spin');
+  $('pause-note').textContent=`稍等一下！歌名就快想起來了！`;show('m-pause');
+}
+function resumePause(){isPaused=false;hide('m-pause');playNow();}
+
+function finish(){
+  stopAll();renderProg();
+  $('quit-btn').style.display='none';
+  if(isDemo){show('m-demo');return;}
+  saveHistory();showResult();
+}
+
+function maxScore(n=total){
+  let m=n*(CFG.BASE+CFG.SPEED);
+  for(let i=0;i<n;i++)m+=Math.min(CFG.COMBO_MAX,i*CFG.COMBO_STEP);
+  return m;
+}
+function grade(s){
+  const mx=maxScore(),r=mx>0?s/mx:0;
+  return GRADES.find(g=>r>=g.min&&(!g.clean||!usedChoice));
+}
+
+function saveHistory(){
+  const sec=Math.floor((Date.now()-startAt)/1000),t=String(Math.floor(sec/60)).padStart(2,'0')+':'+String(sec%60).padStart(2,'0');
+  const gObj=grade(score);
+  try{
+    let h=JSON.parse(localStorage.getItem('song_king_solo_history')||'[]');
+    h.push({grade:gObj.k,title:gObj.title,score,combo:maxCombo,time:t,playlist:names[theme]});
+    h.sort((a,b)=>b.score-a.score);
+    localStorage.setItem('song_king_solo_history',JSON.stringify(h.slice(0,3)));
+  }catch(e){}
+  loadHistory();
+}
+
+function loadHistory(){
+  let h=[];try{h=JSON.parse(localStorage.getItem('song_king_solo_history')||'[]');}catch(e){}
+  $('hist').innerHTML=h.length?h.map((x,i)=>`<li class="hi"><span><span class="g">${x.grade}級</span><b>🪙${x.score}</b> [${x.title}]</span><span>🔥${x.combo} · ${x.playlist}</span></li>`).join(''):'<li class="hi" style="justify-content:center">尚無高分紀錄</li>';
+}
+
+function showResult(){
+  const g=grade(score),b=g.k,t=g.title;show('m-result');
+  const mx = maxScore(total);
+  const ratio = mx > 0 ? Math.round((score / mx) * 100) : 0;
+  
+  $('r-score').textContent = score;
+  $('r-combo').textContent = maxCombo;
+  $('r-badge').textContent = b;
+  $('r-title').textContent = t;
+  $('rocket-pr-val').textContent = `PR ${ratio}`;
+  
+  setTimeout(() => {
+    $('rocket-fill').style.height = ratio + '%';
+    $('rocket-icon').style.bottom = ratio + '%';
+  }, 100);
+
+  const card=$('res-card'),cf=$('conf');cf.innerHTML='';card.classList.toggle('gold',b==='SS'||b==='SSS');
+  if(['SSS','SS','S','A+','A'].includes(b)){const cs=['#d6246e','#f5c518','#19a7d8','#4caf7d','#fff'];
+    for(let i=0;i<35;i++){const c=document.createElement('div');c.className='cf';c.style.setProperty('--c',cs[i%5]);c.style.left=Math.random()*100+'%';c.style.animationDuration=1.2+Math.random()*1.5+'s';c.style.animationDelay=Math.random()*.6+'s';cf.appendChild(c);}}
+  $('gal').innerHTML=cds.map(c=>`<div class="gp ${c.cond}"><img src="${c.art}" alt=""></div>`).join('');
+  let d=g.desc;
+  if(usedChoice&&score/maxScore()>=GRADES.find(x=>x.k==='S').min)d+='（本場使用了選擇題，評級上限為 A+）';
+  $('r-desc').textContent=d;
+}
+loadHistory();
+
+// 測試專用：一鍵直接預覽結算畫面（包含 10 張模擬 CD）
+function testResult() {
+  score = 1280;
+  maxCombo = 12;
+  startAt = Date.now() - 102000; // 模擬 1分42秒
+  
+  // 10張模擬專輯縮圖與不同稀有度狀態
+  cds = [
+    { art: 'https://is1-ssl.mzstatic.com/image/thumb/Music112/v4/2b/86/0a/2b860a48-4e89-137a-bc12-4c6e9a651912/mzi.vjldzjxy.jpg/600x600bb.jpg', cond: 'gem-mint' },
+    { art: 'https://is1-ssl.mzstatic.com/image/thumb/Music126/v4/7d/51/23/7d512345-6789-abcd-ef01-23456789abcd/source/600x600bb.jpg', cond: 'near-mint' },
+    { art: 'https://is1-ssl.mzstatic.com/image/thumb/Music115/v4/8b/6e/c3/8b6ec345-1234-5678-9abc-def012345678/source/600x600bb.jpg', cond: 'good' },
+    { art: 'https://is1-ssl.mzstatic.com/image/thumb/Music128/v4/9c/7f/d4/9c7fd456-2345-6789-abcd-ef01-23456789abcd/source/600x600bb.jpg', cond: 'gem-mint' },
+    { art: 'https://is1-ssl.mzstatic.com/image/thumb/Music114/v4/0d/80/e5/0d80e567-3456-789a-bcde-f0123456789a/source/600x600bb.jpg', cond: 'near-mint' },
+    { art: 'https://is1-ssl.mzstatic.com/image/thumb/Music125/v4/1a/2b/3c/1a2b3c4d-5e6f-7a8b-9c0d-1e2f3a4b5c6d/source/600x600bb.jpg', cond: 'good' },
+    { art: 'https://is1-ssl.mzstatic.com/image/thumb/Music118/v4/4d/5e/6f/4d5e6f7a-8b9c-0d1e-2f3a-4b5c6d7e8f9a/source/600x600bb.jpg', cond: 'poor' },
+    { art: 'https://is1-ssl.mzstatic.com/image/thumb/Music122/v4/7a/8b/9c/7a8b9c0d-1e2f-3a4b-5c6d-7e8f9a0b1c2d/source/600x600bb.jpg', cond: 'gem-mint' },
+    { art: 'https://is1-ssl.mzstatic.com/image/thumb/Music116/v4/0d/1e/2f/0d1e2f3a-4b5c-6d7e-8f9a-0b1c2d3e4f5a/source/600x600bb.jpg', cond: 'near-mint' },
+    { art: 'https://is1-ssl.mzstatic.com/image/thumb/Music120/v4/3a/4b/5c/3a4b5c6d-7e8f-9a0b-1c2d-3e4f5a6b7c8d/source/600x600bb.jpg', cond: 'gem-mint' }
+  ];
+
+  stopAll();
+  document.querySelectorAll('.ov').forEach(m => m.style.display = 'none');
+  showResult();
+}
+</script>
+</body>
+</html>
