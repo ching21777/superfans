@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="zh-TW">
 <head>
@@ -8,16 +9,35 @@
 </head>
 <body>
 <div class="app">
-  <header class="mast">
+  <header class="header">
     <h1 class="logo">Who's the Song King</h1>
-    <div class="mast-right">
+    <div class="header-actions">
       <button class="quit-btn" id="quit-btn" onclick="confirmQuit()">放棄返回</button>
       <div class="mode-badge" id="mode">準備中</div>
     </div>
   </header>
-  <div class="prog"><div class="qno" id="qno">&nbsp;</div><div class="pgrid" id="pgrid"></div></div>
-  <div class="hud"><div class="srow"><div class="tags l" id="tags-l"></div><div class="score" id="score">0</div><div class="tags r" id="tags-r"></div></div><div class="combo" id="combo">🔥 0 COMBO</div></div>
-  <div class="trow" id="trow"><div class="tbox"><div class="tbar" id="tbar"></div></div><div class="tnum" id="tnum">20s</div></div>
+
+  <div class="progress">
+    <div class="question-number" id="qno">&nbsp;</div>
+    <div class="progress-grid" id="pgrid"></div>
+  </div>
+
+  <div class="game-status">
+    <div class="score-row">
+      <div class="feedback-tags l" id="tags-l"></div>
+      <div class="score" id="score">0</div>
+      <div class="feedback-tags r" id="tags-r"></div>
+    </div>
+    <div class="combo" id="combo">🔥 0 COMBO</div>
+  </div>
+
+  <div class="timer-row" id="trow">
+    <div class="timer-track">
+      <div class="timer-fill" id="tbar"></div>
+    </div>
+    <div class="timer-number" id="tnum">20s</div>
+  </div>
+
   <div class="stage" id="stage">
     <div class="cwrap"><div class="cw">
       <div class="cd" id="cd"><div class="disc" id="disc"></div></div>
@@ -26,6 +46,7 @@
     <div class="banner" id="banner" onclick="next()"><b id="b-title"></b><span id="b-artist"></span><small id="b-meta"></small></div>
     <div class="tap" id="tap"><button class="bevel go">🔊 點一下開始播放</button></div>
   </div>
+
   <div class="ibox" id="ibox">
     <div class="msg" id="msg"></div>
     <div id="type-sec">
@@ -131,7 +152,6 @@
   <div class="col"><button class="bevel go" onclick="startGame()">再玩一次</button><button class="bevel" onclick="toTheme()">🎵 切換其他歌單</button></div>
 </div></div>
 <div id="cdown">3</div>
-
 <script src="js/playlists.js"></script>
 
 <script>
@@ -397,8 +417,8 @@ function renderProg() {
     const c = cds[i];
 
     return c
-      ? `<div class="pslot ${c.cond}"><img src="${c.art}" alt=""></div>`
-      : `<div class="pslot ${i === qDone ? 'now' : ''}"></div>`;
+      ? `<div class="progress-slot ${c.cond}"><img src="${c.art}" alt=""></div>`
+      : `<div class="progress-slot ${i === qDone ? 'now' : ''}"></div>`;
   }).join('');
 
   $('qno').textContent = `第 ${Math.min(qDone + 1, total)} / ${total} 題`;
@@ -479,7 +499,7 @@ function tag(side, t, c, delay = 0) {
   setTimeout(() => {
     const e = document.createElement('div');
 
-    e.className = 'tag';
+    e.className = 'feedback-tag';
     e.textContent = t;
     e.style.setProperty('--c', c);
 
