@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="zh-TW">
 <head>
@@ -12,8 +11,8 @@
   <header class="header">
     <h1 class="logo">Who's the Song King</h1>
     <div class="header-actions">
-      <button class="quit-btn" id="quit-btn" onclick="confirmQuit()">放棄返回</button>
-      <div class="mode-badge" id="mode">準備中</div>
+      <div class="mode-badge" id="mode" style="display: none;">Loading</div>
+      <button class="quit-btn" id="quit-btn" onclick="confirmQuit()">QUIT</button>
     </div>
   </header>
 
@@ -52,7 +51,7 @@
     <div id="type-sec">
       <div class="irow">
         <input type="text" id="inp" placeholder="輸入完整歌名（不分大小寫、空格）" autocomplete="off" onkeydown="if(event.key==='Enter')submitAnswer()">
-        <button class="bevel go" style="padding:0 18px;font-size:1rem" onclick="submitAnswer()">送出</button>
+        <button class="bevel go" style="padding:0 var(--sp-4)" onclick="submitAnswer()">送出</button>
       </div>
     </div>
     <div id="choice-sec" style="display:none"><div class="ogrid" id="ogrid"></div></div>
@@ -66,7 +65,7 @@
 
 <div class="ov" id="m-start" style="display:flex"><div class="mc">
   <div class="mt">遊戲規則</div>
-  <button class="bevel" style="font-size:.75rem; padding:4px 10px; background:#6c5ce7; color:#fff; border-color:#4a3db8;" onclick="testResult()">🎨 預覽結算畫面</button>
+  <button class="bevel btn-sm" style="background:#6c5ce7; color:#fff; border-color:#4a3db8;" onclick="testResult()">🎨 預覽結算畫面</button>
   <div class="rules">
     <p><b>🎵 猜歌：</b>聽 10 首歌曲，輸入完整歌名</p>
     <p><b>🪙 計分：</b>速度越快金幣越多，連續答對再加碼</p>
@@ -74,10 +73,10 @@
     <p><b>🎒 道具2-暫停卡：</b>爭取時間！每局可暫停 1 次，不扣金幣</p>
   </div>
   <div class="col">
-    <button class="bevel go" style="padding:13px;font-size:1.05rem" onclick="toTheme()">直接開始，選歌單 ➔</button>
+    <button class="bevel go btn-lg" onclick="toTheme()">直接開始，選歌單 ➔</button>
     <button class="bevel" onclick="startDemo()">🎧 先試玩 3 題</button>
   </div>
-  <div style="text-align:left;font-weight:800;font-size:.85rem">高分紀錄 (Top 3)</div>
+  <div style="text-align:left;font-weight:800;font-size:var(--fs-sm)">高分紀錄 (Top 3)</div>
   <ul class="hist" id="hist"></ul>
 </div></div>
 
@@ -89,32 +88,32 @@
     <button class="tb" data-k="she" onclick="pickTheme('she')">🍀 S.H.E 特輯</button>
     <button class="tb" data-k="fish" onclick="pickTheme('fish')">🐟 梁靜茹特輯</button>
   </div>
-  <button class="bevel go" style="padding:12px;font-size:1.1rem" onclick="startGame()">🚀 選好了，開玩！</button>
+  <button class="bevel go btn-lg" onclick="startGame()">🚀 選好了，開玩！</button>
 </div></div>
 
 <div class="ov" id="m-demo"><div class="mc">
   <div class="mt" style="color:var(--magenta)">🎧 試玩結束</div>
-  <p style="line-height:1.6;color:#444">手感還順利嗎？準備好迎接正式 10 題了嗎？</p>
-  <div class="col"><button class="bevel go" style="padding:12px" onclick="toTheme()">🚀 準備好了，選歌單！</button><button class="bevel" onclick="startDemo()">再試玩 3 題</button></div>
+  <p style="line-height:1.6;color:var(--text-sub)">手感還順利嗎？準備好迎接正式 10 題了嗎？</p>
+  <div class="col"><button class="bevel go" onclick="toTheme()">🚀 準備好了，選歌單！</button><button class="bevel" onclick="startDemo()">再試玩 3 題</button></div>
 </div></div>
 
 <div class="ov" id="m-half"><div class="mc">
   <div class="mt">☕ 中場休息</div>
-  <p style="color:#555">休息一下，準備好就進入第 6 題！</p>
-  <div class="stats"><div>目前金幣<br><span id="h-score" style="font-size:1.2rem;color:var(--magenta)">0</span></div><div>目前連擊<br><span id="h-combo" style="font-size:1.2rem;color:var(--cobalt)">0</span></div></div>
-  <button class="bevel go" style="padding:11px;font-size:1.1rem" onclick="resumeHalf()">▶ 繼續下半場</button>
+  <p style="color:var(--text-sub)">休息一下，準備好就進入第 6 題！</p>
+  <div class="stats"><div>目前金幣<br><span id="h-score" style="font-size:var(--fs-lg);color:var(--magenta)">0</span></div><div>目前連擊<br><span id="h-combo" style="font-size:var(--fs-lg);color:var(--cobalt)">0</span></div></div>
+  <button class="bevel go btn-lg" onclick="resumeHalf()">▶ 繼續下半場</button>
 </div></div>
 
 <div class="ov" id="m-pause"><div class="mc">
   <div class="mt">⏸ 暫停中</div>
-  <p id="pause-note" style="color:#e85d04;font-weight:700"></p>
-  <button class="bevel go" style="padding:11px;font-size:1.1rem" onclick="resumePause()">▶ 繼續遊戲</button>
+  <p id="pause-note" style="color:var(--magenta);font-weight:700"></p>
+  <button class="bevel go btn-lg" onclick="resumePause()">▶ 繼續遊戲</button>
 </div></div>
 
 <div class="ov" id="m-confirm"><div class="mc" style="max-width:340px;">
   <div class="mt" style="color:var(--magenta)">🚨 放棄遊戲？</div>
-  <p style="font-weight:700;color:#555;font-size:.9rem;">確定要放棄目前的進度並返回主選單嗎？</p>
-  <div class="col" style="grid-template-columns:1fr 1fr;display:grid;gap:8px;">
+  <p style="font-weight:700;color:var(--text-sub);font-size:var(--fs-sm);">確定要放棄目前的進度並返回主選單嗎？</p>
+  <div class="col" style="grid-template-columns:1fr 1fr;display:grid;gap:var(--sp-2);">
     <button class="bevel" onclick="cancelQuit()">繼續遊玩</button>
     <button class="bevel go" onclick="doQuit()">確定放棄</button>
   </div>
@@ -125,7 +124,7 @@
   <div class="conf" id="conf"></div>
   <div class="badge" id="r-badge">SSS</div>
   <div class="mt" id="r-title"></div>
-  
+
   <!-- 簡約版：三個數據水平一排平鋪 -->
   <div class="result-inline-box">
     <div class="stat-item">
@@ -142,13 +141,13 @@
         <div class="mini-fill" id="rocket-fill"></div>
         <div class="mini-rocket" id="rocket-icon">🚀</div>
       </div>
-      <span class="val" id="rocket-pr-val" style="font-size: 1rem;">PR 0</span>
+      <span class="val" id="rocket-pr-val" style="font-size:var(--fs-md);">PR 0</span>
     </div>
   </div>
 
-  <div style="text-align:left;font-size:.82rem;font-weight:700;color:#555">💿 成果紀念牆</div>
+  <div style="text-align:left;font-size:var(--fs-sm);font-weight:700;color:var(--text-sub)">💿 成果紀念牆</div>
   <div class="gal" id="gal"></div>
-  <p id="r-desc" style="font-size:.85rem;color:#555"></p>
+  <p id="r-desc" style="font-size:var(--fs-sm);color:var(--text-sub)"></p>
   <div class="col"><button class="bevel go" onclick="startGame()">再玩一次</button><button class="bevel" onclick="toTheme()">🎵 切換其他歌單</button></div>
 </div></div>
 <div id="cdown">3</div>
@@ -556,7 +555,8 @@ function begin(demo) {
   isDemo = demo;
   total = demo ? 3 : 10;
 
-  $('mode').textContent = demo ? '🎧 試玩中' : '🔥 正式挑戰';
+  $('mode').textContent = demo ? '試玩模式' : '比賽模式';
+  $('mode').style.display = 'block';
   $('quit-btn').style.display = 'block';
 
   pauseLeft = CFG.PAUSE_MAX;
