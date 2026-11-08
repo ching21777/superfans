@@ -415,14 +415,88 @@ body {
 }
 
 .logo {
+  position: relative;
+  display: inline-block;
+
   font-family: var(--serif);
   font-style: italic;
   font-weight: 900;
-  font-size: var(--fs-lg);
-  color: var(--paper);
+  font-size: clamp(1.3rem,2.8vw,2rem);
+  letter-spacing: 1px;
+
+  color: transparent;
+
+  background-image:
+    radial-gradient(circle, #FFFFFF 0 0.7px, transparent 1.2px),
+    radial-gradient(circle, rgba(255,255,255,.8) 0 0.5px, transparent 1px),
+    linear-gradient(
+      175deg,
+      #FFFFFF 0%,
+      #B8B9C2 12%,
+      #FFFFFF 20%,
+      #777985 31%,
+      #F9F9FA 40%,
+      #A4A5AF 49%,
+      #FFFFFF 55%,
+      #777985 67%,
+      #E5E5E9 78%,
+      #FFFFFF 88%,
+      #92939D 100%
+    );
+
+  background-size:
+    7px 7px,
+    11px 11px,
+    100% 100%;
+
+  background-position:
+    0 0,
+    3px 4px,
+    0 0;
+
+  background-clip: text;
+  -webkit-background-clip: text;
+
+  -webkit-text-stroke: .6px rgba(255,255,255,.8);
+
+  text-shadow: none;
+
+  filter:
+    drop-shadow(0 1px 0 #6A1528)
+    drop-shadow(1px 2px 0 #3C101D)
+    drop-shadow(0 0 3px rgba(255,255,255,.45))
+    drop-shadow(0 0 8px rgba(213,31,59,.4));
+}
+
+/* 小型星芒 */
+.logo::before {
+  content: "✦";
+  position: absolute;
+  rotate: 6deg;
+  bottom: 30%;
+  left: -3%;
+  font-size: .22em;
+  color: #FFFFFF;
   text-shadow:
-    1px 1px 0 var(--red),
-    2px 2px 8px rgba(213,31,59,.5);
+    0 0 2px #FFFFFF,
+    0 0 5px #FFFFFF,
+    0 0 9px #FFB9C9;
+  pointer-events: none;
+}
+
+.logo::after {
+  content: "✧";
+  position: absolute;
+  rotate: 12deg;
+  bottom: 40%;
+  right: -7.5%;
+  font-size: .36em;
+  color: #FFFFFF;
+  text-shadow:
+    0 0 2px #FFFFFF,
+    0 0 5px #FFFFFF,
+    0 0 9px #FFB9C9;
+  pointer-events: none;
 }
 
 .header-actions {
@@ -440,6 +514,7 @@ body {
   font-size: var(--fs-xs);
   padding: var(--sp-1) var(--sp-3);
 }
+
 
 
 /* ========================================
@@ -760,13 +835,20 @@ body {
   position: fixed;
   z-index: 120;
   pointer-events: none;
+
   font-family: var(--serif);
   font-weight: 900;
-  font-size: var(--fs-lg);
+  font-size: clamp(2rem, 5vw, 3rem);
+
   color: var(--yellow);
-  text-shadow: 2px 2px 0 var(--ink);
+  text-shadow:
+    2px 2px 0 var(--ink),
+    0 0 8px rgba(255,220,120,.5);
+
   transform: translate(-50%,-50%);
-  transition: transform var(--t-slow) cubic-bezier(.5,0,.8,.4), opacity var(--t-slow);
+  transition:
+    transform .7s cubic-bezier(.2,.8,.3,1),
+    opacity .7s ease;
 }
 
 /* 加分標籤 */
@@ -800,8 +882,26 @@ body {
   font-weight: 900;
   font-size: var(--fs-md);
   white-space: nowrap;
-  color: var(--c);
-  text-shadow: 2px 2px 0 var(--ink);
+
+  color: transparent;
+  background: linear-gradient(
+    175deg,
+    #FFFFFF 0%,
+    #B8B9C2 20%,
+    #FFFFFF 40%,
+    #A4A5AF 60%,
+    #FFFFFF 80%,
+    #92939D 100%
+  );
+
+  background-clip: text;
+  -webkit-background-clip: text;
+  -webkit-text-stroke: .4px rgba(255,255,255,.8);
+
+  filter:
+    drop-shadow(1px 2px 0 #3C101D)
+    drop-shadow(0 0 5px rgba(213,31,59,.4));
+
   animation: tagup 1.5s ease-out forwards;
 }
 
