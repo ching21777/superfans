@@ -13,9 +13,31 @@
   <header class="header">
     <h1 class="logo">Super Fans</h1>
     <div class="header-actions">
-      <div class="mode-badge" id="mode" style="display:none">Loading</div>
-      <button class="quit-btn" id="quit-btn" onclick="confirmQuit()">HOME</button>
-    </div>
+  <div class="mode-badge" id="mode" style="display:none">Loading</div>
+
+  <button class="rules-open"
+        onclick="show('m-rules')"
+        aria-label="計分方式"
+        title="計分方式">
+
+  <svg viewBox="0 0 24 24"
+       width="20"
+       height="20"
+       fill="none"
+       stroke="currentColor"
+       stroke-width="1.8"
+       stroke-linecap="round"
+       stroke-linejoin="round">
+
+    <circle cx="12" cy="12" r="10"/>
+    <line x1="12" y1="11" x2="12" y2="16"/>
+    <circle cx="12" cy="8" r=".8" fill="currentColor" stroke="none"/>
+
+  </svg>
+</button>
+
+  <button class="quit-btn" id="quit-btn" onclick="confirmQuit()">HOME</button>
+</div>
   </header>
 
   <div class="progress">
@@ -87,7 +109,7 @@
     <div class="logo">Super Fans</div>
 
     <section class="history-panel">
-      <div class="history-heading">🏆 我的戰績</div>
+      <div class="history-heading">我的戰績</div>
       <ul class="hist" id="hist"></ul>
     </section>
 
@@ -96,7 +118,6 @@
       <button class="bevel" onclick="startDemo()">試玩模式</button>
     </div>
 
-    <button class="rules-open" onclick="show('m-rules')">✧ 遊戲規則 ✧</button>
 
     <!-- 開發用：網址加 ?dev 才會顯示 -->
     <button class="bevel btn-sm" id="test-btn" hidden onclick="testResult()">[test] 預覽結算畫面</button>
@@ -107,14 +128,13 @@
 <div class="ov" id="m-rules">
   <div class="mc rules-dialog">
     <button class="x" onclick="hide('m-rules')">✖</button>
-    <div class="rules-title">✧ 遊戲規則 ✧</div>
+    <div class="rules-title">遊戲規則</div>
     <div class="rules">
       <p><b>🎵 猜歌：</b>聽 10 首歌曲，輸入完整歌名</p>
       <p><b>🪙 計分：</b>速度越快金幣越多，連續答對再加碼</p>
       <p><b>🎒 道具 1－選擇卡：</b>讓題目變簡單！獲得的金幣也會變少喔</p>
       <p><b>🎒 道具 2－暫停卡：</b>爭取時間！每局可暫停 1 次，不扣金幣</p>
     </div>
-    <button class="bevel go btn-lg" onclick="hide('m-rules')">知道了！</button>
   </div>
 </div>
 
@@ -135,11 +155,11 @@
 <!-- 試玩結束 -->
 <div class="ov" id="m-demo">
   <div class="mc">
-    <div class="mt" style="color:var(--magenta)">試玩結束</div>
-    <p style="line-height:1.6;color:var(--text-sub)">比賽模式一場 10 首歌，可以挑歌單。準備好正式開始了嗎？</p>
+    <div class="mt" style="color:var(--magenta)">試玩結束！</div>
+    <p style="line-height:1.6;color:var(--text-sub)">接著要選歌單，10 首歌連番出擊，準備好迎戰了嗎？</p>
     <div class="actions-pair">
-      <button class="bevel" onclick="startDemo()">再試玩 3 首</button>
-      <button class="bevel go" onclick="toTheme()">GAME START</button>
+      <button class="bevel" onclick="startDemo()">再練一回</button>
+      <button class="bevel go" onclick="toTheme()">正式上場</button>
     </div>
   </div>
 </div>
@@ -148,7 +168,7 @@
 <div class="ov" id="m-half">
   <div class="mc">
     <div class="mt">中場休息</div>
-    <p style="color:var(--text-sub)">休息一下，讓你喝水上廁所</p>
+    <p style="color:var(--text-sub)">休息一下，喝水上廁所</p>
     <div class="stats">
       <div>目前金幣<br><span id="h-score" style="font-size:var(--fs-lg);color:var(--magenta)">0</span></div>
       <div>目前連擊<br><span id="h-combo" style="font-size:var(--fs-lg);color:var(--cobalt)">0</span></div>
@@ -162,18 +182,18 @@
   <div class="mc">
     <div class="mt">⏸ 暫停中</div>
     <p id="pause-note" style="color:var(--text-sub);font-weight:700"></p>
-    <button class="bevel go btn-lg" onclick="resumePause()">▶ 繼續遊戲</button>
+    <button class="bevel go" onclick="resumePause()">繼續玩</button>
   </div>
 </div>
 
 <!-- 確認中斷 -->
 <div class="ov" id="m-confirm">
   <div class="mc" style="max-width:340px">
-    <div class="mt" style="color:var(--magenta)">確定中斷嗎？</div>
-    <p style="font-weight:700;color:var(--text-sub);font-size:var(--fs-sm)">即將返回主選單，本次積分不會保留。</p>
-    <div class="actions-stack">
-      <button class="bevel go btn-lg" onclick="cancelQuit()">繼續玩</button>
-      <button class="bevel text danger" onclick="doQuit()">放棄本局</button>
+    <div class="mt" style="color:var(--magenta)">確定要離開嗎？</div>
+    <p style="font-weight:700;color:var(--text-sub);font-size:var(--fs-sm)">離開後將返回主選單，這局成績不會保留。</p>
+    <div class="actions-pair">
+      <button class="bevel" onclick="doQuit()">放棄這局</button>
+      <button class="bevel go " onclick="cancelQuit()">繼續玩</button>
     </div>
   </div>
 </div>
@@ -595,7 +615,7 @@ function begin(demo) {
   isDemo = demo;
   total = demo ? 3 : 10;
 
-  $('mode').textContent = demo ? '試玩模式' : '比賽模式';
+  $('mode').textContent = demo ? '試玩模式' : '計分模式';
   $('mode').style.display = 'block';
   $('quit-btn').style.display = 'block';
 
@@ -968,18 +988,36 @@ function loadHistory() {
     h = JSON.parse(localStorage.getItem(HISTORY_KEY) || '[]');
   } catch (e) {}
 
+// 歌單簡稱對照表
+const playlistShort = {
+  "經典偶像劇金曲": "偶像劇",
+  "S.H.E 特輯": "S.H.E",
+  "梁靜茹特輯": "梁靜茹",
+  "2026 浪人祭": "浪人祭"
+};
+
+
   // 固定顯示三個名額
   $('hist').innerHTML = Array.from({length: 3}, (_, i) => {
     const x = h[i];
 
     if (x) {
-      return `
-        <li class="hi">
-          <span><span class="g">${x.grade}級</span><b>🪙${x.score}</b> [${x.title}]</span>
-          <span>🔥${x.combo} · ⏱️${x.time} · ${x.playlist}</span>
-        </li>
-      `;
-    }
+  return `
+    <li class="hi">
+      <span class="hi-main">
+        <span class="g">${x.grade}</span>
+        <b class="hi-score">🪙${x.score}</b>
+        <span>${x.title}</span>
+      </span>
+
+      <span class="hi-info">
+        <span>🔥${x.combo}</span>
+        <span>⏱️${x.time}</span>
+        <small class="playlist-tag">${playlistShort[x.playlist] || x.playlist}</small>
+      </span>
+    </li>
+  `;
+}
 
     return `
       <li class="hi empty">
