@@ -91,10 +91,10 @@
 
     <div class="items" id="items">
       <button class="item" id="choice-btn" onclick="toChoice()">
-        <span class="ic">🆘</span><span class="tx"><b>改選擇題</b><small id="choice-sub">金幣打折</small></span>
+        <span class="ic">🆘</span><span class="tx"><b>改選擇題</b><small id="choice-sub">分數打折</small></span>
       </button>
       <button class="item" id="pause-btn" onclick="doPause()">
-        <span class="ic">⏸</span><span class="tx"><b>暫停</b><small id="pause-sub">每局 1 次</small></span>
+        <span class="ic">⏸</span><span class="tx"><b>暫停</b><small id="pause-sub">可用一次</small></span>
       </button>
     </div>
 
@@ -130,10 +130,10 @@
     <button class="x" onclick="hide('m-rules')">✖</button>
     <div class="rules-title">遊戲規則</div>
     <div class="rules">
-      <p><b>🎵 猜歌：</b>聽 10 首歌曲，輸入完整歌名</p>
-      <p><b>🪙 計分：</b>速度越快金幣越多，連續答對再加碼</p>
-      <p><b>🎒 道具 1－選擇卡：</b>讓題目變簡單！獲得的金幣也會變少喔</p>
-      <p><b>🎒 道具 2－暫停卡：</b>爭取時間！每局可暫停 1 次，不扣金幣</p>
+      <p><b>🎵 猜歌：</b>輸入完整歌名（不分大小寫、空格）</p>
+      <p><b>🪙 計分：</b>答題速度越快分數越多，連續答對再加碼</p>
+      <p><b>🎒 選擇卡：</b>讓題目變簡單！答錯會扣分哦</p>
+      <p><b>🎒 暫停卡：</b>爭取時間！每局可暫停 1 次</p>
     </div>
   </div>
 </div>
@@ -164,7 +164,8 @@
   </div>
 </div>
 
-<!-- 中場休息 -->
+<!--
+中場休息功能（停用中）
 <div class="ov" id="m-half">
   <div class="mc">
     <div class="mt">中場休息</div>
@@ -176,6 +177,7 @@
     <button class="bevel go btn-lg" onclick="resumeHalf()">▶ 繼續下半場</button>
   </div>
 </div>
+-->
 
 <!-- 暫停 -->
 <div class="ov" id="m-pause">
@@ -476,7 +478,7 @@ function resumePause() {
 
 function updPauseBtn() {
   $('pause-btn').disabled = pauseLeft <= 0;
-  $('pause-sub').textContent = pauseLeft > 0 ? `每局 ${CFG.PAUSE_MAX} 次` : '已使用';
+  $('pause-sub').textContent = pauseLeft > 0 ? `可用一次` : '已使用';
 }
 
 
@@ -693,21 +695,8 @@ function next() {
 
   if (qDone >= total) return finish();
 
-  // 中場休息
-  if (!isDemo && qDone === 5 && !halfPassed) {
-    halfPassed = true;
-
-    stopAll();
-    renderProg();
-
-    $('h-score').textContent = score;
-    $('h-combo').textContent = combo + ' COMBO';
-
-    show('m-half');
-    return;
-  }
-
-  loadQuestion();
+  // 載入下一題
+loadQuestion();
 }
 
 function finish() {
@@ -758,7 +747,7 @@ async function loadQuestion() {
   $('tap').style.display = 'none';
 
   $('choice-btn').disabled = false;
-  $('choice-sub').textContent = CFG.CHOICE_COST ? `花 ${CFG.CHOICE_COST} 金幣` : '金幣打折';
+  $('choice-sub').textContent = CFG.CHOICE_COST ? `花 ${CFG.CHOICE_COST} 金幣` : '分數打折';
   $('items').style.display = '';
 
   timeLeft = CFG.MAX_TIME;
