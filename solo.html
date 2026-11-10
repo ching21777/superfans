@@ -7,11 +7,13 @@
 <link rel="stylesheet" href="css/solo.css">
 </head>
 <body>
+
+<!-- ==================== 遊戲畫面 ==================== -->
 <div class="app">
   <header class="header">
     <h1 class="logo">Super Fans</h1>
     <div class="header-actions">
-      <div class="mode-badge" id="mode" style="display: none;">Loading</div>
+      <div class="mode-badge" id="mode" style="display:none">Loading</div>
       <button class="quit-btn" id="quit-btn" onclick="confirmQuit()">HOME</button>
     </div>
   </header>
@@ -31,9 +33,7 @@
   </div>
 
   <div class="timer-row" id="trow">
-    <div class="timer-track">
-      <div class="timer-fill" id="tbar"></div>
-    </div>
+    <div class="timer-track"><div class="timer-fill" id="tbar"></div></div>
     <div class="timer-number" id="tnum">20s</div>
   </div>
 
@@ -42,163 +42,202 @@
       <div class="cd" id="cd"><div class="disc" id="disc"></div></div>
       <div class="case" id="case"><div class="q">?</div><img id="art" alt=""></div>
     </div></div>
+
     <div class="timeout-overlay" id="timeout-overlay">
-  <div class="timeout-title">TIME'S UP!</div>
-  <div class="timeout-sub">時間到！</div>
-</div>
-    <div class="banner" id="banner" onclick="next()"><b id="b-title"></b><span id="b-artist"></span><small id="b-meta"></small></div>
+      <div class="timeout-title">TIME'S UP!</div>
+      <div class="timeout-sub">時間到！</div>
+    </div>
+
+    <div class="banner" id="banner" onclick="next()">
+      <b id="b-title"></b><span id="b-artist"></span><small id="b-meta"></small>
+    </div>
+
     <div class="tap" id="tap"><button class="bevel go">🔊 點一下開始播放</button></div>
   </div>
 
   <div class="ibox" id="ibox">
     <div class="msg" id="msg"></div>
+
     <div id="type-sec">
       <div class="irow">
         <input type="text" id="inp" placeholder="輸入完整歌名（不分大小寫、空格）" autocomplete="off" onkeydown="if(event.key==='Enter')submitAnswer()">
         <button class="bevel go" style="padding:0 var(--sp-4)" onclick="submitAnswer()">送出</button>
       </div>
     </div>
+
     <div id="choice-sec" style="display:none"><div class="ogrid" id="ogrid"></div></div>
+
     <div class="items" id="items">
-      <button class="item" id="choice-btn" onclick="toChoice()"><span class="ic">🆘</span><span class="tx"><b>改選擇題</b><small id="choice-sub">金幣打折</small></span></button>
-      <button class="item" id="pause-btn" onclick="doPause()"><span class="ic">⏸</span><span class="tx"><b>暫停</b><small id="pause-sub">每場 1 次</small></span></button>
+      <button class="item" id="choice-btn" onclick="toChoice()">
+        <span class="ic">🆘</span><span class="tx"><b>改選擇題</b><small id="choice-sub">金幣打折</small></span>
+      </button>
+      <button class="item" id="pause-btn" onclick="doPause()">
+        <span class="ic">⏸</span><span class="tx"><b>暫停</b><small id="pause-sub">每局 1 次</small></span>
+      </button>
     </div>
+
     <div id="next-sec" style="display:none"></div>
   </div>
 </div>
 
+
+<!-- ==================== 主選單 ==================== -->
 <div class="ov" id="m-start" style="display:flex">
   <div class="mc">
-
     <div class="logo">Super Fans</div>
 
-    <!-- 我的戰績 -->
     <section class="history-panel">
       <div class="history-heading">🏆 我的戰績</div>
       <ul class="hist" id="hist"></ul>
     </section>
 
-    <!-- 開始遊戲 -->
     <div class="col">
       <button class="bevel go btn-lg" onclick="toTheme()">GAME START ➔</button>
       <button class="bevel" onclick="startDemo()">試玩模式</button>
     </div>
 
-    <!-- 遊戲規則入口 -->
-    <button class="rules-open" onclick="show('m-rules')">
-      ✧ 遊戲規則 ✧
-    </button>
+    <button class="rules-open" onclick="show('m-rules')">✧ 遊戲規則 ✧</button>
 
-    <!-- 開發測試按鈕 -->
-    <button class="bevel btn-sm"
-      style="background:#eeedf1; color:#4a3db8;"
-      onclick="testResult()">
-      [test] 預覽結算畫面
-    </button>
-
+    <!-- 開發用：網址加 ?dev 才會顯示 -->
+    <button class="bevel btn-sm" id="test-btn" hidden onclick="testResult()">[test] 預覽結算畫面</button>
   </div>
 </div>
 
-<!-- 遊戲規則彈出視窗 -->
+<!-- 遊戲規則 -->
 <div class="ov" id="m-rules">
   <div class="mc rules-dialog">
-
     <button class="x" onclick="hide('m-rules')">✖</button>
-
     <div class="rules-title">✧ 遊戲規則 ✧</div>
-
     <div class="rules">
       <p><b>🎵 猜歌：</b>聽 10 首歌曲，輸入完整歌名</p>
       <p><b>🪙 計分：</b>速度越快金幣越多，連續答對再加碼</p>
       <p><b>🎒 道具 1－選擇卡：</b>讓題目變簡單！獲得的金幣也會變少喔</p>
       <p><b>🎒 道具 2－暫停卡：</b>爭取時間！每局可暫停 1 次，不扣金幣</p>
     </div>
-
-    <button class="bevel go btn-lg" onclick="hide('m-rules')">
-      知道了！
-    </button>
-
+    <button class="bevel go btn-lg" onclick="hide('m-rules')">知道了！</button>
   </div>
 </div>
 
-<div class="ov" id="m-theme"><div class="mc">
+<!-- 選歌單 -->
+<div class="ov" id="m-theme">
+  <div class="mc">
     <div class="logo">Super Fans</div>
-  <div class="col">
-    <button class="tb sel" data-k="drama" onclick="pickTheme('drama')">經典偶像劇金曲 ✬</button>
-    <button class="tb" data-k="she" onclick="pickTheme('she')">S.H.E 特輯 ✬✬✬</button>
-    <button class="tb" data-k="fish" onclick="pickTheme('fish')">梁靜茹特輯 ✬✬✬✬✬</button>
-    <button class="tb" data-k="vagabond" onclick="pickTheme('vagabond')">2026 浪人祭 ✬✬✬✬✬✬✬✬✬</button>
-  </div>
-
-  <button class="bevel go btn-lg" onclick="startGame()">START</button>
-</div></div>
-
-<div class="ov" id="m-demo"><div class="mc">
-  <div class="mt" style="color:var(--magenta)">試玩結束</div>
-  <p style="line-height:1.6;color:var(--text-sub)">比賽模式一場 10 首歌，可以挑歌單。準備好正式開始了嗎？</p>
-  <div class="col"><button class="bevel go" onclick="toTheme()">GAME START</button><button class="bevel" onclick="startDemo()">再試玩 3 首</button></div>
-</div></div>
-
-<div class="ov" id="m-half"><div class="mc">
-  <div class="mt">中場休息</div>
-  <p style="color:var(--text-sub)">休息一下，讓你喝水上廁所</p>
-  <div class="stats"><div>目前金幣<br><span id="h-score" style="font-size:var(--fs-lg);color:var(--magenta)">0</span></div><div>目前連擊<br><span id="h-combo" style="font-size:var(--fs-lg);color:var(--cobalt)">0</span></div></div>
-  <button class="bevel go btn-lg" onclick="resumeHalf()">▶ 繼續下半場</button>
-</div></div>
-
-<div class="ov" id="m-pause"><div class="mc">
-  <div class="mt">⏸ 暫停中</div>
-  <p id="pause-note" style="color:var(--text-sub);font-weight:700"></p>
-  <button class="bevel go btn-lg" onclick="resumePause()">▶ 繼續遊戲</button>
-</div></div>
-
-<div class="ov" id="m-confirm"><div class="mc" style="max-width:340px;">
-  <div class="mt" style="color:var(--magenta)">確定中斷嗎？</div>
-  <p style="font-weight:700;color:var(--text-sub);font-size:var(--fs-sm);">即將返回主選單，本次積分不會保留。</p>
-  <div class="col" style="grid-template-columns:1fr 1fr;display:grid;gap:var(--sp-2);">
-    <button class="bevel go" onclick="doQuit()">回主選單</button>
-    <button class="bevel" onclick="cancelQuit()">繼續玩</button>
-  </div>
-</div></div>
-
-<div class="ov" id="m-result"><div class="mc" id="res-card">
-  <button class="x" onclick="show('m-start');hide('m-result');loadHistory()">✖</button>
-  <div class="conf" id="conf"></div>
-  <div class="badge" id="r-badge">SSS</div>
-  <div class="mt" id="r-title"></div>
-
-  <!-- 簡約版：三個數據水平一排平鋪 -->
-  <div class="result-inline-box">
-    <div class="stat-item">
-      <span class="label">🪙Score</span>
-      <span class="val" id="r-score">0</span>
+    <div class="col">
+      <button class="tb sel" data-k="drama" onclick="pickTheme('drama')">經典偶像劇金曲 ✬</button>
+      <button class="tb" data-k="she" onclick="pickTheme('she')">S.H.E 特輯 ✬✬✬</button>
+      <button class="tb" data-k="fish" onclick="pickTheme('fish')">梁靜茹特輯 ✬✬✬✬✬</button>
+      <button class="tb" data-k="vagabond" onclick="pickTheme('vagabond')">2026 浪人祭 ✬✬✬✬✬✬✬✬✬</button>
     </div>
-    <div class="stat-item">
-      <span class="label">🔥Combo</span>
-      <span class="val" id="r-combo" style="color:var(--cobalt);">0</span>
+    <button class="bevel go btn-lg" onclick="startGame()">START</button>
+  </div>
+</div>
+
+<!-- 試玩結束 -->
+<div class="ov" id="m-demo">
+  <div class="mc">
+    <div class="mt" style="color:var(--magenta)">試玩結束</div>
+    <p style="line-height:1.6;color:var(--text-sub)">比賽模式一場 10 首歌，可以挑歌單。準備好正式開始了嗎？</p>
+    <div class="actions-pair">
+      <button class="bevel" onclick="startDemo()">再試玩 3 首</button>
+      <button class="bevel go" onclick="toTheme()">GAME START</button>
     </div>
-    <div class="stat-item rocket-item">
-      <span class="label">PR值</span>
-      <div class="mini-track">
-        <div class="mini-fill" id="rocket-fill"></div>
-        <div class="mini-rocket" id="rocket-icon">🚀</div>
+  </div>
+</div>
+
+<!-- 中場休息 -->
+<div class="ov" id="m-half">
+  <div class="mc">
+    <div class="mt">中場休息</div>
+    <p style="color:var(--text-sub)">休息一下，讓你喝水上廁所</p>
+    <div class="stats">
+      <div>目前金幣<br><span id="h-score" style="font-size:var(--fs-lg);color:var(--magenta)">0</span></div>
+      <div>目前連擊<br><span id="h-combo" style="font-size:var(--fs-lg);color:var(--cobalt)">0</span></div>
+    </div>
+    <button class="bevel go btn-lg" onclick="resumeHalf()">▶ 繼續下半場</button>
+  </div>
+</div>
+
+<!-- 暫停 -->
+<div class="ov" id="m-pause">
+  <div class="mc">
+    <div class="mt">⏸ 暫停中</div>
+    <p id="pause-note" style="color:var(--text-sub);font-weight:700"></p>
+    <button class="bevel go btn-lg" onclick="resumePause()">▶ 繼續遊戲</button>
+  </div>
+</div>
+
+<!-- 確認中斷 -->
+<div class="ov" id="m-confirm">
+  <div class="mc" style="max-width:340px">
+    <div class="mt" style="color:var(--magenta)">確定中斷嗎？</div>
+    <p style="font-weight:700;color:var(--text-sub);font-size:var(--fs-sm)">即將返回主選單，本次積分不會保留。</p>
+    <div class="actions-stack">
+      <button class="bevel go btn-lg" onclick="cancelQuit()">繼續玩</button>
+      <button class="bevel text danger" onclick="doQuit()">放棄本局</button>
+    </div>
+  </div>
+</div>
+
+
+<!-- ==================== 結算畫面 ==================== -->
+<div class="ov" id="m-result">
+  <div class="mc" id="res-card">
+    <button class="x" onclick="show('m-start');hide('m-result');loadHistory()">✖</button>
+    <div class="conf" id="conf"></div>
+
+    <!-- 主視覺：等級、封號、評語、專輯牆 -->
+    <div class="result-hero">
+      <div class="result-heading">
+        <div id="r-badge">SSS</div>
+        <div class="mt" id="r-title"></div>
       </div>
-      <span class="val" id="rocket-pr-val" style="font-size:var(--fs-md);">PR 0</span>
+      <p class="result-desc" id="r-desc"></p>
+      <div class="gallery-frame">
+        <div class="gal" id="gal"></div>
+      </div>
+    </div>
+
+    <!-- 數據：分數、PR、連擊、時間 -->
+    <div class="result-stats">
+      <div class="stat-main">
+        <span class="label">🪙 SCORE</span>
+        <span class="val" id="r-score">0</span>
+      </div>
+
+      <div class="pr-gauge" id="pr-gauge">
+        <div class="pr-gauge-inner">
+          <span class="pr-value" id="rocket-pr-val">0</span>
+          <span class="pr-caption">PR</span>
+        </div>
+      </div>
+
+      <div class="stat-side">
+        <div class="stat-item">
+          <span class="label">🔥 COMBO</span>
+          <span class="val" id="r-combo">0</span>
+        </div>
+        <div class="stat-item">
+          <span class="label">⏱ TIME</span>
+          <span class="val" id="r-time">00:00</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- 再次挑戰 -->
+    <div class="actions-stack">
+      <button class="bevel go btn-lg" onclick="startGame()">再玩一次</button>
+      <button class="bevel text" onclick="toTheme()">換其他歌單</button>
     </div>
   </div>
+</div>
 
-  <p id="r-desc" style="font-size:var(--fs-sm);color:var(--text-sub)"></p>
-  <div class="gal" id="gal"></div>
-  <div class="col"><button class="bevel go" onclick="startGame()">再玩一次</button><button class="bevel" onclick="toTheme()">換其他歌單</button></div>
-</div></div>
 <div id="cdown">3</div>
-<script src="js/playlists.js"></script>
 
+<script src="js/playlists.js"></script>
 <script>
 
 /* ==========================================
    01. 遊戲設定 CONFIG
-   管理遊戲參數、計分比例、時間限制、評級門檻
 ========================================== */
 
 const CFG = {
@@ -217,18 +256,18 @@ const CFG = {
 };
 
 const GRADES = [
-  {k:'SSS',min:.90,clean:true,title:'絕頂聰明猜歌王',desc:'前奏一下就秒殺全場，猜歌王非你莫屬！'},
-  {k:'SS', min:.80,clean:true,title:'行動點歌機',desc:'聽歌量深不可測，你每天聽歌聽滿 24 小時嗎？'},
-  {k:'S',  min:.65,clean:true,title:'資深歌迷',desc:'你是常出沒在搖滾區的鐵粉吧！'},
-  {k:'A+', min:.55,title:'快手搶答王',desc:'旋律一響就知道，但歌名永遠卡在想不起來的那個字！'},
-  {k:'A',  min:.40,title:'音樂玩家',desc:'哎呦不錯喔，換個歌單玩看看吧！'},
-  {k:'B',  min:1e-9,title:'猜歌初心者',desc:'多聽幾首就能踏出新手村了！'},
-  {k:'F',  min:0,title:'耳朵還在暖機',desc:'聽著聽著就忘記作答了，再挑戰一次吧！'}
+  {k:'SSS', min:.90, clean:true, title:'絕頂聰明猜歌王', desc:'前奏一下就秒殺全場，猜歌王非你莫屬！'},
+  {k:'SS',  min:.80, clean:true, title:'行動點歌機',     desc:'聽歌量深不可測，你每天聽歌聽滿 24 小時嗎？'},
+  {k:'S',   min:.65, clean:true, title:'資深歌迷',       desc:'你是常出沒在搖滾區的鐵粉吧！'},
+  {k:'A+',  min:.55, title:'快手搶答王', desc:'旋律一響就知道，但歌名永遠卡在想不起來的那個字！'},
+  {k:'A',   min:.40, title:'音樂玩家',   desc:'哎呦不錯喔，換個歌單玩看看吧！'},
+  {k:'B',   min:1e-9, title:'猜歌初心者', desc:'多聽幾首就能踏出新手村了！'},
+  {k:'F',   min:0, title:'耳朵還在暖機', desc:'聽著聽著就忘記作答了，再挑戰一次吧！'}
 ];
+
 
 /* ==========================================
    02. 遊戲狀態 STATE
-   記錄目前遊戲進行到哪裡、玩家的狀態
 ========================================== */
 
 // 遊戲進度
@@ -239,7 +278,7 @@ let theme = 'drama',
     total = 10,
     cur = null;
 
-// 遊戲模式與答題狀態
+// 模式與答題狀態
 let active = false,
     isDemo = false,
     halfPassed = false,
@@ -252,8 +291,8 @@ let score = 0,
     shown = 0,
     combo = 0,
     maxCombo = 0,
-    cds = [];
-let scoreRAF = null;
+    cds = [],
+    scoreRAF = null;
 
 // 計時與暫停
 let reqId = 0,
@@ -272,25 +311,14 @@ let opts = [];
 
 /* ==========================================
    03. 共用工具 UTILITIES
-   放置可以重複使用的小工具
 ========================================== */
 
-// 取得網頁元素
 const $ = id => document.getElementById(id);
-
-// 顯示與隱藏元素
 const show = id => $(id).style.display = 'flex';
 const hide = id => $(id).style.display = 'none';
 
-// 去除重複資料
-function uniq(a) {
-  return [...new Set(a)];
-}
-
-// 隨機打亂陣列
-function shuffle(a) {
-  return a.sort(() => Math.random() - .5);
-}
+const uniq = a => [...new Set(a)];
+const shuffle = a => a.sort(() => Math.random() - .5);
 
 // 統一文字格式，方便比對歌名
 function sanitize(s) {
@@ -299,50 +327,46 @@ function sanitize(s) {
     .replace(/[\s\-_()（）\[\]【】.,?!'"]/g, '');
 }
 
+// 秒數 → mm:ss
+function fmtTime(sec) {
+  return String(Math.floor(sec / 60)).padStart(2, '0') + ':' + String(sec % 60).padStart(2, '0');
+}
+
+// 目前可用的歌曲清單（試玩模式混合三個歌單）
+function songPool() {
+  return isDemo
+    ? [...playlists.drama, ...playlists.she, ...playlists.fish]
+    : playlists[theme];
+}
+
 
 /* ==========================================
    04. 計分系統 SCORING
-   負責計算分數、連擊獎勵與玩家評級
 ========================================== */
 
 function calcScore(isChoice, tLeft, comboNow, lostCombo) {
-  const base = Math.round(
-    CFG.BASE * (isChoice ? CFG.CHOICE_BASE_RATE : 1)
-  );
+  const base = Math.round(CFG.BASE * (isChoice ? CFG.CHOICE_BASE_RATE : 1));
 
   const speed = Math.round(
-    CFG.SPEED *
-    Math.min(1, tLeft / CFG.FULL_AT) *
-    (isChoice ? CFG.CHOICE_SPEED_RATE : 1)
+    CFG.SPEED * Math.min(1, tLeft / CFG.FULL_AT) * (isChoice ? CFG.CHOICE_SPEED_RATE : 1)
   );
 
   const bonus = lostCombo ? 0 : Math.round(
-    Math.min(
-      CFG.COMBO_MAX,
-      Math.max(0, comboNow - 1) * CFG.COMBO_STEP
-    ) *
+    Math.min(CFG.COMBO_MAX, Math.max(0, comboNow - 1) * CFG.COMBO_STEP) *
     (isChoice ? CFG.CHOICE_COMBO_RATE : 1)
   );
 
-  return {
-    speed,
-    bonus,
-    total: base + speed + bonus
-  };
+  return { speed, bonus, total: base + speed + bonus };
 }
 
-// 計算本局理論最高分
+// 本局理論最高分
 function maxScore(n = total) {
   let m = n * (CFG.BASE + CFG.SPEED);
-
-  for (let i = 0; i < n; i++) {
-    m += Math.min(CFG.COMBO_MAX, i * CFG.COMBO_STEP);
-  }
-
+  for (let i = 0; i < n; i++) m += Math.min(CFG.COMBO_MAX, i * CFG.COMBO_STEP);
   return m;
 }
 
-// 根據得分比例判斷評級
+// 依得分比例判斷評級
 function grade(s) {
   const mx = maxScore(),
         r = mx > 0 ? s / mx : 0;
@@ -353,7 +377,6 @@ function grade(s) {
 
 /* ==========================================
    05. 音訊與計時 AUDIO & TIMER
-   負責音樂播放、暫停、倒數計時
 ========================================== */
 
 // 靜音音訊：協助瀏覽器解鎖播放權限
@@ -364,11 +387,9 @@ audio.preload = 'auto';
 function unlockAudio() {
   audio.src = SILENT;
   const p = audio.play();
-
   if (p) p.then(() => audio.pause()).catch(() => {});
 }
 
-// 執行倒數計時
 function runTimer() {
   clearInterval(tick);
   endAt = Date.now() + timeLeft * 1000;
@@ -387,7 +408,6 @@ function runTimer() {
   }, 50);
 }
 
-// 停止所有音訊與計時效果
 function stopAll() {
   clearInterval(tick);
   audio.pause();
@@ -396,7 +416,6 @@ function stopAll() {
   $('trow').classList.remove('danger');
 }
 
-// 播放目前歌曲
 function playNow() {
   return audio.play()
     .then(() => {
@@ -410,12 +429,10 @@ function playNow() {
     });
 }
 
-// 點擊播放按鈕
 $('tap').onclick = () => {
   if (active && !isPaused) playNow();
 };
 
-// 暫停遊戲
 function doPause() {
   if (!active || isPaused || pauseLeft <= 0) return;
 
@@ -427,33 +444,29 @@ function doPause() {
   audio.pause();
   $('disc').classList.remove('spin');
 
-  $('pause-note').textContent = `長頸鹿跟河馬去逛街買新衣服試穿時，長頸鹿問河馬：「我適合嗎？」河馬說：「你是長頸鹿，我才是河馬。」`;
+  $('pause-note').textContent = '長頸鹿跟河馬去逛街買新衣服試穿時，長頸鹿問河馬：「我適合嗎？」河馬說：「你是長頸鹿，我才是河馬。」';
   show('m-pause');
 }
 
-// 恢復遊戲
 function resumePause() {
   isPaused = false;
   hide('m-pause');
   playNow();
 }
 
-// 更新暫停按鈕
 function updPauseBtn() {
   $('pause-btn').disabled = pauseLeft <= 0;
-  $('pause-sub').textContent =
-    pauseLeft > 0 ? `每局 ${CFG.PAUSE_MAX} 次` : '已使用';
+  $('pause-sub').textContent = pauseLeft > 0 ? `每局 ${CFG.PAUSE_MAX} 次` : '已使用';
 }
 
 
 /* ==========================================
    06. 畫面與動畫 DISPLAY
-   負責畫面呈現、分數動畫、文字提示
 ========================================== */
 
 // 更新題目進度
 function renderProg() {
-  $('pgrid').innerHTML = Array.from({length:total}, (_, i) => {
+  $('pgrid').innerHTML = Array.from({length: total}, (_, i) => {
     const c = cds[i];
 
     return c
@@ -464,12 +477,11 @@ function renderProg() {
   $('qno').textContent = `第 ${Math.min(qDone + 1, total)} / ${total} 題`;
 }
 
-// 更新分數與分數動畫
+// 更新分數（加分有跑數字動畫，扣分直接跳轉）
 function setScore(v) {
-  const from = shown;
-  const el = $('score');
+  const from = shown,
+        el = $('score');
 
-  // 取消尚未完成的分數動畫
   if (scoreRAF !== null) {
     cancelAnimationFrame(scoreRAF);
     scoreRAF = null;
@@ -480,25 +492,16 @@ function setScore(v) {
   el.classList.remove('bump', 'penalty');
   void el.offsetWidth;
 
-  if (v > from) {
-  el.classList.add('bump');
-  }
+  if (v > from) el.classList.add('bump');
 
-  // 扣分：直接跳轉
   if (v < from || (v === 0 && from === 0)) {
     shown = v;
     el.textContent = v;
-
     el.classList.add('penalty');
-
-    setTimeout(() => {
-      el.classList.remove('penalty');
-    }, 500);
-
+    setTimeout(() => el.classList.remove('penalty'), 500);
     return;
   }
 
-  // 加分：保留數字動畫
   const t0 = performance.now();
 
   function f(t) {
@@ -507,17 +510,13 @@ function setScore(v) {
     shown = Math.round(from + (v - from) * p);
     el.textContent = shown;
 
-    if (p < 1) {
-      scoreRAF = requestAnimationFrame(f);
-    } else {
-      scoreRAF = null;
-    }
+    scoreRAF = p < 1 ? requestAnimationFrame(f) : null;
   }
 
   scoreRAF = requestAnimationFrame(f);
 }
 
-// 更新連擊顯示
+// 更新連擊
 function updCombo(pop) {
   const c = $('combo');
 
@@ -531,7 +530,7 @@ function updCombo(pop) {
   }
 }
 
-// 顯示提示訊息
+// 提示訊息
 function say(t, c) {
   const e = $('msg');
 
@@ -542,7 +541,7 @@ function say(t, c) {
   e.classList.add('show');
 }
 
-// 顯示加分標籤
+// 加分標籤
 function tag(side, t, c, delay = 0) {
   setTimeout(() => {
     const e = document.createElement('div');
@@ -552,18 +551,16 @@ function tag(side, t, c, delay = 0) {
     e.style.setProperty('--c', c);
 
     $('tags-' + side).appendChild(e);
-
     setTimeout(() => e.remove(), 1500);
   }, delay);
 }
 
-// 倒數畫面
+// 開場倒數
 function countdown(cb) {
-
   const o = $('cdown');
-  o.style.display = 'flex';
-
   let c = 3;
+
+  o.style.display = 'flex';
   o.textContent = c;
 
   const t = setInterval(() => {
@@ -583,23 +580,17 @@ function countdown(cb) {
 
 
 /* ==========================================
-   07. 遊戲入口與流程 GAME FLOW
-   負責開始遊戲、試玩、選擇主題、離開遊戲
+   07. 遊戲流程 GAME FLOW
 ========================================== */
 
-// 選擇歌曲主題
 function pickTheme(k) {
   theme = k;
-
-  document.querySelectorAll('.tb').forEach(b => {
-    b.classList.toggle('sel', b.dataset.k === k);
-  });
+  document.querySelectorAll('.tb').forEach(b => b.classList.toggle('sel', b.dataset.k === k));
 }
 
-// 開始遊戲的共同流程
 function begin(demo) {
   unlockAudio();
-  
+
   document.querySelectorAll('.ov').forEach(m => m.style.display = 'none');
   isDemo = demo;
   total = demo ? 3 : 10;
@@ -621,11 +612,7 @@ function begin(demo) {
   cds = [];
   halfPassed = false;
 
-  queue = shuffle(uniq(
-    demo
-      ? [...playlists.drama, ...playlists.she, ...playlists.fish]
-      : playlists[theme]
-  ));
+  queue = shuffle(uniq(songPool()));
 
   $('score').textContent = '0';
   updCombo();
@@ -633,31 +620,19 @@ function begin(demo) {
 
   startAt = Date.now();
 
-  if (demo) {
-  loadQuestion();
-} else {
-  countdown(loadQuestion);
-}
+  if (demo) loadQuestion();
+  else countdown(loadQuestion);
 }
 
-// 開始正式遊戲
-function startGame() {
-  begin(false);
-}
+const startGame = () => begin(false);
+const startDemo = () => begin(true);
 
-// 開始試玩
-function startDemo() {
-  begin(true);
-}
-
-// 返回主題選擇畫面
 function toTheme() {
   ['m-start', 'm-demo', 'm-result', 'm-confirm'].forEach(hide);
   show('m-theme');
   $('quit-btn').style.display = 'none';
 }
 
-// 確認離開遊戲
 function confirmQuit() {
   wasRunning = active && !isPaused;
 
@@ -670,33 +645,24 @@ function confirmQuit() {
   show('m-confirm');
 }
 
-// 取消離開
 function cancelQuit() {
   hide('m-confirm');
-
-  if (wasRunning) {
-    playNow();
-  }
+  if (wasRunning) playNow();
 }
 
-// 確定離開
 function doQuit() {
   stopAll();
   hide('m-confirm');
-
   $('quit-btn').style.display = 'none';
   show('m-start');
-
   loadHistory();
 }
 
-// 通過中場休息後繼續
 function resumeHalf() {
   hide('m-half');
   loadQuestion();
 }
 
-// 進入下一題
 function next() {
   if (!$('banner').classList.contains('show')) return;
 
@@ -707,6 +673,7 @@ function next() {
 
   if (qDone >= total) return finish();
 
+  // 中場休息
   if (!isDemo && qDone === 5 && !halfPassed) {
     halfPassed = true;
 
@@ -723,7 +690,6 @@ function next() {
   loadQuestion();
 }
 
-// 結束遊戲
 function finish() {
   stopAll();
   renderProg();
@@ -742,10 +708,8 @@ function finish() {
 
 /* ==========================================
    08. 題目與答題 QUESTION
-   負責取得歌曲、顯示題目、判斷答案
 ========================================== */
 
-// 載入下一首歌曲
 async function loadQuestion() {
   const my = ++reqId;
 
@@ -774,10 +738,7 @@ async function loadQuestion() {
   $('tap').style.display = 'none';
 
   $('choice-btn').disabled = false;
-  $('choice-sub').textContent = CFG.CHOICE_COST
-    ? `花 ${CFG.CHOICE_COST} 金幣`
-    : '金幣打折';
-
+  $('choice-sub').textContent = CFG.CHOICE_COST ? `花 ${CFG.CHOICE_COST} 金幣` : '金幣打折';
   $('items').style.display = '';
 
   timeLeft = CFG.MAX_TIME;
@@ -785,8 +746,6 @@ async function loadQuestion() {
   $('tnum').textContent = CFG.MAX_TIME + 's';
 
   renderProg();
-
-  const san = s => sanitize(s);
 
   while (qPtr < queue.length) {
     const term = queue[qPtr++],
@@ -798,7 +757,6 @@ async function loadQuestion() {
       const r = await fetch(
         `https://itunes.apple.com/search?term=${encodeURIComponent(artist + ' ' + title)}&entity=song&limit=10&country=TW`
       );
-
       const d = await r.json();
 
       if (my !== reqId) return;
@@ -807,7 +765,7 @@ async function loadQuestion() {
 
       const t = rs.find(x =>
         x.artistName.toLowerCase().includes(artist.toLowerCase()) &&
-        san(x.trackName).includes(san(title))
+        sanitize(x.trackName).includes(sanitize(title))
       ) || rs.find(x =>
         x.artistName.toLowerCase().includes(artist.toLowerCase())
       );
@@ -826,48 +784,44 @@ async function loadQuestion() {
 
         active = true;
         playNow();
-
         return;
       }
-
     } catch (e) {
       if (my !== reqId) return;
     }
   }
 
+  // 歌單找不到足夠的歌，提早結束
   total = qDone;
   finish();
 }
 
-// 提交文字答案
 function submitAnswer() {
   if (!active || isPaused) return;
 
   const v = $('inp').value.trim();
-
   if (!v) return;
 
   if (sanitize(v) === sanitize(cur.title)) {
     correct(false);
-  } else {
-    setScore(Math.max(0, score - 10));
-
-    $('inp').value = '';
-
-    const b = $('inp');
-    b.classList.remove('shake');
-    void b.offsetWidth;
-    b.classList.add('shake');
+    return;
   }
+
+  setScore(Math.max(0, score - 10));
+  $('inp').value = '';
+
+  const b = $('inp');
+  b.classList.remove('shake');
+  void b.offsetWidth;
+  b.classList.add('shake');
 }
 
-// 使用選擇題提示
+// 改選擇題
 function toChoice() {
   if (!active || isPaused || choiceUsed) return;
 
   choiceUsed = true;
   usedChoice = true;
-
   $('choice-btn').disabled = true;
 
   if (CFG.CHOICE_COST) {
@@ -875,68 +829,50 @@ function toChoice() {
     tag('l', '使用錦囊 🪙' + CFG.CHOICE_COST, '#ffc857');
   }
 
-  const pool = uniq(
-    (isDemo
-      ? [...playlists.drama, ...playlists.she, ...playlists.fish]
-      : playlists[theme]
-    ).map(s => s.slice(s.indexOf(' ') + 1))
-  ).filter(t => sanitize(t) !== sanitize(cur.title));
+  const pool = uniq(songPool().map(s => s.slice(s.indexOf(' ') + 1)))
+    .filter(t => sanitize(t) !== sanitize(cur.title));
 
-  opts = shuffle([
-    ...shuffle(pool).slice(0, 3),
-    cur.title
-  ]);
+  opts = shuffle([...shuffle(pool).slice(0, 3), cur.title]);
 
-  $('ogrid').innerHTML = opts.map((o, i) =>
-    `<button class="opt" data-i="${i}"></button>`
-  ).join('');
-
-  $('ogrid').querySelectorAll('.opt').forEach((b, i) => {
-    b.textContent = opts[i];
-  });
+  $('ogrid').innerHTML = opts.map((o, i) => `<button class="opt" data-i="${i}"></button>`).join('');
+  $('ogrid').querySelectorAll('.opt').forEach((b, i) => { b.textContent = opts[i]; });
 
   $('type-sec').style.display = 'none';
   $('choice-sec').style.display = 'block';
 }
 
-// 選擇題點擊事件
 $('ogrid').onclick = e => {
   const b = e.target.closest('.opt');
-
   if (!b || !active || isPaused) return;
 
   if (opts[+b.dataset.i] === cur.title) {
     correct(true);
-  } else {
-    setScore(Math.max(0, score - 10));
+    return;
+  }
 
-    b.disabled = true;
-    b.textContent += ' ✖';
+  setScore(Math.max(0, score - 10));
+  b.disabled = true;
+  b.textContent += ' ✖';
 
-    if (!choiceMiss) {
-      choiceMiss = true;
-      combo = 0;
-      updCombo();
-    }
+  if (!choiceMiss) {
+    choiceMiss = true;
+    combo = 0;
+    updCombo();
   }
 };
 
-// 答對歌曲
 function correct(isChoice) {
   combo++;
   maxCombo = Math.max(maxCombo, combo);
 
   const s = calcScore(isChoice, timeLeft, combo, choiceMiss);
 
+  // 專輯品質：剩餘時間越多越好
   let cond = 'near-mint';
+  if (timeLeft >= 10) cond = 'gem-mint';
+  else if (timeLeft < 5) cond = 'good';
 
-  if (timeLeft >= 10) {
-    cond = 'gem-mint';
-  } else if (timeLeft < 5) {
-    cond = 'good';
-  }
-
-  cds.push({art:cur.art, cond});
+  cds.push({art: cur.art, cond});
 
   setScore(score + s.total);
   updCombo(true);
@@ -947,12 +883,11 @@ function correct(isChoice) {
   reveal();
 }
 
-// 時間到
 function timeout() {
   combo = 0;
   updCombo();
 
-  cds.push({art:cur.art, cond:'poor'});
+  cds.push({art: cur.art, cond: 'poor'});
 
   active = false;
   $('timeout-overlay').style.display = 'flex';
@@ -966,7 +901,6 @@ function timeout() {
 // 揭曉答案
 function reveal() {
   active = false;
-
   clearInterval(tick);
 
   $('trow').classList.remove('danger');
@@ -979,7 +913,6 @@ function reveal() {
   $('b-title').textContent = cur.title;
   $('b-artist').textContent = cur.artist;
   $('b-meta').textContent = [cur.album, cur.year].filter(Boolean).join(' · ');
-
   $('banner').classList.add('show');
 
   $('type-sec').style.display = 'none';
@@ -988,7 +921,6 @@ function reveal() {
 
   const n = $('next-sec');
   n.style.display = 'block';
-
   n.innerHTML = `
     <button class="bevel go big nbtn" style="width:100%" onclick="next()">
       <i style="animation-duration:${CFG.REVEAL_MS}ms"></i>
@@ -1003,110 +935,94 @@ function reveal() {
 
 /* ==========================================
    09. 紀錄與結算 RESULT & HISTORY
-   負責儲存歷史成績、顯示最終結果
 ========================================== */
 
-// 儲存遊戲紀錄
-function saveHistory() {
-  const sec = Math.floor((Date.now() - startAt) / 1000),
-        t = String(Math.floor(sec / 60)).padStart(2, '0') +
-            ':' + String(sec % 60).padStart(2, '0');
+const HISTORY_KEY = 'song_king_solo_history';
 
+function saveHistory() {
   const gObj = grade(score);
 
   try {
-    let h = JSON.parse(
-      localStorage.getItem('song_king_solo_history') || '[]'
-    );
+    const h = JSON.parse(localStorage.getItem(HISTORY_KEY) || '[]');
 
     h.push({
       grade: gObj.k,
       title: gObj.title,
       score,
       combo: maxCombo,
-      time: t,
+      time: fmtTime(Math.floor((Date.now() - startAt) / 1000)),
       playlist: names[theme]
     });
 
     h.sort((a, b) => b.score - a.score);
-
-    localStorage.setItem(
-      'song_king_solo_history',
-      JSON.stringify(h.slice(0, 3))
-    );
-
+    localStorage.setItem(HISTORY_KEY, JSON.stringify(h.slice(0, 3)));
   } catch (e) {}
 
   loadHistory();
 }
 
-// 讀取歷史紀錄
 function loadHistory() {
   let h = [];
 
   try {
-    h = JSON.parse(
-      localStorage.getItem('song_king_solo_history') || '[]'
-    );
+    h = JSON.parse(localStorage.getItem(HISTORY_KEY) || '[]');
   } catch (e) {}
 
   // 固定顯示三個名額
   $('hist').innerHTML = Array.from({length: 3}, (_, i) => {
     const x = h[i];
 
-    // 有紀錄：顯示成績
     if (x) {
       return `
         <li class="hi">
-          <span>
-            <span class="g">${x.grade}級</span>
-            <b>🪙${x.score}</b> [${x.title}]
-          </span>
+          <span><span class="g">${x.grade}級</span><b>🪙${x.score}</b> [${x.title}]</span>
           <span>🔥${x.combo} · ⏱️${x.time} · ${x.playlist}</span>
         </li>
       `;
     }
 
-    // 沒紀錄：保留空位
     return `
       <li class="hi empty">
-        <span>
-          <span class="rank">0${i + 1}</span>
-          <span>尚無紀錄</span>
-        </span>
+        <span><span class="rank">0${i + 1}</span><span>尚無紀錄</span></span>
         <span>──────</span>
       </li>
     `;
   }).join('');
 }
 
-// 顯示結算畫面
 function showResult() {
   const g = grade(score),
         b = g.k,
-        t = g.title;
+        ratio = maxScore(total) > 0 ? Math.round(score / maxScore(total) * 100) : 0;
 
   show('m-result');
 
-  const mx = maxScore(total);
-  const ratio = mx > 0 ? Math.round((score / mx) * 100) : 0;
-
   $('r-score').textContent = score;
   $('r-combo').textContent = maxCombo;
+  $('r-time').textContent = fmtTime(Math.floor((Date.now() - startAt) / 1000));
   $('r-badge').textContent = b;
-  $('r-title').textContent = t;
-  $('rocket-pr-val').textContent = `PR ${ratio}`;
+  $('r-title').textContent = g.title;
+  $('rocket-pr-val').textContent = ratio;
 
-  setTimeout(() => {
-    $('rocket-fill').style.height = ratio + '%';
-    $('rocket-icon').style.bottom = ratio + '%';
-  }, 100);
+  // PR 圓環：先歸零再填滿，才有動畫
+  $('pr-gauge').style.setProperty('--pr', '0%');
+  setTimeout(() => $('pr-gauge').style.setProperty('--pr', ratio + '%'), 100);
 
-  const card = $('res-card'),
-        cf = $('conf');
+  // 專輯牆
+  $('gal').innerHTML = cds.map(c => `<div class="gp ${c.cond}"><img src="${c.art}" alt=""></div>`).join('');
 
+  // 評語
+  let d = g.desc;
+  if (usedChoice && score / maxScore() >= GRADES.find(x => x.k === 'S').min) {
+    d += '（本場使用了選擇題，評級上限為 A+）';
+  }
+  $('r-desc').textContent = d;
+
+  // 金光與紙花
+  $('res-card').classList.toggle('gold', b === 'SS' || b === 'SSS');
+
+  const cf = $('conf');
   cf.innerHTML = '';
-  card.classList.toggle('gold', b === 'SS' || b === 'SSS');
 
   if (['SSS', 'SS', 'S', 'A+', 'A'].includes(b)) {
     const cs = ['#d6246e', '#f5c518', '#19a7d8', '#4caf7d', '#fff'];
@@ -1123,57 +1039,45 @@ function showResult() {
       cf.appendChild(c);
     }
   }
-
-  $('gal').innerHTML = cds.map(c =>
-    `<div class="gp ${c.cond}"><img src="${c.art}" alt=""></div>`
-  ).join('');
-
-  let d = g.desc;
-
-  if (usedChoice && score / maxScore() >= GRADES.find(x => x.k === 'S').min) {
-    d += '（本場使用了選擇題，評級上限為 A+）';
-  }
-
-  $('r-desc').textContent = d;
 }
 
 
 /* ==========================================
-   10. 開發測試 TESTING
-   開發期間使用的測試功能
+   10. 開發測試 DEV
+   網址加 ?dev 才會顯示測試按鈕
 ========================================== */
 
-// 一鍵直接預覽結算畫面（包含 10 張模擬 CD）
+if (location.search.includes('dev')) {
+  $('test-btn').hidden = false;
+}
+
+// 用假資料預覽結算畫面（不影響正在進行的遊戲）
 function testResult() {
+  const backup = {score, maxCombo, startAt, cds, total, usedChoice};
+
+  // 用純色 SVG 當假封面，不依賴外部圖片
+  const cover = hue => 'data:image/svg+xml,' + encodeURIComponent(
+    `<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100"><rect width="100" height="100" fill="hsl(${hue},45%,45%)"/></svg>`
+  );
+  const conds = ['gem-mint','near-mint','good','gem-mint','near-mint','good','poor','gem-mint','near-mint','gem-mint'];
+
   score = 1280;
   maxCombo = 12;
-  startAt = Date.now() - 102000; // 模擬 1分42秒
-
-  // 10 張模擬專輯縮圖與不同稀有度狀態
-  cds = [
-    { art: 'https://is1-ssl.mzstatic.com/image/thumb/Music112/v4/2b/86/0a/2b860a48-4e89-137a-bc12-4c6e9a651912/mzi.vjldzjxy.jpg/600x600bb.jpg', cond: 'gem-mint' },
-    { art: 'https://is1-ssl.mzstatic.com/image/thumb/Music126/v4/7d/51/23/7d512345-6789-abcd-ef01-23456789abcd/source/600x600bb.jpg', cond: 'near-mint' },
-    { art: 'https://is1-ssl.mzstatic.com/image/thumb/Music115/v4/8b/6e/c3/8b6ec345-1234-5678-9abc-def012345678/source/600x600bb.jpg', cond: 'good' },
-    { art: 'https://is1-ssl.mzstatic.com/image/thumb/Music128/v4/9c/7f/d4/9c7fd456-2345-6789-abcd-ef01-23456789abcd/source/600x600bb.jpg', cond: 'gem-mint' },
-    { art: 'https://is1-ssl.mzstatic.com/image/thumb/Music114/v4/0d/80/e5/0d80e567-3456-789a-bcde-f0123456789a/source/600x600bb.jpg', cond: 'near-mint' },
-    { art: 'https://is1-ssl.mzstatic.com/image/thumb/Music125/v4/1a/2b/3c/1a2b3c4d-5e6f-7a8b-9c0d-1e2f3a4b5c6d/source/600x600bb.jpg', cond: 'good' },
-    { art: 'https://is1-ssl.mzstatic.com/image/thumb/Music118/v4/4d/5e/6f/4d5e6f7a-8b9c-0d1e-2f3a-4b5c6d7e8f9a/source/600x600bb.jpg', cond: 'poor' },
-    { art: 'https://is1-ssl.mzstatic.com/image/thumb/Music122/v4/7a/8b/9c/7a8b9c0d-1e2f-3a4b-5c6d-7e8f9a0b1c2d/source/600x600bb.jpg', cond: 'gem-mint' },
-    { art: 'https://is1-ssl.mzstatic.com/image/thumb/Music116/v4/0d/1e/2f/0d1e2f3a-4b5c-6d7e-8f9a-0b1c2d3e4f5a/source/600x600bb.jpg', cond: 'near-mint' },
-    { art: 'https://is1-ssl.mzstatic.com/image/thumb/Music120/v4/3a/4b/5c/3a4b5c6d-7e8f-9a0b-1c2d-3e4f5a6b7c8d/source/600x600bb.jpg', cond: 'gem-mint' }
-  ];
+  startAt = Date.now() - 102000;
+  usedChoice = false;
+  total = 10;
+  cds = conds.map((cond, i) => ({art: cover(i * 36), cond}));
 
   stopAll();
-
   document.querySelectorAll('.ov').forEach(m => m.style.display = 'none');
-
   showResult();
+
+  ({score, maxCombo, startAt, cds, total, usedChoice} = backup);
 }
 
 
 /* ==========================================
-   11. 初始化 INITIALIZATION
-   網頁載入後先讀取歷史紀錄
+   11. 初始化 INIT
 ========================================== */
 
 loadHistory();
