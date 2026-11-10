@@ -132,8 +132,8 @@
     <div class="rules">
       <p><b>🎵 猜歌：</b>輸入完整歌名（不分大小寫、空格）</p>
       <p><b>🪙 計分：</b>答題速度越快分數越多，連續答對再加碼</p>
-      <p><b>🎒 選擇卡：</b>讓題目變簡單！答錯會扣分哦</p>
-      <p><b>🎒 暫停卡：</b>爭取時間！每局可暫停 1 次</p>
+      <p><b>🎒 選擇卡：</b>讓題目變簡單！但分數也會變少哦</p>
+      <p><b>🎒 暫停卡：</b>每局可暫停 1 次，爭取思考時間！</p>
     </div>
   </div>
 </div>
@@ -1139,7 +1139,7 @@ function showResult() {
   // 評語
   let d = g.desc;
   if (usedChoice && score / maxScore() >= GRADES.find(x => x.k === 'S').min) {
-    d += '（本場使用了選擇題，評級上限為 A+）';
+    
   }
   $('r-desc').textContent = d;
 
