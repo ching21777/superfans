@@ -296,13 +296,15 @@ const PR_CFG = {
 };
 
 const GRADES = [
-  {k:'SSS', min:.90, clean:true, title:'絕頂聰明猜歌王', desc:'前奏一下就秒殺全場，猜歌王非你莫屬！'},
-  {k:'SS',  min:.80, clean:true, title:'行動點歌機',     desc:'聽歌量深不可測，你每天聽歌聽滿 24 小時嗎？'},
-  {k:'S',   min:.65, clean:true, title:'資深歌迷',       desc:'你是常出沒在搖滾區的鐵粉吧！'},
-  {k:'A+',  min:.55, title:'快手搶答王', desc:'旋律一響就知道，但歌名永遠卡在想不起來的那個字！'},
-  {k:'A',   min:.40, title:'音樂玩家',   desc:'哎呦不錯喔，換個歌單玩看看吧！'},
-  {k:'B',   min:1e-9, title:'猜歌初心者', desc:'多聽幾首就能踏出新手村了！'},
-  {k:'F',   min:0, title:'耳朵還在暖機', desc:'聽著聽著就忘記作答了，再挑戰一次吧！'}
+  {k:'SSS', min:.90, title:'傳奇鐵粉猜歌王', desc:'前奏一下就秒殺全場，猜歌王非你莫屬！'},
+  {k:'SS',  min:.80, title:'骨灰級粉絲',     desc:'你是電你是光你是唯一的神話。'},
+  {k:'S',   min:.65, title:'後援會團長',       desc:'如果舞台會說話，他一定喊得出你的名字。'},
+  {k:'A+',  min:.55, title:'行走的音樂資料庫',     desc:'主打歌、冷門曲都難不倒你！'},
+  {k:'A',   min:.40, title:'副歌哼唱專家',       desc:'旋律一響就知道，但歌名永遠卡在想不起來的那個字！'},
+  {k:'B',   min:.22, title:'入坑潛力股',     desc:'距離鐵粉又近了一步！'},
+  {k:'C',   min:.125, title:'路人粉',    desc:'還沒找到本命歌？再多聽幾首就有機會！'},
+  {k:'D',   min:1e-9, title:'全場應援王',    desc:'歌可以不認識，選項可不能冷落任何一個。'},
+  {k:'F',   min:0,    title:'佛系聽眾',  desc:'享受音樂才是終身大事。'}
 ];
 
 
@@ -438,7 +440,7 @@ function grade(s) {
   const mx = maxScore(),
         r = mx > 0 ? s / mx : 0;
 
-  return GRADES.find(g => r >= g.min && (!g.clean || !usedChoice));
+  return GRADES.find(g => r >= g.min);
 }
 
 // 每題答對分數：依答題次數遞減
