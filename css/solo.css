@@ -1442,12 +1442,11 @@ body {
   --pr: 0%;
   width: 56px;
   height: 56px;
-  padding: 4px;
-  border: 2px solid #D5D3D9;
+  padding: 6px;
+  border: 1px solid rgba(231,205,158,.35);
   border-radius: 50%;
-  background: conic-gradient(from -90deg, #A84D68 0 var(--pr), #77717C var(--pr) 100%);
-  box-shadow: 0 2px 5px rgba(0,0,0,.2), inset 0 1px 2px white;
-}
+  background: conic-gradient(#A84D68 0 var(--pr), #77717C var(--pr) 100%);
+  box-shadow: none;}
 
 .pr-gauge-inner {
   width: 100%;
@@ -1583,4 +1582,57 @@ button:focus:not(:focus-visible) { outline: none; }
 button:focus-visible {
   outline: 2px solid var(--purple-light);
   outline-offset: 3px;
+}
+
+/* ========================================
+   16. FLAT｜選單與視窗的按鈕（扁平，紅＋黑）
+   只作用在 .ov 裡面，遊戲畫面（.app）維持銀色立體
+======================================== */
+
+/* 主要：紅 */
+.ov .bevel.go {
+  background: linear-gradient(180deg, #D4465C 0%, #A9233B 100%);
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,.25),
+    0 3px 0 #581525,
+    0 4px 10px rgba(0,0,0,.3);
+}
+
+/* 次要與歌單：黑色金屬 */
+.ov .bevel:not(.go):not(.text),
+.ov .tb {
+  color: #F3ECEE;
+  background: linear-gradient(180deg, #4A484F 0%, #1E1D21 100%);
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,.22),
+    0 0 0 1px rgba(255,255,255,.1),
+    0 3px 0 #0B0B0D,
+    0 4px 10px rgba(0,0,0,.35);
+}
+
+/* 按下去 */
+.ov .bevel:not(.text):active:not(:disabled),
+.ov .tb:active:not(:disabled) {
+  transform: translateY(2px);
+  box-shadow: inset 0 2px 4px rgba(0,0,0,.3);
+}
+
+/* 結算頁：主要按鈕字級較小、字距拉開 */
+#m-result .bevel.go {
+  font-size: var(--fs-md);
+  letter-spacing: 2px;
+}
+
+/* 歌單選取狀態：紫色霓虹 */
+.tb:hover {
+  color: #F8F6FF;
+  background: linear-gradient(180deg, #8478BD 0%, #5C5190 100%);
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,.3),
+    0 0 0 1px rgba(255,255,255,.1),
+    0 3px 0 #30294E,
+    0 0 12px rgba(115,100,190,.3);
+}
+.tb:focus-visible {
+  /* 同樣使用紫色效果 */
 }
