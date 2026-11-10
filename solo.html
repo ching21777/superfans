@@ -275,13 +275,24 @@ const CFG = {
   FULL_AT: 15,
   COMBO_STEP: 11,
   COMBO_MAX: 99,
-  CHOICE_SPEED_RATE: .3,
+  CHOICE_SPEED_RATE: .5,
   CHOICE_COMBO_RATE: .5,
   CHOICE_BASE_RATE: .75,
   PAUSE_MAX: 1,
   CHOICE_COST: 0,
   MAX_TIME: 20,
   REVEAL_MS: 5000
+};
+
+/* ---- PR 表現指數設定 ---- */
+const PR_CFG = {
+  TOTAL: 100,
+
+  WEIGHT: {
+    CORRECT: 70,
+    SPEED: 15,
+    COMBO: 15
+  }
 };
 
 const GRADES = [
@@ -322,6 +333,11 @@ let score = 0,
     maxCombo = 0,
     cds = [],
     scoreRAF = null;
+
+// PR 專用數據
+let questionAttempts = 0,
+    prCorrect = 0,
+    prSpeed = 0;
 
 // 計時與暫停
 let reqId = 0,
@@ -373,13 +389,35 @@ function songPool() {
    04. 計分系統 SCORING
 ========================================== */
 
-function calcScore(isChoice, tLeft, comboNow, lostCombo) {
-  const base = Math.round(CFG.BASE * (isChoice ? CFG.CHOICE_BASE_RATE : 1));
+function calcScore(isChoice, tLeft, comboNow, lostCombo, attempts) {
+  // 依答題次數降低基本分
+  const rates = [1, 0.79, 0.57, 0.36, 0.14];
+  const attemptRate = rates[Math.min(attempts, 5) - 1] || 0.14;
 
-  const speed = Math.round(
-    CFG.SPEED * Math.min(1, tLeft / CFG.FULL_AT) * (isChoice ? CFG.CHOICE_SPEED_RATE : 1)
+  const base = Math.round(
+    CFG.BASE *
+    attemptRate *
+    (isChoice ? 0.5 : 1)
   );
 
+  // 速度分數
+  let speed = Math.round(
+    CFG.SPEED *
+    Math.min(1, tLeft / CFG.FULL_AT) *
+    (isChoice ? CFG.CHOICE_SPEED_RATE : 1)
+  );
+
+  // 選擇題答錯後，不給速度分數
+if (isChoice && attempts > 1) {
+  speed = 0;
+}
+
+// 自由輸入答錯後，速度分數最多一半
+if (!isChoice && attempts > 1) {
+  speed = Math.min(speed, Math.round(CFG.SPEED * 0.5));
+}
+
+  // 連擊分數
   const bonus = lostCombo ? 0 : Math.round(
     Math.min(CFG.COMBO_MAX, Math.max(0, comboNow - 1) * CFG.COMBO_STEP) *
     (isChoice ? CFG.CHOICE_COMBO_RATE : 1)
@@ -403,6 +441,38 @@ function grade(s) {
   return GRADES.find(g => r >= g.min && (!g.clean || !usedChoice));
 }
 
+// 每題答對分數：依答題次數遞減
+function calcCorrectPR(attempts) {
+  const base = PR_CFG.WEIGHT.CORRECT / total;
+  const rates = [1, 5.5 / 7, 4 / 7, 2.5 / 7, 1 / 7];
+
+  return base * (rates[Math.min(attempts, 5) - 1] || 0);
+}
+
+// 每題速度分數
+function calcSpeedPR(tLeft, attempts) {
+  const base = PR_CFG.WEIGHT.SPEED / total;
+  const elapsed = CFG.MAX_TIME - tLeft;
+
+  let points = base * Math.max(0, 1 - elapsed / CFG.MAX_TIME);
+
+  // 答錯後才答對，速度分數最多一半
+  if (attempts > 1) {
+    points = Math.min(points, base * 0.5);
+  }
+
+  return points;
+}
+
+// 計算目前 PR
+function calcPR() {
+  const comboPR = PR_CFG.WEIGHT.COMBO * maxCombo / total;
+
+  return Math.min(
+    PR_CFG.TOTAL,
+    prCorrect + prSpeed + comboPR
+  );
+}
 
 /* ==========================================
    05. 音訊與計時 AUDIO & TIMER
@@ -636,6 +706,10 @@ function begin(demo) {
   shown = 0;
   combo = 0;
   maxCombo = 0;
+  // 重置 PR 數據
+questionAttempts = 0;
+prCorrect = 0;
+prSpeed = 0;
   qDone = 0;
   qPtr = 0;
   cds = [];
@@ -737,6 +811,7 @@ async function loadQuestion() {
   choiceUsed = false;
   choiceMiss = false;
   isPaused = false;
+  questionAttempts = 0;
 
   $('trow').classList.remove('done');
   $('banner').classList.remove('show');
@@ -818,12 +893,21 @@ function submitAnswer() {
   const v = $('inp').value.trim();
   if (!v) return;
 
+  questionAttempts++;
+
   if (sanitize(v) === sanitize(cur.title)) {
     correct(false);
     return;
   }
 
-  setScore(Math.max(0, score - 10));
+  // 暫時中：答錯扣分機制
+  // setScore(Math.max(0, score - 10));
+
+  // 答錯立即中斷連擊
+  choiceMiss = true;
+  combo = 0;
+  updCombo();
+
   $('inp').value = '';
 
   const b = $('inp');
@@ -859,29 +943,34 @@ function toChoice() {
 
 $('ogrid').onclick = e => {
   const b = e.target.closest('.opt');
-  if (!b || !active || isPaused) return;
+  if (!b || !active || isPaused || b.disabled) return;
+
+  questionAttempts++;
 
   if (opts[+b.dataset.i] === cur.title) {
     correct(true);
     return;
   }
 
-  setScore(Math.max(0, score - 10));
+  // 暫時中：答錯扣分機制
+  // setScore(Math.max(0, score - 10));
   b.disabled = true;
   b.textContent += ' ✖';
 
-  if (!choiceMiss) {
-    choiceMiss = true;
-    combo = 0;
-    updCombo();
-  }
+  // 答錯立即中斷連擊
+  choiceMiss = true;
+  combo = 0;
+  updCombo();
 };
 
 function correct(isChoice) {
   combo++;
   maxCombo = Math.max(maxCombo, combo);
 
-  const s = calcScore(isChoice, timeLeft, combo, choiceMiss);
+  const s = calcScore(isChoice, timeLeft, combo, choiceMiss, questionAttempts);
+  // 累積 PR 的答對與速度分數
+prCorrect += calcCorrectPR(questionAttempts);
+prSpeed += calcSpeedPR(timeLeft, questionAttempts);
 
   // 專輯品質：剩餘時間越多越好
   let cond = 'near-mint';
