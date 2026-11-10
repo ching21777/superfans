@@ -213,7 +213,7 @@ body {
 }
 
 /* 歌單選取狀態：紫色霓虹 */
-.tb.sel {
+.tb:hover {
   color: #F8F6FF;
   background: linear-gradient(180deg, #B7B1D9 0%, #7165A9 45%, #484071 100%);
   box-shadow:
@@ -222,6 +222,9 @@ body {
     0 1px 0 rgba(255,255,255,.2),
     0 4px 0 #30294E,
     0 0 12px rgba(115,100,190,.3);
+}
+.tb:focus-visible {
+  /* 同樣使用紫色效果 */
 }
 
 /* HOME：低調金屬 */
@@ -1216,6 +1219,16 @@ body {
   color: #713B50;
 }
 
+/* 歌單畫面副標題 */
+.theme-subtitle {
+  margin-top: -6px;
+  margin-bottom: 18px;
+  font-size: var(--fs-sm);
+  font-weight: 500;
+  color: var(--text-sub);
+  text-align: center;
+  letter-spacing: 1px;
+}
 
 /* ========================================
    12. RESULT｜結算畫面

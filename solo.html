@@ -114,7 +114,7 @@
     </section>
 
     <div class="col">
-      <button class="bevel go btn-lg" onclick="toTheme()">GAME START ➔</button>
+      <button class="bevel go btn-lg" onclick="toTheme()">START</button>
       <button class="bevel" onclick="startDemo()">試玩模式</button>
     </div>
 
@@ -138,19 +138,26 @@
   </div>
 </div>
 
+
 <!-- 選歌單 -->
 <div class="ov" id="m-theme">
   <div class="mc">
+
+    <button class="x" onclick="hide('m-theme'); show('m-start')">✖</button>
+
     <div class="logo">Super Fans</div>
+    <div class="theme-subtitle">選擇歌單，開始挑戰</div>
+
     <div class="col">
-      <button class="tb sel" data-k="drama" onclick="pickTheme('drama')">經典偶像劇金曲 ✬</button>
+      <button class="tb" data-k="drama" onclick="pickTheme('drama')">經典偶像劇金曲 ✬</button>
       <button class="tb" data-k="she" onclick="pickTheme('she')">S.H.E 特輯 ✬✬✬</button>
       <button class="tb" data-k="fish" onclick="pickTheme('fish')">梁靜茹特輯 ✬✬✬✬✬</button>
       <button class="tb" data-k="vagabond" onclick="pickTheme('vagabond')">2026 浪人祭 ✬✬✬✬✬✬✬✬✬</button>
     </div>
-    <button class="bevel go btn-lg" onclick="startGame()">START</button>
+
   </div>
 </div>
+
 
 <!-- 試玩結束 -->
 <div class="ov" id="m-demo">
@@ -607,7 +614,7 @@ function countdown(cb) {
 
 function pickTheme(k) {
   theme = k;
-  document.querySelectorAll('.tb').forEach(b => b.classList.toggle('sel', b.dataset.k === k));
+  startGame();
 }
 
 function begin(demo) {
