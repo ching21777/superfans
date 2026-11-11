@@ -344,6 +344,9 @@ let questionAttempts = 0,
 // 計時與暫停
 let reqId = 0,
     startAt = 0,
+    totalAnswerTime = 0,
+    questionStartAt = 0,
+    questionElapsed = 0,
     timeLeft = CFG.MAX_TIME,
     endAt = 0,
     tick = null,
@@ -491,6 +494,21 @@ function unlockAudio() {
   if (p) p.then(() => audio.pause()).catch(() => {});
 }
 
+// 累計目前這一段作答時間
+function accumulateQuestionTime() {
+  if (questionStartAt) {
+    questionElapsed += (Date.now() - questionStartAt) / 1000;
+    questionStartAt = 0;
+  }
+}
+
+// 結束本題計時，加入整局總時間
+function finishQuestionTime() {
+  accumulateQuestionTime();
+  totalAnswerTime += questionElapsed;
+  questionElapsed = 0;
+}
+
 function runTimer() {
   clearInterval(tick);
   endAt = Date.now() + timeLeft * 1000;
@@ -520,11 +538,14 @@ function stopAll() {
 function playNow() {
   return audio.play()
     .then(() => {
-      $('tap').style.display = 'none';
-      $('disc').classList.add('spin');
-      $('cd').classList.add('on');
-      runTimer();
-    })
+  $('tap').style.display = 'none';
+  $('disc').classList.add('spin');
+  $('cd').classList.add('on');
+
+  questionStartAt = Date.now();
+
+  runTimer();
+})
     .catch(() => {
       $('tap').style.display = 'flex';
     });
@@ -541,6 +562,7 @@ function doPause() {
   updPauseBtn();
 
   isPaused = true;
+  accumulateQuestionTime();
   clearInterval(tick);
   audio.pause();
   $('disc').classList.remove('spin');
@@ -724,6 +746,9 @@ prSpeed = 0;
   renderProg();
 
   startAt = Date.now();
+  totalAnswerTime = 0;
+  questionElapsed = 0;
+  questionStartAt = 0;
 
   if (demo) loadQuestion();
   else countdown(loadQuestion);
@@ -739,20 +764,11 @@ function toTheme() {
 }
 
 function confirmQuit() {
-  wasRunning = active && !isPaused;
-
-  if (wasRunning) {
-    clearInterval(tick);
-    audio.pause();
-    $('disc').classList.remove('spin');
-  }
-
   show('m-confirm');
 }
 
 function cancelQuit() {
   hide('m-confirm');
-  if (wasRunning) playNow();
 }
 
 function doQuit() {
@@ -966,6 +982,8 @@ $('ogrid').onclick = e => {
 };
 
 function correct(isChoice) {
+  finishQuestionTime();
+
   combo++;
   maxCombo = Math.max(maxCombo, combo);
 
@@ -991,6 +1009,7 @@ prSpeed += calcSpeedPR(timeLeft, questionAttempts);
 }
 
 function timeout() {
+  finishQuestionTime();
   combo = 0;
   updCombo();
 
@@ -1057,7 +1076,7 @@ function saveHistory() {
       title: gObj.title,
       score,
       combo: maxCombo,
-      time: fmtTime(Math.floor((Date.now() - startAt) / 1000)),
+      time: fmtTime(Math.floor(totalAnswerTime)),
       playlist: names[theme]
     });
 
@@ -1124,7 +1143,7 @@ function showResult() {
 
   $('r-score').textContent = score;
   $('r-combo').textContent = maxCombo;
-  $('r-time').textContent = fmtTime(Math.floor((Date.now() - startAt) / 1000));
+  $('r-time').textContent = fmtTime(Math.floor(totalAnswerTime));
   $('r-badge').textContent = b;
   $('r-title').textContent = g.title;
   $('rocket-pr-val').textContent = ratio;
@@ -1199,6 +1218,127 @@ function testResult() {
 
   ({score, maxCombo, startAt, cds, total, usedChoice} = backup);
 }
+
+
+// 自動測試作答時間計算
+function testTimer() {
+  const backup = {
+    totalAnswerTime,
+    questionStartAt,
+    questionElapsed,
+    now: Date.now
+  };
+
+  let mockNow = 0;
+  Date.now = () => mockNow;
+
+  const results = [];
+
+  function check(name, condition, detail) {
+    results.push({
+      測試項目: name,
+      結果: condition ? 'PASS' : 'FAIL',
+      說明: detail
+    });
+  }
+
+  try {
+    // 測試 1：正常作答 5 秒
+    totalAnswerTime = 0;
+    questionElapsed = 0;
+    questionStartAt = 1000;
+    mockNow = 6000;
+
+    finishQuestionTime();
+
+    check(
+      '正常作答',
+      totalAnswerTime === 5,
+      `預期 5 秒，實際 ${totalAnswerTime} 秒`
+    );
+
+    // 測試 2：作答 5 秒，暫停，再作答 3 秒
+    totalAnswerTime = 0;
+    questionElapsed = 0;
+    questionStartAt = 1000;
+    mockNow = 6000;
+
+    accumulateQuestionTime();
+
+    questionStartAt = 9000;
+    mockNow = 12000;
+
+    finishQuestionTime();
+
+    check(
+      '暫停後恢復',
+      totalAnswerTime === 8,
+      `預期 8 秒，實際 ${totalAnswerTime} 秒`
+    );
+
+    // 測試 3：HOME 開啟期間仍然累積 3 秒
+    totalAnswerTime = 0;
+    questionElapsed = 0;
+    questionStartAt = 1000;
+    mockNow = 9000;
+
+    // 模擬 HOME 視窗停留 3 秒，不呼叫暫停函式
+    mockNow = 12000;
+
+    finishQuestionTime();
+
+    check(
+      'HOME 期間持續計時',
+      totalAnswerTime === 11,
+      `預期 11 秒，實際 ${totalAnswerTime} 秒`
+    );
+
+    // 測試 4：揭曉答案後等待 5 秒不計時
+    totalAnswerTime = 0;
+    questionElapsed = 0;
+    questionStartAt = 1000;
+    mockNow = 6000;
+
+    finishQuestionTime();
+
+    mockNow = 11000;
+
+    check(
+      '揭曉等待不計時',
+      totalAnswerTime === 5,
+      `預期 5 秒，實際 ${totalAnswerTime} 秒`
+    );
+
+    // 測試 5：下一題繼續累加，不重複計算
+    questionElapsed = 0;
+    questionStartAt = 11000;
+    mockNow = 14000;
+
+    finishQuestionTime();
+
+    check(
+      '跨題累積',
+      totalAnswerTime === 8,
+      `預期 8 秒，實際 ${totalAnswerTime} 秒`
+    );
+
+  } finally {
+    // 還原原本的時間與遊戲狀態
+    Date.now = backup.now;
+    totalAnswerTime = backup.totalAnswerTime;
+    questionStartAt = backup.questionStartAt;
+    questionElapsed = backup.questionElapsed;
+  }
+
+  console.table(results);
+
+  const passed = results.filter(x => x.結果 === 'PASS').length;
+
+  console.log(`計時測試完成：${passed}/${results.length} 項通過`);
+
+  return results;
+}
+
 
 
 /* ==========================================
