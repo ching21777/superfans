@@ -58,7 +58,7 @@
   --gold-glow: rgba(217,180,91,.45);
 
   /* 字體 */
-  --serif: "Noto Serif TC", "Source Han Serif TC", "Songti TC", "PMingLiU", serif;
+  --serif:"Source Han Serif TC", "Noto Serif TC", "Songti TC", "PMingLiU", serif;
   --sans: -apple-system, BlinkMacSystemFont, "PingFang TC", "Noto Sans TC", "Microsoft JhengHei", sans-serif;
 
   /* 字級 */
@@ -339,15 +339,15 @@ body {
   position: relative;
   display: inline-block;
   width: fit-content;
-  font-family: var(--serif);
+  font-family: 'Noto Serif TC', var(--serif), serif;
   font-style: italic;
-  font-weight: 900;
+  font-weight: 700;
   font-size: clamp(1.3rem, 2.8vw, 2rem);
   letter-spacing: 1px;
   color: transparent;
   background-image:
-    radial-gradient(circle, #FFFFFF 0 0.7px, transparent 1.2px),
-    radial-gradient(circle, rgba(255,255,255,.8) 0 0.5px, transparent 1px),
+    radial-gradient(circle, #FFFFFF 0 1px, transparent 1.5px),
+  radial-gradient(circle, rgba(255,255,255,.8) 0 0.8px, transparent 1.2px),
     linear-gradient(175deg,
       #FFFFFF 0%, #B8B9C2 12%, #FFFFFF 20%, #777985 31%, #F9F9FA 40%, #A4A5AF 49%,
       #FFFFFF 55%, #777985 67%, #E5E5E9 78%, #FFFFFF 88%, #92939D 100%);

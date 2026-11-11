@@ -4,6 +4,12 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover, interactive-widget=resizes-content">
 <title>Super Fans｜鐵粉猜歌王</title>
+
+<!-- Google Fonts：Logo 專用字型 -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@400;500;600;700&display=swap" rel="stylesheet">
+
 <link rel="stylesheet" href="css/solo.css">
 </head>
 <body>
@@ -945,6 +951,10 @@ function submitAnswer() {
   b.classList.remove('shake');
   void b.offsetWidth;
   b.classList.add('shake');
+
+  if (window.matchMedia('(hover: none) and (pointer: coarse)').matches) {
+  b.focus({ preventScroll: true });
+}
 }
 
 // 改選擇題
