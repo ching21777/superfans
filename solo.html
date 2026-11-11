@@ -82,7 +82,7 @@
 
     <div id="type-sec">
       <div class="irow">
-        <input type="text" id="inp" placeholder="輸入完整歌名（不分大小寫、空格）" autocomplete="off" onkeydown="if(event.key==='Enter')submitAnswer()">
+        <input type="text" id="inp" placeholder="輸入完整歌名（不分大小寫、空格）" autocomplete="off" onkeydown="if(event.key==='Enter' && !event.isComposing)submitAnswer()">
         <button class="bevel go" style="padding:0 var(--sp-4)" onclick="submitAnswer()">送出</button>
       </div>
     </div>
@@ -149,10 +149,10 @@
     <div class="theme-subtitle">選擇歌單，開始挑戰</div>
 
     <div class="col">
-      <button class="tb" data-k="drama" onclick="pickTheme('drama')">經典偶像劇金曲 ✬</button>
-      <button class="tb" data-k="she" onclick="pickTheme('she')">S.H.E 特輯 ✬✬✬</button>
-      <button class="tb" data-k="fish" onclick="pickTheme('fish')">梁靜茹特輯 ✬✬✬✬✬</button>
-      <button class="tb" data-k="vagabond" onclick="pickTheme('vagabond')">2026 浪人祭 ✬✬✬✬✬✬✬✬✬</button>
+      <button class="tb" data-k="drama" onclick="pickTheme('drama')"> ✬｜ 那些年你看過的經典偶像劇 ➔</button>
+      <button class="tb" data-k="she" onclick="pickTheme('she')">✬✬｜ S.H.E 鐵粉爭霸戰 ➔</button>
+      <button class="tb" data-k="fish" onclick="pickTheme('fish')">✬✬｜ 梁靜茹精選情歌 ➔</button>
+      <button class="tb" data-k="vagabond" onclick="pickTheme('vagabond')">✬✬✬｜走啊聽團！2026 浪人祭 ➔</button>
     </div>
 
   </div>
@@ -1096,10 +1096,10 @@ function loadHistory() {
 
 // 歌單簡稱對照表
 const playlistShort = {
-  "經典偶像劇金曲": "偶像劇",
-  "S.H.E 特輯": "S.H.E",
-  "梁靜茹特輯": "梁靜茹",
-  "2026 浪人祭": "浪人祭"
+  '經典偶像劇': '偶像劇金曲',
+  'S.H.E 特輯': 'S.H.E 精選',
+  '梁靜茹特輯': '梁靜茹精選',
+  '2026 浪人祭': '浪人祭合輯'
 };
 
 
