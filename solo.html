@@ -2,7 +2,7 @@
 <html lang="zh-TW">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover, interactive-widget=resizes-content">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
 <title>Super Fans｜鐵粉猜歌王</title>
 
 <!-- Google Fonts：Logo 專用字型 -->
@@ -88,11 +88,11 @@
 
     <div id="type-sec">
       <div class="irow">
-        <input type="text" id="inp" placeholder="輸入完整歌名（不分大小寫、空格）" autocomplete="off" onkeydown="if(event.key==='Enter' && !event.isComposing)submitAnswer()">
+        <input type="text" id="inp" placeholder="輸入完整歌名（不分大小寫、空格）" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false" enterkeyhint="send">
         <button class="bevel go" style="padding:0 var(--sp-4)" onclick="submitAnswer()">送出</button>
       </div>
     </div>
-
+    
     <div id="choice-sec" style="display:none"><div class="ogrid" id="ogrid"></div></div>
 
     <div class="items" id="items">
@@ -124,6 +124,10 @@
       <button class="bevel" onclick="startDemo()">試玩模式</button>
     </div>
 
+    <div class="copyright-notice">
+  Song Source: Apple Music<br>
+  Personal Project ． Beta Version<br>
+</div>
 
     <!-- 開發用：網址加 ?dev 才會顯示 -->
     <button class="bevel btn-sm" id="test-btn" hidden onclick="testResult()">[test] 預覽結算畫面</button>
@@ -212,6 +216,7 @@
     </div>
   </div>
 </div>
+
 
 
 <!-- ==================== 結算畫面 ==================== -->
@@ -305,11 +310,11 @@ const GRADES = [
   {k:'SSS', min:.90, title:'傳奇鐵粉猜歌王', desc:'前奏一下就秒殺全場，猜歌王非你莫屬！'},
   {k:'SS',  min:.80, title:'骨灰級粉絲',     desc:'你是電你是光你是唯一的神話。'},
   {k:'S',   min:.65, title:'後援會團長',       desc:'如果舞台會說話，他一定喊得出你的名字。'},
-  {k:'A+',  min:.55, title:'行走的音樂資料庫',     desc:'主打歌、冷門曲都難不倒你！'},
-  {k:'A',   min:.40, title:'副歌哼唱專家',       desc:'旋律一響就知道，但歌名永遠卡在想不起來的那個字！'},
-  {k:'B',   min:.22, title:'入坑潛力股',     desc:'距離鐵粉又近了一步！'},
-  {k:'C',   min:.125, title:'路人粉',    desc:'還沒找到本命歌？再多聽幾首就有機會！'},
-  {k:'D',   min:1e-9, title:'全場應援王',    desc:'歌可以不認識，選項可不能冷落任何一個。'},
+  {k:'A+',  min:.55, title:'行走的音樂資料庫',     desc:'主打歌、B 面歌都難不倒你！'},
+  {k:'A',   min:.40, title:'副歌哼唱專家',       desc:'旋律一響就知道，歌名永遠卡在嘴邊：「欸就那首啊～」'},
+  {k:'B',   min:.22, title:'入坑潛力股',     desc:'一隻腳已經踏進坑裡，再聽幾張專輯就回不去囉！'},
+  {k:'C',   min:.125, title:'全場應援王',    desc:'歌可以不認識，選項可不能冷落任何一個。'},
+  {k:'D',   min:1e-9, title:'路人粉',    desc:'本命歌還在路上，先把歌單從頭循環一遍吧！'},
   {k:'F',   min:0,    title:'佛系聽眾',  desc:'享受音樂才是終身大事。'}
 ];
 
@@ -1368,7 +1373,75 @@ function testTimer() {
    11. 初始化 INIT
 ========================================== */
 
+// 輸入法選字的 Enter 不能當成送出
+// iOS Safari 的 compositionend 會比 keydown 先觸發，所以 isComposing 已經是 false，
+// 要靠 keyCode 229 與「剛結束組字」的時間差一起擋
+let composing = false,
+    compEndAt = 0;
+
+$('inp').addEventListener('compositionstart', () => { composing = true; });
+
+$('inp').addEventListener('compositionend', () => {
+  composing = false;
+  compEndAt = Date.now();
+});
+
+$('inp').addEventListener('keydown', e => {
+  if (e.key !== 'Enter') return;
+
+  if (e.isComposing || e.keyCode === 229 || composing || Date.now() - compEndAt < 80) return;
+
+  e.preventDefault();
+  submitAnswer();
+});
+
+// 依裝置切換輸入提示
+const isMobile = window.matchMedia('(hover: none) and (pointer: coarse)').matches;
+
+$('inp').placeholder = isMobile
+  ? '輸入完整歌名'
+  : '輸入完整歌名（不分大小寫、空格）';
+
 loadHistory();
+
+
+/* ==========================================
+   12. 手機：鍵盤處理（只用 visualViewport）
+========================================== */
+
+(() => {
+  const root = document.documentElement;
+  const vv = window.visualViewport;
+  const app = document.querySelector('.app');
+  const inp = $('inp');
+
+  function updateKeyboard() {
+    if (!vv) return;
+
+    // 鍵盤高度 = 版面視窗高 − 可視視窗高 − 可視視窗上方位移
+    const inset = Math.max(0, Math.round(window.innerHeight - vv.height - vv.offsetTop));
+
+    // 使用者雙指縮放時 vv.height 也會變小，不能當成鍵盤
+    const zoomed = vv.scale > 1.01;
+
+    // 只有輸入框有焦點時，才算鍵盤開啟
+    const open = !zoomed && inset > 120 && document.activeElement === inp;
+
+    root.style.setProperty('--keyboard-inset', open ? inset + 'px' : '0px');
+    app?.classList.toggle('keyboard-open', open);
+  }
+
+  updateKeyboard();
+
+  if (vv) {
+    vv.addEventListener('resize', updateKeyboard);
+    vv.addEventListener('scroll', updateKeyboard);
+  }
+  inp.addEventListener('focus', updateKeyboard);
+  inp.addEventListener('blur', updateKeyboard);
+})();
+
+
 </script>
 </body>
 </html>

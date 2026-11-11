@@ -613,8 +613,6 @@ body {
   aspect-ratio: 1.3;
 }
 
-.stage.rev .cw { max-height: 150px; }
-
 .cd {
   position: absolute;
   top: 3%;
@@ -1066,6 +1064,16 @@ body {
    11. MENU｜主選單與規則視窗
    酒紅 × 香檳金 × 珍珠銀
 ======================================== */
+
+.copyright-notice {
+  margin: 12px auto 0;
+  padding: 0 16px 12px;
+  font-size: 10px;
+  line-height: 1.6;
+  color: rgba(255, 255, 255, 0.4);
+  text-align: center;
+  letter-spacing: 0.3px;
+}
 
 #m-start .mc {
   max-height: none;
@@ -1686,4 +1694,88 @@ button:focus-visible {
 }
 .tb:focus-visible {
   /* 同樣使用紫色效果 */
+}
+
+
+/* ========================================
+   17. MOBILE｜手機操作與鍵盤適配
+======================================== */
+
+@media (max-width: 519px) {
+
+  /* 手機鍵盤：依實際可視區域調整遊戲容器 */
+  .app {
+  position: fixed;
+  top: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  height: 100vh;
+  height: 100dvh;
+  min-height: 0;
+  overflow: hidden;
+}
+
+/* 手機版：三個答題階段統一唱片尺寸 */
+.cw {
+  max-height: 150px;
+}
+  /* 進度專輯：縮小為方形標記 */
+  .progress-grid {
+    align-items: flex-start;
+  }
+
+  .progress-slot {
+    flex: 0 0 36px;
+    width: 36px;
+    height: 36px;
+    max-width: none;
+    aspect-ratio: 1;
+  }
+
+  /* 唱片舞台：優先使用剩餘空間 */
+  .stage {
+    flex: 1 1 0;
+    min-height: 0;
+    margin-bottom: 0;
+  }
+
+  .cwrap {
+    min-height: 0;
+  }
+
+  /* 下一題：至少 44px 高 */
+  .nbtn {
+    min-height: 44px;
+    padding: 10px 16px;
+  }
+
+  /* HOME：加大點擊範圍 */
+  .quit-btn {
+    min-width: 64px;
+    min-height: 44px;
+    padding: 8px 12px;
+    font-size: var(--fs-sm);
+  }
+
+  /* 規則 ⓘ：30px → 44px */
+  .rules-open {
+    width: 44px;
+    height: 44px;
+  }
+
+  .rules-open svg {
+    width: 22px;
+    height: 22px;
+  }
+}
+
+
+/* 手機鍵盤開啟：輸入區留在原排版位置，只用 transform 上移到鍵盤上方 */
+@media (max-width: 519px) {
+  .app.keyboard-open .ibox {
+    z-index: 20;
+    transform: translateY(
+      calc(-1 * var(--keyboard-inset, 0px) + env(safe-area-inset-bottom, 0px))
+    );
+  }
 }
