@@ -145,6 +145,19 @@ body {
 
 .col { display: flex; flex-direction: column; gap: var(--sp-2); }
 
+/* ---- 遊戲介面：禁止文字選取 ---- */
+.app,
+.ov,
+#cdown {
+  -webkit-user-select: none;
+  user-select: none;
+}
+
+/* 輸入框保留正常選取與複製 */
+#inp {
+  -webkit-user-select: text;
+  user-select: text;
+}
 
 /* ========================================
    03. COMPONENTS｜共用元件
@@ -695,7 +708,7 @@ body {
   gap: 2px;
   text-align: center;
   border-radius: var(--r-md);
-  cursor: pointer;
+  cursor: default;
   animation: pop var(--t-base) cubic-bezier(.2,1.4,.4,1);
 }
 

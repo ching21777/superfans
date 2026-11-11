@@ -70,7 +70,7 @@
       <div class="timeout-sub">時間到！</div>
     </div>
 
-    <div class="banner" id="banner" onclick="next()">
+    <div class="banner" id="banner">
       <b id="b-title"></b><span id="b-artist"></span><small id="b-meta"></small>
     </div>
 
@@ -370,6 +370,13 @@ const hide = id => $(id).style.display = 'none';
 const uniq = a => [...new Set(a)];
 const shuffle = a => a.sort(() => Math.random() - .5);
 
+// 桌面版自動聚焦輸入框
+function focusInput() {
+  if (window.matchMedia('(hover: hover) and (pointer: fine)').matches) {
+    $('inp').focus({ preventScroll: true });
+  }
+}
+
 // 統一文字格式，方便比對歌名
 function sanitize(s) {
   return (s || '').toLowerCase()
@@ -574,6 +581,8 @@ function doPause() {
 function resumePause() {
   isPaused = false;
   hide('m-pause');
+
+  focusInput();
   playNow();
 }
 
@@ -799,6 +808,8 @@ loadQuestion();
 }
 
 function finish() {
+  $('inp').blur();
+
   stopAll();
   renderProg();
 
@@ -843,7 +854,7 @@ async function loadQuestion() {
   $('stage').classList.remove('rev');
   $('inp').value = '';
   $('inp').classList.remove('shake');
-  $('inp').focus();
+
   $('tap').style.display = 'none';
 
   $('choice-btn').disabled = false;
@@ -892,7 +903,9 @@ async function loadQuestion() {
         audio.currentTime = 0;
 
         active = true;
-        playNow();
+
+        focusInput();
+        playNow();;
         return;
       }
     } catch (e) {
