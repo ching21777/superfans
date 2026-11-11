@@ -1,0 +1,993 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Who's the Song King｜誰是猜歌王 - 練等模式</title>
+<style>
+:root{
+  --cobalt:#1b2a6b; --cobalt-d:#101a4a; --paper:#f6f1e4; --paper-d:#e6dfcb; --ink:#1a1a2e;
+  --magenta:#d6246e; --cyan:#19a7d8; --yellow:#f5c518; --muted:#9aa5d6;
+  --serif:"Noto Serif TC","Source Han Serif TC","Songti TC","PMingLiU",serif;
+  --sans:-apple-system,BlinkMacSystemFont,"PingFang TC","Noto Sans TC","Microsoft JhengHei",sans-serif;
+}
+*{box-sizing:border-box;margin:0;padding:0;font-family:var(--sans);-webkit-tap-highlight-color:transparent;}
+html,body{height:100%}
+body{
+  height:100vh;height:100dvh;display:flex;flex-direction:column;overflow:hidden;color:var(--ink);
+  background:radial-gradient(circle at 1px 1px,rgba(255,255,255,.07) 1.2px,transparent 1.5px) 0 0/10px 10px,
+              radial-gradient(ellipse 80% 60% at 50% 0%,#2b3f9a,var(--cobalt) 65%,var(--cobalt-d));
+}
+
+/* Masthead */
+.mast{flex:none;display:flex;align-items:center;justify-content:space-between;gap:16px;padding:10px clamp(20px,3vw,44px)}
+.logo{font-family:var(--serif);font-style:italic;font-weight:900;font-size:clamp(1.6rem,3.4vw,2.6rem);color:var(--paper);
+  text-shadow:2px 2px 0 var(--magenta),4px 4px 0 var(--cobalt-d);letter-spacing:1px}
+.logo small{font-family:var(--serif);font-style:normal;font-size:.42em;font-weight:700;color:var(--yellow);text-shadow:none;margin-left:14px;letter-spacing:4px}
+.mode-badge{background:var(--yellow);color:var(--ink);font-weight:800;font-size:.85rem;padding:4px 12px;border-radius:999px;border:1.5px solid var(--ink)}
+
+/* Three-column stage */
+.grid{flex:1;min-height:0;display:grid;grid-template-columns:minmax(0,1fr) auto minmax(0,1fr);gap:clamp(14px,1.8vw,30px);padding:6px clamp(20px,3vw,44px) 14px;align-items:center}
+.card{background:var(--paper);border:2px solid var(--ink);border-radius:4px;box-shadow:6px 6px 0 rgba(8,12,40,.45);overflow:hidden}
+.card-h{padding:8px 16px;font-family:var(--serif);font-weight:900;font-size:1.15rem;letter-spacing:3px;color:var(--paper);background:var(--magenta);border-bottom:2px solid var(--ink)}
+.card-h.cy{background:var(--cyan);color:var(--ink)}
+
+/* Left: CD shelf */
+.left{align-self:start;justify-self:end;width:clamp(220px,34vh,340px);display:flex;flex-direction:column;gap:16px}
+.cats{display:flex;flex-wrap:wrap;gap:6px;padding:8px 10px;border-bottom:2px dashed #b9b19a}
+.cat{font-size:.78rem;font-weight:700;padding:3px 10px;border:1.5px solid var(--ink);border-radius:999px;background:transparent;color:var(--ink);cursor:pointer}
+.cat:hover{background:#e6dfcb}
+.cat.active{background:var(--ink);color:var(--paper)}
+.shelf{display:grid;grid-template-columns:repeat(5,1fr);gap:6px;padding:10px;background:#e8e1cc;box-shadow:inset 0 3px 6px rgba(0,0,0,.15)}
+.slot{position:relative;aspect-ratio:1;border:1px dashed #b3ab94;border-radius:2px;overflow:hidden;}
+.slot img{width:100%;height:100%;object-fit:cover;display:block}
+.pool{padding:6px 12px 8px;font-size:.8rem;color:#6b6b80;text-align:right}
+
+/* CD 品相 */
+.slot.gem-mint { border: 2px solid var(--yellow); box-shadow: 0 0 8px var(--yellow); }
+.slot.gem-mint::after { content:"💎"; position:absolute; right:1px; bottom:1px; font-size:0.6rem; text-shadow:0 0 2px #000; }
+.slot.near-mint { border: 1.5px solid var(--ink); box-shadow: 2px 2px 0 rgba(8,12,40,.35); }
+.slot.good { filter: sepia(30%) brightness(0.9); border: 1px solid #777; }
+.slot.poor { filter: grayscale(80%) sepia(50%) brightness(0.6); opacity: 0.75; }
+
+/* Center stage */
+.center{display:flex;flex-direction:column;align-items:center;gap:8px;justify-content:center;}
+.qhead{display:flex;align-items:baseline;justify-content:space-between;width:100%;min-height:2.2rem;padding:0 4px}
+.qno{font-family:var(--serif);font-weight:900;font-size:clamp(1.5rem,3.5vh,2.4rem);color:var(--paper);text-shadow:2px 2px 0 var(--magenta)}
+.qno span{font-size:.55em;color:var(--muted);margin-left:6px;text-shadow:none}
+
+.status-indicators{display:flex;align-items:center;gap:14px;}
+.live-score{font-family:var(--serif);font-size:1.2rem;font-weight:900;color:var(--paper);text-shadow:2px 2px 0 var(--magenta);transition:transform .2s ease;}
+.live-score.bump{animation:scoreBump .4s cubic-bezier(.2,1.6,.4,1);}
+@keyframes scoreBump{ 0%{transform:scale(1)} 50%{transform:scale(1.4);color:var(--yellow)} 100%{transform:scale(1)} }
+
+.combo-display{font-size:1.1rem;font-weight:900;color:var(--yellow);text-shadow:1.5px 1.5px 0 var(--ink);transition:transform .2s ease;}
+.combo-display.pop{animation:comboPop .35s cubic-bezier(.2,1.6,.4,1);}
+@keyframes comboPop{ 0%{transform:scale(1)} 50%{transform:scale(1.35);color:#fff} 100%{transform:scale(1)} }
+
+/* Timer row */
+.timer-flex-row{width:100%;display:flex;align-items:center;gap:12px;}
+.timer-container{flex:1;height:12px;background:#fff;border:2px solid var(--ink);border-radius:3px;overflow:hidden}
+.timer-bar{height:100%;width:100%;background:var(--cyan);transition:width linear}
+.timer-number{font-family:var(--serif);font-weight:900;font-size:1.2rem;color:var(--paper);min-width:3.2ch;text-align:right;text-shadow:1px 1px 0 var(--ink)}
+
+@keyframes shakeTimer {
+  0% { transform: translateX(0); }
+  25% { transform: translateX(-4px); }
+  50% { transform: translateX(4px); }
+  75% { transform: translateX(-3px); }
+  100% { transform: translateX(0); }
+}
+.timer-flex-row.danger-shake { animation: shakeTimer 0.25s infinite; }
+.timer-flex-row.danger-shake .timer-bar { background: var(--magenta) !important; }
+.timer-flex-row.danger-shake .timer-number { color: var(--yellow); }
+
+/* 固定專輯外框大小 */
+.case-wrap{--s:clamp(150px,32vh,350px);position:relative;width:calc(var(--s) * 1.3);height:var(--s);flex:none;}
+.cd{position:absolute;top:3%;left:calc(var(--s) * .06);width:calc(var(--s) * .94);height:calc(var(--s) * .94);transition:left .8s cubic-bezier(.3,.9,.3,1);z-index:0}
+.disc{width:100%;height:100%;border-radius:50%;border:2px solid var(--ink);
+  background:radial-gradient(circle,var(--cobalt-d) 0 9%,#e9e9ef 9.5% 14%,transparent 14.5%),
+             conic-gradient(from 0deg,#d8d8e4,#f7f7fb,#b7c2e6,#f7f7fb,#e8d3ea,#f7f7fb,#c9e6ef,#d8d8e4);
+  animation:spin 5s linear infinite;animation-play-state:paused}
+.disc.spinning{animation-play-state:running}
+@keyframes spin{to{transform:rotate(360deg)}}
+.case{position:absolute;left:0;top:0;width:var(--s);height:var(--s);z-index:1;border:3px solid var(--ink);border-radius:3px;box-shadow:8px 8px 0 rgba(8,12,40,.5);overflow:hidden;
+  background:linear-gradient(135deg,var(--magenta),#6b2a8a 55%,var(--cobalt))}
+.case::after{content:"";position:absolute;inset:0;background:linear-gradient(115deg,rgba(255,255,255,.28),transparent 30%);pointer-events:none}
+.case .q{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-family:var(--serif);font-weight:900;font-size:calc(var(--s) * .55);color:var(--paper);text-shadow:4px 4px 0 var(--cobalt-d)}
+.case img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;opacity:0}
+.case.revealed img{opacity:1;animation:flip .7s ease-out}
+.case.revealed .q{display:none}
+@keyframes flip{from{transform:rotateY(90deg)}to{transform:rotateY(0)}}
+
+/* 答案解說欄 */
+.song-info-banner{width:100%;height:46px;display:flex;flex-direction:column;justify-content:center;background:var(--paper);border:2px solid var(--ink);border-radius:4px;padding:2px 10px;text-align:center;box-shadow:3px 3px 0 rgba(8,12,40,.3);opacity:0;transition:opacity 0.25s ease;}
+.song-info-banner.show{opacity:1;}
+.song-info-banner .stitle{font-family:var(--serif);font-weight:900;font-size:1rem;color:var(--magenta);line-height:1.2;}
+.song-info-banner .sartist{font-size:0.75rem;color:#555;line-height:1.2;}
+
+/* Input box & 選擇題 */
+.input-box{width:100%;min-width:min(480px,100%);background:var(--paper);border:2px solid var(--ink);border-radius:4px;padding:8px 12px;box-shadow:4px 4px 0 rgba(8,12,40,.4);display:flex;flex-direction:column;gap:5px}
+.input-row{display:flex;gap:8px}
+.input-row input{flex:1;padding:7px 10px;font-size:0.95rem;border:2px solid var(--ink);border-radius:3px;font-weight:700;outline:none;background:#fff}
+.bevel{padding:7px 14px;font-size:0.9rem;font-weight:700;color:var(--ink);background:#d7d3c6;border:2px solid;border-color:#fff #6c6a60 #6c6a60 #fff;cursor:pointer;border-radius:3px}
+.bevel:active{border-color:#6c6a60 #fff #fff #6c6a60}
+.bevel.go{background:var(--magenta);color:#fff}
+.bevel.pause-btn{background:var(--yellow);color:var(--ink);padding:7px 10px;}
+.options-grid{display:grid;grid-template-columns:1fr 1fr;gap:5px}
+.opt-btn{padding:7px 8px;font-size:0.85rem;font-weight:700;background:var(--paper-d);border:2px solid var(--ink);border-radius:3px;cursor:pointer;text-align:left;transition:.15s;display:flex;justify-content:space-between;align-items:center;}
+.opt-btn:hover:not(:disabled){background:var(--cyan);color:#fff}
+.opt-btn:disabled{background:#ccc;color:#777;border-color:#999;cursor:not-allowed;filter:grayscale(100%);opacity:0.6;}
+
+.helper-row{display:flex;justify-content:space-between;align-items:center;font-size:0.78rem;color:#555}
+.link-btn{background:none;border:none;color:var(--cobalt);text-decoration:underline;cursor:pointer;font-weight:700}
+
+/* 免滾動簡潔歷史紀錄 */
+.side{align-self:start;justify-self:start;width:100%;max-width:380px}
+.history-list{list-style:none;padding:6px 8px;font-size:0.82rem;display:flex;flex-direction:column;gap:6px;}
+.history-card-item{background:#fff;border:1.5px solid var(--ink);border-radius:4px;padding:6px 10px;display:flex;justify-content:space-between;align-items:center;box-shadow:2px 2px 0 rgba(8,12,40,.2);position:relative;}
+.history-main-info{display:flex;align-items:center;gap:6px;}
+.history-grade-badge{font-family:var(--serif);font-weight:900;font-size:1.1rem;color:var(--magenta);background:#f6f1e4;padding:2px 6px;border:1.5px solid var(--ink);border-radius:3px;min-width:3ch;text-align:center;}
+.history-score-text{font-weight:800;font-size:0.9rem;color:var(--ink);}
+.history-sub-info{display:flex;flex-direction:column;align-items:flex-end;gap:1px;font-size:0.72rem;color:#666;}
+.crown-icon{position:absolute;top:-8px;left:-6px;font-size:1.1rem;filter:drop-shadow(1px 1px 0 #000);}
+
+.rules-details{padding:6px 12px 10px;font-size:0.82rem;line-height:1.4;border-top:2px dashed #b9b19a}
+.rules-details summary{font-family:var(--serif);font-weight:900;cursor:pointer;color:var(--cobalt);font-size:0.9rem;user-select:none}
+
+/* Modals */
+.modal-overlay{position:fixed;inset:0;background:rgba(10,16,51,0.88);z-index:100;display:none;align-items:center;justify-content:center;padding:20px}
+.modal-card{background:var(--paper);border:4px solid var(--ink);border-radius:6px;width:100%;max-width:440px;padding:24px;box-shadow:10px 10px 0 rgba(0,0,0,.6);text-align:center;display:flex;flex-direction:column;gap:14px;animation:pop .4s cubic-bezier(.2,1.4,.4,1);position:relative;}
+@keyframes pop{from{transform:scale(.7);opacity:0}to{transform:scale(1);opacity:1}}
+
+/* 結算左上角叉叉按鈕 */
+.modal-close-btn {
+  position: absolute; top: 10px; left: 12px;
+  background: none; border: none; font-size: 1.2rem; font-weight: 900; color: var(--ink);
+  cursor: pointer; padding: 4px 8px; border-radius: 3px; transition: background 0.1s;
+}
+.modal-close-btn:hover { background: #d7d3c6; }
+
+/* 🌟 SS 級以上金光閃閃特效框 */
+.modal-card.gold-shine {
+  border: 4px solid var(--yellow);
+  box-shadow: 0 0 25px rgba(245, 197, 24, 0.6), 10px 10px 0 rgba(0,0,0,.6);
+  animation: goldPulse 1.8s infinite alternate;
+}
+@keyframes goldPulse {
+  from { filter: brightness(1); }
+  to { filter: brightness(1.1) saturate(1.3); }
+}
+
+.modal-badge{font-size:2.8rem;font-family:var(--serif);font-weight:900;color:var(--magenta);text-shadow:2px 2px 0 var(--yellow)}
+.modal-title{font-family:var(--serif);font-size:1.5rem;font-weight:900}
+.modal-stats{display:grid;grid-template-columns:1fr 1fr;gap:10px;background:#e8e1cc;padding:10px;border-radius:4px;border:2px solid var(--ink);font-weight:700;font-size:0.85rem}
+.rules-list{text-align:left;font-size:.9rem;line-height:1.6;background:#e8e1cc;padding:12px 16px;border-radius:4px;border:1.5px solid var(--ink)}
+.theme-select-box{display:flex;flex-direction:column;gap:8px;}
+.theme-btn{padding:12px;font-size:1rem;font-weight:800;border:2px solid var(--ink);background:var(--paper-d);border-radius:4px;cursor:pointer;text-align:left;transition:.15s}
+.theme-btn:hover,.theme-btn.selected{background:var(--cyan);color:#fff}
+.result-actions{display:flex;flex-direction:column;gap:8px;margin-top:4px}
+
+/* 💿 圓形錯落專輯牆（無釘子） */
+.result-gallery{
+  background:#dfd7c2; padding:14px 8px; border-radius:6px; border:2px solid var(--ink);
+  max-height:200px; overflow-y:auto; box-shadow:inset 0 2px 5px rgba(0,0,0,0.2);
+  display:flex; flex-direction:column; align-items:center; gap:6px;
+}
+.gallery-row{display:flex; justify-content:center; gap:8px; width:100%;}
+.gallery-photo{
+  width:42px; height:42px; background:#fff; padding:2px; border:1.5px solid var(--ink);
+  box-shadow:2px 2px 0 rgba(0,0,0,0.3); border-radius:2px; overflow:hidden;
+}
+.gallery-photo img{width:100%; height:100%; object-fit:cover; display:block;}
+.gallery-photo.gem-mint { border: 2px solid var(--yellow); box-shadow: 0 0 5px var(--yellow); filter: brightness(1.15); }
+.gallery-photo.good { filter: sepia(30%) brightness(0.9); }
+.gallery-photo.poor { filter: grayscale(80%) sepia(50%) brightness(0.6); opacity: 0.8; }
+
+/* 🎉 慶祝彩帶特效容器 */
+.confetti-container {
+  position: absolute; inset: 0; pointer-events: none; overflow: hidden; z-index: 99; border-radius: 6px;
+}
+.confetti {
+  position: absolute; width: 10px; height: 16px; background: var(--c);
+  top: -20px; opacity: 0.9; animation: fallConfetti linear forwards;
+}
+@keyframes fallConfetti {
+  0% { transform: translateY(0) rotate(0deg); opacity: 1; }
+  100% { transform: translateY(450px) rotate(720deg); opacity: 0; }
+}
+
+/* ⏱ 獨立全螢幕 3 秒開場倒數遮罩 */
+.countdown-overlay{
+  position:fixed; inset:0; background:rgba(10,16,51,0.95); z-index:9999;
+  display:none; align-items:center; justify-content:center;
+  font-family:var(--serif); font-weight:900; font-size:8rem; color:var(--yellow);
+  text-shadow:4px 4px 0 var(--magenta), 8px 8px 0 var(--ink);
+}
+
+/* 🎯 Toast 提示框 */
+.toast{position:fixed;left:50%;top:20%;z-index:110;pointer-events:none;transform:translateX(-50%);padding:10px 24px;background:var(--paper);border:3px solid var(--ink);border-left:10px solid var(--c);border-radius:4px;box-shadow:5px 5px 0 rgba(8,12,40,.5);font-family:var(--serif);font-weight:900;font-size:1.2rem;white-space:nowrap;animation:toast 1.3s ease forwards}
+@keyframes toast{0%{transform:translateX(-50%) scale(.4);opacity:0}20%{transform:translateX(-50%) scale(1.05);opacity:1}80%{opacity:1}100%{transform:translateX(-50%) translateY(-20px);opacity:0}}
+
+@media (max-width:900px){
+  body{height:auto;overflow:auto}
+  .grid{display:contents}
+  .center{order:1;padding:8px 14px 16px}
+  .side{order:2;margin:14px;max-width:none;width:auto}
+  .left{order:3;margin:14px;max-width:none;width:auto}
+  .case-wrap{--s:clamp(150px,min(32vh,50vw),300px);margin:0 auto}
+}
+</style>
+</head>
+<body>
+
+<header class="mast">
+  <h1 class="logo">Who's the Song King<small>誰是猜歌王 - 練等模式</small></h1>
+  <div class="mode-badge" id="current-mode-tag">準備中</div>
+</header>
+
+<main class="grid">
+  <!-- 左：CD 收藏架 -->
+  <aside class="left">
+    <section class="card">
+      <div class="card-h">CD 收藏牆</div>
+      <div class="cats" id="cats"></div>
+      <div class="shelf" id="shelf"></div>
+      <div class="pool" id="shelf-status">已收集 0 / 10</div>
+    </section>
+  </aside>
+
+  <!-- 中：專輯與播放器 -->
+  <section class="center">
+    <div class="qhead">
+      <div class="qno" id="q-no">第 1 題<span>/ 10</span></div>
+      <div class="status-indicators">
+        <div class="live-score" id="live-score">🪙 金幣：0</div>
+        <div class="combo-display" id="combo-display">🔥 0 COMBO</div>
+      </div>
+    </div>
+
+    <div class="timer-flex-row" id="timer-row">
+      <div class="timer-container">
+        <div class="timer-bar" id="timer-bar" style="width: 100%;"></div>
+      </div>
+      <div class="timer-number" id="timer-num">15s</div>
+    </div>
+
+    <div class="case-wrap">
+      <div class="cd" id="turntable"><div class="disc" id="vinyl-disc"></div></div>
+      <div class="case" id="case">
+        <div class="q">?</div>
+        <img id="artwork" alt="專輯封面">
+      </div>
+    </div>
+
+    <div class="song-info-banner" id="song-info-banner">
+      <div class="stitle" id="banner-title">歌名</div>
+      <div class="sartist" id="banner-artist">歌手 — 專輯</div>
+    </div>
+
+    <div class="input-box" id="interaction-box">
+      <div id="type-section">
+        <div class="input-row">
+          <input type="text" id="user-input" placeholder="請輸入完整歌名..." onkeydown="if(event.key==='Enter') submitAnswer()">
+          <button class="bevel go" onclick="submitAnswer()">送出</button>
+          <button class="bevel pause-btn" onclick="triggerEmergencyPause()" title="緊急暫停 (使用30金幣)">⏸ 暫停</button>
+        </div>
+        <div class="helper-row">
+          <span id="hint-text">💡 英文可忽略大小寫、空格可不輸入</span>
+          <button class="link-btn" onclick="switchToChoiceMode()">切換選擇題 (使用30金幣)</button>
+        </div>
+      </div>
+
+      <div id="choice-section" style="display: none;">
+        <div style="font-weight: 700; margin-bottom: 5px; font-size: 0.82rem;">請選出正確歌名：</div>
+        <div class="options-grid" id="options-grid"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 右：免滾動簡潔歷史紀錄 -->
+  <section class="card side">
+    <div class="card-h cy">最近5次挑戰紀錄</div>
+    <ul class="history-list" id="history-list">
+      <li style="text-align:center; padding:10px; color:#8a8570; font-weight:700;">尚無遊玩紀錄</li>
+    </ul>
+    
+    <details class="rules-details">
+      <summary>📜 展開遊戲規則</summary>
+      <p style="margin-top:4px;">• <b>歌名判定：</b>須輸入完整歌名，忽略標點、空格與 Remix 等後綴詞。</p>
+      <p style="margin-top:2px;">• <b>選擇題機制：</b>首次切換使用 30 金幣，選錯不重複扣金幣。</p>
+    </details>
+  </section>
+</main>
+
+<!-- Modal 1: 遊戲規則說明 -->
+<div class="modal-overlay" id="modal-rules" style="display: flex;">
+  <div class="modal-card">
+    <div class="modal-title">遊戲規則</div>
+    <div class="rules-list">
+      <p><b>🎵10道題目：</b>輸入完整歌名就過關。大小寫空格不限</p>
+      <p><b>🪙賺取金幣：</b>答對累積金幣，手速越快金幣越多！</p>
+      <p><b>⚡救援道具：</b>花 30 金幣可切換選擇題、或暫停喘口氣</p>
+    </div>
+    <div style="display:flex;gap:10px;">
+      <button class="bevel" style="flex:1;" onclick="startDemoMode()">🎧 先試玩</button>
+      <button class="bevel go" style="flex:1.5;" onclick="goToThemeSelect()">直接開始，選歌單 ➔</button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal 2: 選擇主題 -->
+<div class="modal-overlay" id="modal-theme">
+  <div class="modal-card">
+    <div class="modal-title">選一個你喜歡的歌單</div>
+    <div class="theme-select-box">
+      <button class="theme-btn selected" id="t-btn-drama" onclick="selectTheme('drama')">📺 經典偶像劇金曲</button>
+      <button class="theme-btn" id="t-btn-she" onclick="selectTheme('she')">🍀 S.H.E 特輯</button>
+      <button class="theme-btn" id="t-btn-fish" onclick="selectTheme('fish')">🐟 梁靜茹特輯</button>
+    </div>
+    <button class="bevel go" style="font-size:1.1rem;padding:12px;" onclick="prepToStartGame()">🚀 選好了，開玩！</button>
+  </div>
+</div>
+
+<!-- Modal 6: 試玩結束後的確認引導 -->
+<div class="modal-overlay" id="demo-finish-modal">
+  <div class="modal-card">
+    <div class="modal-title" style="color:var(--magenta);">🎧 試玩結束</div>
+    <p style="font-size:0.95rem; line-height:1.6; color:#444;">
+      手感還順利嗎？<br>準備好迎接正式 10 題挑戰了嗎？
+    </p>
+    <div style="display:flex; flex-direction:column; gap:8px; margin-top:6px;">
+      <button class="bevel go" style="font-size:1.05rem; padding:12px;" onclick="goToThemeSelectFromDemo()">🚀 準備好了，選歌單！</button>
+      <button class="bevel" onclick="startDemoMode()">再試玩 3 題</button>
+    </div>
+  </div>
+</div>
+
+<!-- ⏱ 3 秒開場倒數動畫遮罩 -->
+<div class="countdown-overlay" id="countdown-overlay">3</div>
+
+<!-- Modal 3: 半場休息 -->
+<div class="modal-overlay" id="half-time-modal">
+  <div class="modal-card">
+    <div class="modal-title">☕ 中場休息</div>
+    <p style="color:#555;">休息一下，沒有廣告。準備好就進入第6題吧！</p>
+    <div class="modal-stats">
+      <div>目前金幣：<br><span id="half-score" style="font-size:1.2rem;color:var(--magenta)">0</span></div>
+      <div>目前連擊：<br><span id="half-combo" style="font-size:1.2rem;color:var(--cobalt)">0 COMBO</span></div>
+    </div>
+    <button class="bevel go" style="font-size:1.1rem;padding:10px;" onclick="resumeFromHalfTime()">▶ 繼續下半場</button>
+  </div>
+</div>
+
+<!-- Modal 4: 緊急暫停 -->
+<div class="modal-overlay" id="pause-modal">
+  <div class="modal-card">
+    <div class="modal-title">⏸ 緊急暫停中</div>
+    <p style="color:#e85d04; font-weight:700;">⚠️ 已啟用緊急暫停，使用 30 金幣！</p>
+    <button class="bevel go" style="font-size:1.1rem;padding:10px;" onclick="resumeFromPause()">▶ 繼續遊戲</button>
+  </div>
+</div>
+
+<!-- Modal 5: 結算 Modal -->
+<div class="modal-overlay" id="result-modal">
+  <div class="modal-card" id="result-modal-card" style="max-width: 480px;">
+    <button class="modal-close-btn" onclick="closeResultAndReturn()" title="關閉結算">✖</button>
+    <div class="confetti-container" id="confetti-container"></div>
+    <div class="modal-badge" id="res-badge">SSS</div>
+    <div class="modal-title" id="res-title">絕頂聰明猜歌王</div>
+    <div class="modal-stats">
+      <div>最終金幣：<br><span id="res-score" style="font-size:1.3rem;color:var(--magenta)">950</span></div>
+      <div>最高連擊：<br><span id="res-combo" style="font-size:1.3rem;color:var(--cobalt)">10 COMBO</span></div>
+    </div>
+    <div style="text-align:left; font-size:0.82rem; font-weight:700; color:#555;">💿 成果紀念牆：</div>
+    <div class="result-gallery" id="result-gallery"></div>
+    <p id="res-desc" style="font-size:0.82rem; color:#555">前奏一下，秒殺全場！</p>
+    <div class="result-actions">
+      <button class="bevel go" onclick="prepToStartGame()">再玩一次</button>
+      <button class="bevel" onclick="goToThemeSelect()">🎵 切換其他歌單</button>
+    </div>
+  </div>
+</div>
+
+<script>
+const playlists = {
+  drama: [
+    "周杰倫 晴天","五月天 突然好想你","梁靜茹 燕尾蝶","王心凌 愛你","張棟樑 北極星的眼淚",
+    "S.H.E 戀人未滿","F4 流星雨","TANK 專屬天使","林俊傑 江南","戴愛玲 對的人",
+    "飛輪海 只對你有感覺","品冠 那些女孩教我的事","楊丞琳 曖昧","張韶涵 遺失的美好","孫燕姿 遇見",
+    "信樂團 一了百了","曹格 Superwoman","羅志祥 灰色空間","Energy 第一次愛的人",
+    "蕭敬騰 王妃","嚴爵 好的事情","郁可唯 路過人間","韋禮安 慢慢等","郭靜 心牆",
+    "劉若英 後來","梁文音 最幸福的事","徐若瑄 決定愛你","陳勢安 天后","Bii 勢在必行",
+    "田馥甄 小幸運","八三夭 想見你想見你想見你","周興哲 以後別做朋友","胡夏 那些年","丁噹 我愛他",
+    "林宥嘉 殘酷月光","徐佳瑩 失落沙洲","韋禮安 如果可以","告五人 愛人錯過","陳奕迅 十年",
+    "張惠妹 人質","蔡依林 倒帶","王力宏 唯一","蘇打綠 小情歌","楊宗緯 洋蔥",
+    "李聖傑 癡心絕對","吳克群 為你寫詩","光良 童話","范瑋琪 是非題",
+    "潘瑋柏 不得不愛","張智成 暗戀","許茹芸 看透","謝和弦 牽心萬苦",
+    "閻奕格 也可以","陳綺貞 旅行的意義","盧廣仲 魚仔","周杰倫 稻香","五月天 玖號球",
+    "S.H.E 花都開好了","飛兒樂團 Lydia","張韶涵 隱形的翅膀","王心凌 睫毛彎彎","林俊傑 可惜沒如果",
+    "楊丞琳 雨愛","張棟樑 當你孤單你會想起誰","TANK 獨唱情歌","梁靜茹 情歌","孫燕姿 我不難過",
+    "郭靜 下一個天亮","韋禮安 還是會","郁可唯 微加幸福","蕭敬騰 阿飛的小蝴蝶","嚴爵 暫時的男友",
+    "羅志祥 愛轉角","黃鴻升 地球上最浪漫的一首歌","陳勢安 再痛也要愛","Bii 轉身之後","曾沛慈 不夠勇敢",
+    "戴愛玲 千年之戀","信樂團 死了都要愛","曹格 背叛","動力火車 當",
+    "李聖傑 手放開",
+    "吳克群 男傭","潘瑋柏 愛上未來的你","張智成 凌晨三點鐘","周興哲 怎麼了","八三夭 東區東區"
+  ],
+  she: [
+    "S.H.E Super Star","S.H.E 戀人未滿","S.H.E 波斯貓","S.H.E SHERO","S.H.E 中國話",
+    "S.H.E 熱帶雨林","S.H.E 美麗新世界","S.H.E 痛快","S.H.E 宇宙小姐","S.H.E 十面埋伏",
+    "S.H.E 保持微笑","S.H.E 不想長大","S.H.E 觸電","S.H.E 安靜了","S.H.E 候鳥",
+    "S.H.E 聽袁惟仁彈吉他","S.H.E 我愛你","S.H.E 最近還好嗎","S.H.E 月桂女神","S.H.E 魔力",
+    "S.H.E 花又開好了","S.H.E 愛上你","S.H.E 替我愛你","S.H.E 兩個人的荒島","S.H.E 謝謝你的溫柔",
+    "S.H.E 金鐘罩鐵布衫","S.H.E 白色戀歌","S.H.E 管不著","S.H.E 冰箱","S.H.E 你太誠實",
+    "S.H.E 說你愛我","S.H.E 熱帶雨林","S.H.E 一個人唱情歌","S.H.E 夢田","S.H.E 心還是熱的",
+    "S.H.E 不說再見","S.H.E 別說對不起","S.H.E 一起開始的旅程","S.H.E 永遠都在","S.H.E 老婆",
+    "S.H.E 星光","S.H.E 觸電","S.H.E 天灰","S.H.E 你不會","S.H.E 半糖主義",
+    "S.H.E 河濱公園","S.H.E 店小二","S.H.E 愛呢","S.H.E Ring Ring Ring","S.H.E 十七"
+  ],
+  fish: [
+    "梁靜茹 燕尾蝶","梁靜茹 勇氣","梁靜茹 寧夏","梁靜茹 崇拜","梁靜茹 分手快樂",
+    "梁靜茹 可惜不是你","梁靜茹 會呼吸的痛","梁靜茹 暖暖","梁靜茹 情歌","梁靜茹 我還記得",
+    "梁靜茹 接受","梁靜茹 絲路","梁靜茹 無條件為你","梁靜茹 聽不到","梁靜茹 美麗人生",
+    "梁靜茹 為我好","梁靜茹 最快樂那一年","梁靜茹 小手拉大手","梁靜茹 愛久見人心","梁靜茹 慢冷",
+    "梁靜茹 大人","梁靜茹 親親","梁靜茹 妳的腳步","梁靜茹 會過去的","梁靜茹 我喜歡",
+    "梁靜茹 很久以後","梁靜茹 給未來的自己","梁靜茹 只能抱著你","梁靜茹 滿滿的都是愛","梁靜茹 愛你不是兩三天",
+  ]
+};
+const playlistNames = { drama: '經典偶像劇', she: 'S.H.E 精選', fish: '梁靜茹精選' };
+
+let currentPlaylistKey = 'drama';
+let gameQueue = [];
+let currentIndex = 0;
+let currentQuestion = null;
+let currentAudio = new Audio();
+let timerInterval = null;
+const MAX_TIME = 20;
+let timeLeft = MAX_TIME;
+let isPaused = false;
+let isDemoMode = false;
+
+let score = 0;
+let combo = 0;
+let maxCombo = 0;
+let collectedCDs = [];
+let reqId = 0;
+let gameStartTime = 0;
+
+const $ = id => document.getElementById(id);
+
+function initGame() {
+  renderCats();
+  loadHistory();
+  $('modal-rules').style.display = 'flex';
+}
+
+function renderCats() {
+  $('cats').innerHTML = Object.keys(playlists).map(k =>
+    `<button class="cat ${k === currentPlaylistKey ? 'active' : ''}" onclick="selectTheme('${k}')">${playlistNames[k]}</button>`
+  ).join('');
+}
+
+function goToThemeSelect() {
+  $('modal-rules').style.display = 'none';
+  $('demo-finish-modal').style.display = 'none';
+  $('modal-theme').style.display = 'flex';
+}
+
+function goToThemeSelectFromDemo() {
+  $('demo-finish-modal').style.display = 'none';
+  $('modal-theme').style.display = 'flex';
+}
+
+function selectTheme(key) {
+  currentPlaylistKey = key;
+  $('t-btn-drama').classList.toggle('selected', key === 'drama');
+  $('t-btn-she').classList.toggle('selected', key === 'she');
+  $('t-btn-fish').classList.toggle('selected', key === 'fish');
+  renderCats();
+}
+
+function startDemoMode() {
+  $('modal-rules').style.display = 'none';
+  $('demo-finish-modal').style.display = 'none';
+  isDemoMode = true;
+  $('current-mode-tag').innerText = '🎧 試玩中';
+  score = 0; combo = 0; maxCombo = 0; currentIndex = 0;
+  collectedCDs = [];
+  
+  const src = [...playlists.drama, ...playlists.she, ...playlists.fish];
+  gameQueue = src.sort(() => Math.random() - 0.5).slice(0, 3);
+  
+  updateStatsUI();
+  renderShelf();
+  gameStartTime = Date.now();
+  
+  runCountdown(loadQuestion);
+}
+
+function prepToStartGame() {
+  $('modal-theme').style.display = 'none';
+  $('result-modal').style.display = 'none';
+  isDemoMode = false;
+  $('current-mode-tag').innerText = '🔥 正式挑戰中';
+  
+  startNewGame(currentPlaylistKey);
+  gameStartTime = Date.now();
+  
+  runCountdown(() => {
+    loadQuestion();
+  });
+}
+
+function runCountdown(callback) {
+  document.querySelectorAll('.modal-overlay').forEach(m => m.style.display = 'none');
+  
+  const overlay = $('countdown-overlay');
+  overlay.style.display = 'flex';
+  let count = 3;
+  overlay.innerText = count;
+
+  const cdTimer = setInterval(() => {
+    count--;
+    if (count > 0) {
+      overlay.innerText = count;
+    } else if (count === 0) {
+      overlay.innerText = 'GO!';
+    } else {
+      clearInterval(cdTimer);
+      overlay.style.display = 'none';
+      if (callback) callback();
+    }
+  }, 750);
+}
+
+function startNewGame(key) {
+  score = 0;
+  combo = 0;
+  maxCombo = 0;
+  currentIndex = 0;
+  collectedCDs = [];
+  window._halfTimePassed = false;
+  
+  const src = [...playlists[key]];
+  gameQueue = src.sort(() => Math.random() - 0.5).slice(0, 10);
+  
+  updateStatsUI();
+  renderShelf();
+}
+
+function updateStatsUI(bumpScore = false) {
+  const scoreEl = $('live-score');
+  scoreEl.innerText = `🪙 金幣：${score}`;
+  if (bumpScore) {
+    scoreEl.classList.remove('bump');
+    void scoreEl.offsetWidth;
+    scoreEl.classList.add('bump');
+  }
+
+  const comboEl = $('combo-display');
+  comboEl.innerText = combo > 0 ? `🔥 ${combo} COMBO` : `🔥 0 COMBO`;
+}
+
+function triggerEmergencyPause() {
+  if (isDemoMode) return;
+  isPaused = true;
+  stopAudio();
+  
+  score = Math.max(0, score - 30);
+  updateStatsUI(true);
+  showToast('⚠️ 緊急暫停！使用 30 金幣', '#d6246e');
+
+  $('pause-modal').style.display = 'flex';
+}
+
+function resumeFromPause() {
+  isPaused = false;
+  $('pause-modal').style.display = 'none';
+  if (currentQuestion && timeLeft > 0) {
+    currentAudio.play().catch(() => {});
+    $('vinyl-disc').classList.add('spinning');
+    $('turntable').classList.add('on');
+    startTimerInterval();
+  }
+}
+
+function renderShelf() {
+  let html = '';
+  const totalSlots = isDemoMode ? 3 : 10;
+  for (let i = 0; i < totalSlots; i++) {
+    if (collectedCDs[i]) {
+      const cd = collectedCDs[i];
+      html += `<div class="slot ${cd.condition}"><img src="${cd.artwork}" alt="CD"></div>`;
+    } else {
+      html += `<div class="slot"></div>`;
+    }
+  }
+  $('shelf').innerHTML = html;
+  $('shelf-status').innerText = `已收集 ${collectedCDs.length} / ${totalSlots}`;
+}
+
+async function loadQuestion() {
+  // 當答完第 5 題（此時 currentIndex 在答對後被加到 5）時，暫停進入半場休息
+  if (!isDemoMode && currentIndex === 5 && !window._halfTimePassed) {
+    window._halfTimePassed = true;
+    stopAudio();
+    $('half-score').innerText = `${score} 金幣`;
+    $('half-combo').innerText = `${combo} COMBO`;
+    $('half-time-modal').style.display = 'flex';
+    return;
+  }
+
+  if (currentIndex >= gameQueue.length) {
+    stopAudio();
+    if (isDemoMode) {
+      $('demo-finish-modal').style.display = 'flex';
+    } else {
+      window._halfTimePassed = false;
+      saveHistory();
+      showResultModal();
+    }
+    return;
+  }
+
+  const myReq = ++reqId;
+  stopAudio();
+  $('song-info-banner').classList.remove('show');
+  $('timer-row').classList.remove('danger-shake');
+  $('type-section').style.display = 'block';
+  $('choice-section').style.display = 'none';
+  $('user-input').value = '';
+  
+  $('case').classList.remove('revealed');
+  $('artwork').removeAttribute('src');
+
+  const fullTerm = gameQueue[currentIndex];
+  const parts = fullTerm.split(' ');
+  const artist = parts[0];
+  const songTitle = parts.slice(1).join(' ');
+
+  $('q-no').innerHTML = `第 ${currentIndex + 1} 題<span>/ ${isDemoMode ? 3 : 10}</span>`;
+  updateStatsUI();
+
+  try {
+    const res = await fetch(`https://itunes.apple.com/search?term=${encodeURIComponent(songTitle)}&entity=song&limit=1&country=TW`);
+    const data = await res.json();
+    if (myReq !== reqId) return;
+
+    if (data.results && data.results.length > 0) {
+      const track = data.results[0];
+      currentQuestion = {
+        artist: artist,
+        title: songTitle,
+        fullTitle: fullTerm,
+        realName: track.trackName,
+        artwork: track.artworkUrl100.replace('100x100', '600x600'),
+        previewUrl: track.previewUrl
+      };
+      
+      currentAudio.src = currentQuestion.previewUrl;
+      playAudioAndStartTimer();
+    } else {
+      currentIndex++;
+      loadQuestion();
+    }
+  } catch (e) {
+    currentIndex++;
+    loadQuestion();
+  }
+}
+
+function resumeFromHalfTime() {
+  $('half-time-modal').style.display = 'none';
+  // 💡 修正關鍵：半場休息結束後，不需要再手動 +1！
+  // 因為此時 currentIndex 停留在 5（正對應 gameQueue[5]，也就是第 6 題），
+  // 直接呼叫 loadQuestion() 就會完美載入第 6 題！
+  loadQuestion();
+}
+
+function playAudioAndStartTimer() {
+  currentAudio.currentTime = 0;
+  if (!isPaused) {
+    currentAudio.play().catch(() => {});
+    $('vinyl-disc').classList.add('spinning');
+    $('turntable').classList.add('on');
+  }
+
+  timeLeft = MAX_TIME;
+  const bar = $('timer-bar');
+  const num = $('timer-num');
+  bar.style.transition = 'none';
+  bar.style.width = '100%';
+  void bar.offsetWidth;
+  bar.style.transition = `width ${MAX_TIME}s linear`;
+  bar.style.width = '0%';
+  num.innerText = `${Math.ceil(timeLeft)}s`;
+
+  startTimerInterval();
+}
+
+function startTimerInterval() {
+  if (timerInterval) clearInterval(timerInterval);
+  timerInterval = setInterval(() => {
+    if (isPaused) return;
+
+    timeLeft -= 0.1;
+    $('timer-num').innerText = `${Math.ceil(timeLeft)}s`;
+
+    if (timeLeft <= 3) {
+      $('timer-row').classList.add('danger-shake');
+    }
+
+    if (timeLeft <= 0) {
+      clearInterval(timerInterval);
+      handleTimeout();
+    }
+  }, 100);
+}
+
+function stopAudio() {
+  if (timerInterval) clearInterval(timerInterval);
+  currentAudio.pause();
+  $('vinyl-disc').classList.remove('spinning');
+  $('turntable').classList.remove('on');
+  $('timer-row').classList.remove('danger-shake');
+}
+
+function sanitizeStrict(str) {
+  if (!str) return '';
+  return str
+    .toLowerCase()
+    .replace(/\(.*?\)|（.*?）|\[.*?\]|【.*?】/g, '')
+    .replace(/[\s\-_()（）\[\]【】\.,?!'"]/g, '');
+}
+
+function submitAnswer() {
+  if (isPaused) return;
+  const userVal = $('user-input').value.trim();
+  if (!userVal) return;
+
+  const targetTitle = sanitizeStrict(currentQuestion.title);
+  const userTitle = sanitizeStrict(userVal);
+
+  if (userTitle === targetTitle) {
+    handleCorrect(false);
+  } else {
+    showToast('❌ 答錯囉！請輸入完整歌名', '#d6246e');
+    $('user-input').value = '';
+  }
+}
+
+function switchToChoiceMode() {
+  if (isPaused) return;
+  
+  score = Math.max(0, score - 30);
+  updateStatsUI(true);
+  showToast('⚡ 切換選擇題 (-30金幣)', '#f5c518');
+
+  $('type-section').style.display = 'none';
+  $('choice-section').style.display = 'block';
+
+  const allSongs = playlists[currentPlaylistKey].map(s => s.split(' ').slice(1).join(' '));
+  const wrongOptions = allSongs.filter(s => s !== currentQuestion.title).sort(() => Math.random() - 0.5).slice(0, 3);
+  const options = [...wrongOptions, currentQuestion.title].sort(() => Math.random() - 0.5);
+
+  const grid = $('options-grid');
+  grid.innerHTML = options.map((opt, idx) => 
+    `<button class="opt-btn" id="opt-btn-${idx}" onclick="checkChoice('${opt.replace(/'/g, "\\'")}', 'opt-btn-${idx}')">
+      <span>${opt}</span>
+    </button>`
+  ).join('');
+}
+
+function checkChoice(selected, btnId) {
+  if (isPaused) return;
+  const targetBtn = $(btnId);
+
+  if (selected === currentQuestion.title) {
+    handleCorrect(true);
+  } else {
+    showToast('😢 哎呀選錯了', '#d6246e');
+    targetBtn.disabled = true;
+    targetBtn.innerHTML += ` <span style="color:#d6246e;font-weight:900;">✖</span>`;
+  }
+}
+
+function handleCorrect(isChoice) {
+  stopAudio();
+  combo++;
+  if (combo > maxCombo) maxCombo = combo;
+
+  let base = 100 * (timeLeft / MAX_TIME);
+  if (isChoice) base *= 0.6;
+
+  let multiplier = 1 + (combo - 1) * 0.2;
+  if (multiplier > 2) multiplier = 2.0;
+
+  const earned = Math.max(1, Math.round(base * multiplier));
+  score += earned;
+  updateStatsUI(true);
+
+  const comboEl = $('combo-display');
+  comboEl.classList.remove('pop');
+  void comboEl.offsetWidth;
+  comboEl.classList.add('pop');
+
+  let condition = 'near-mint';
+  if (!isChoice && timeLeft >= 10) {
+    condition = 'gem-mint';
+  } else if (isChoice) {
+    condition = 'poor';
+  } else if (timeLeft < 5) {
+    condition = 'good';
+  }
+
+  collectedCDs.push({ artwork: currentQuestion.artwork, condition: condition });
+  renderShelf();
+
+  $('artwork').src = currentQuestion.artwork;
+  $('case').classList.add('revealed');
+  $('banner-title').innerText = currentQuestion.title;
+  $('banner-artist').innerText = currentQuestion.artist;
+  $('song-info-banner').classList.add('show');
+
+  showToast(`🎉 恭喜答對！ +${earned}金幣`, '#4caf7d');
+  
+  setTimeout(() => {
+    currentIndex++; // 答完第 5 題答對後會在這裡 +1 變成 5，然後在下次 loadQuestion() 被半場攔截
+    loadQuestion();
+  }, 3500);
+}
+
+function handleTimeout() {
+  stopAudio();
+  combo = 0;
+  updateStatsUI();
+  showToast('⏰ 時間到！', '#d6246e');
+
+  collectedCDs.push({ artwork: currentQuestion.artwork, condition: 'poor' });
+  renderShelf();
+
+  $('artwork').src = currentQuestion.artwork;
+  $('case').classList.add('revealed');
+  $('banner-title').innerText = currentQuestion.title;
+  $('banner-artist').innerText = currentQuestion.artist;
+  $('song-info-banner').classList.add('show');
+  
+  setTimeout(() => {
+    currentIndex++;
+    loadQuestion();
+  }, 3500);
+}
+
+function showToast(text, color) {
+  const t = document.createElement('div');
+  t.className = 'toast';
+  t.style.setProperty('--c', color);
+  t.textContent = text;
+  document.body.appendChild(t);
+  setTimeout(() => t.remove(), 1300);
+}
+
+function getBadgeAndTitle(s) {
+  if (s >= 900) return { badge: 'SSS', title: '絕頂聰明猜歌王' };
+  if (s >= 750) return { badge: 'SS', title: '街頭聽力王者' };
+  if (s >= 600) return { badge: 'S', title: '資深音樂達人' };
+  if (s >= 400) return { badge: 'A', title: '音樂愛好者' };
+  return { badge: 'B', title: '路過的聽眾' };
+}
+
+function saveHistory() {
+  const totalSeconds = Math.floor((Date.now() - gameStartTime) / 1000);
+  const mins = String(Math.floor(totalSeconds / 60)).padStart(2, '0');
+  const secs = String(totalSeconds % 60).padStart(2, '0');
+  const timeStr = `${mins}:${secs}`;
+
+  const { badge } = getBadgeAndTitle(score);
+
+  let history = JSON.parse(localStorage.getItem('song_king_solo_history') || '[]');
+  const record = {
+    grade: badge,
+    score: score,
+    combo: maxCombo,
+    time: timeStr,
+    playlist: playlistNames[currentPlaylistKey],
+    date: new Date().toLocaleDateString()
+  };
+  history.unshift(record);
+  if (history.length > 5) history.pop();
+  localStorage.setItem('song_king_solo_history', JSON.stringify(history));
+  loadHistory();
+}
+
+function loadHistory() {
+  let history = JSON.parse(localStorage.getItem('song_king_solo_history') || '[]');
+  const list = $('history-list');
+  if (history.length === 0) {
+    list.innerHTML = `<li style="text-align:center; padding:10px; color:#8a8570; font-weight:700;">尚無遊玩紀錄</li>`;
+    return;
+  }
+  list.innerHTML = history.map((h, index) => {
+    const isFirst = (index === 0);
+    return `
+      <li class="history-card-item">
+        ${isFirst ? '<span class="crown-icon">👑</span>' : ''}
+        <div class="history-main-info">
+          <div class="history-grade-badge">${h.grade}</div>
+          <span class="history-score-text">${h.score}金幣</span>
+        </div>
+        <div class="history-sub-info">
+          <span>🔥 ${h.combo} COMBO</span>
+          <span>${h.playlist} (${h.time})</span>
+        </div>
+      </li>
+    `;
+  }).join('');
+}
+
+function closeResultAndReturn() {
+  $('result-modal').style.display = 'none';
+  $('modal-rules').style.display = 'flex';
+}
+
+function showResultModal() {
+  $('result-modal').style.display = 'flex';
+  const { badge, title } = getBadgeAndTitle(score);
+
+  $('res-score').innerText = `${score} 金幣`;
+  $('res-combo').innerText = `${maxCombo} COMBO`;
+  $('res-badge').innerText = badge;
+  $('res-title').innerText = title;
+
+  const modalCard = $('result-modal-card');
+  const confettiContainer = $('confetti-container');
+  confettiContainer.innerHTML = '';
+  modalCard.classList.remove('gold-shine');
+
+  if (['A', 'S', 'SS', 'SSS'].includes(badge)) {
+    const colors = ['#d6246e', '#f5c518', '#19a7d8', '#4caf7d', '#ffffff'];
+    for (let i = 0; i < 35; i++) {
+      const c = document.createElement('div');
+      c.className = 'confetti';
+      c.style.setProperty('--c', colors[Math.floor(Math.random() * colors.length)]);
+      c.style.left = `${Math.random() * 100}%`;
+      c.style.animationDuration = `${1.2 + Math.random() * 1.5}s`;
+      c.style.animationDelay = `${Math.random() * 0.6}s`;
+      confettiContainer.appendChild(c);
+    }
+  }
+
+  if (['SS', 'SSS'].includes(badge)) {
+    modalCard.classList.add('gold-shine');
+  }
+
+  const gallery = $('result-gallery');
+  const rows = [
+    collectedCDs.slice(0, 3),
+    collectedCDs.slice(3, 7),
+    collectedCDs.slice(7, 10)
+  ];
+
+  gallery.innerHTML = rows.map(rowArr => {
+    if (rowArr.length === 0) return '';
+    return `
+      <div class="gallery-row">
+        ${rowArr.map(cd => `
+          <div class="gallery-photo ${cd.condition}">
+            <img src="${cd.artwork}" alt="CD">
+          </div>
+        `).join('')}
+      </div>
+    `;
+  }).join('');
+
+  let desc = '你太強了！前奏一下秒殺全場！';
+  if (score < 400) desc = '多聽幾分鐘就能上手囉！';
+  else if (score < 600) desc = '真厲害！下回就能突破個人紀錄了！';
+  $('res-desc').innerText = desc;
+}
+
+window.onload = initGame;
+</script>
+</body>
+</html>
