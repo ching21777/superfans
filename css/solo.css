@@ -1721,16 +1721,20 @@ button:focus-visible {
 }
   /* 進度專輯：縮小為方形標記 */
   .progress-grid {
-    align-items: flex-start;
-  }
+  display: flex;
+  align-items: flex-start;
+  flex-wrap: nowrap;
+  gap: 6px;
+}
 
-  .progress-slot {
-    flex: 0 0 36px;
-    width: 36px;
-    height: 36px;
-    max-width: none;
-    aspect-ratio: 1;
-  }
+.progress-slot {
+  flex: 0 1 clamp(20px, 8vw, 32px);
+  width: clamp(20px, 8vw, 32px);
+  height: auto;
+  max-width: none;
+  aspect-ratio: 1 / 1;
+  box-sizing: border-box;
+}
 
   /* 唱片舞台：優先使用剩餘空間 */
   .stage {
