@@ -96,13 +96,20 @@
     <div id="choice-sec" style="display:none"><div class="ogrid" id="ogrid"></div></div>
 
     <div class="items" id="items">
-      <button class="item" id="choice-btn" onclick="toChoice()">
-        <span class="ic">🆘</span><span class="tx"><b>改選擇題</b><small id="choice-sub">分數打折</small></span>
-      </button>
-      <button class="item" id="pause-btn" onclick="doPause()">
-        <span class="ic">⏸</span><span class="tx"><b>暫停</b><small id="pause-sub">可用一次</small></span>
-      </button>
-    </div>
+  <button class="item" id="choice-btn" onclick="toChoice()">
+    <span class="ic">🆘</span><span class="tx"><b>改選擇題</b><small id="choice-sub">分數打折</small></span>
+  </button>
+
+  <!-- 原本的暫停功能，暫時保留
+  <button class="item" id="pause-btn" onclick="doPause()">
+    <span class="ic">⏸</span><span class="tx"><b>暫停</b><small id="pause-sub">可用一次</small></span>
+  </button>
+  -->
+
+  <button class="item" id="pause-btn" onclick="doHint()">
+    <span class="ic">💡</span><span class="tx"><b>首字提示</b><small id="pause-sub">可用一次</small></span>
+  </button>
+</div>
 
     <div id="next-sec" style="display:none"></div>
   </div>
@@ -363,8 +370,11 @@ let reqId = 0,
     tick = null,
     isPaused = false,
     nextT = null,
-    pauseLeft = 0,
+    hintLeft = 1,
     wasRunning = false;
+
+/*  pauseLeft = 0, 暫停功能用不到*/
+
 
 // 選擇題選項
 let opts = [];
@@ -573,6 +583,8 @@ $('tap').onclick = () => {
   if (active && !isPaused) playNow();
 };
 
+/*停用中：暫停功能
+
 function doPause() {
   if (!active || isPaused || pauseLeft <= 0) return;
 
@@ -601,7 +613,23 @@ function updPauseBtn() {
   $('pause-btn').disabled = pauseLeft <= 0;
   $('pause-sub').textContent = pauseLeft > 0 ? `可用一次` : '已使用';
 }
+*/
 
+// 一字提示
+function doHint() {
+  if (!active || isPaused || hintLeft <= 0 || !cur) return;
+
+  hintLeft--;
+  updHintBtn();
+
+  $('inp').value = cur.title.trim().charAt(0);
+}
+
+// 更新提示按鈕
+function updHintBtn() {
+  $('pause-btn').disabled = hintLeft <= 0;
+  $('pause-sub').textContent = hintLeft > 0 ? '每題一次' : '已使用';
+}
 
 /* ==========================================
    06. 畫面與動畫 DISPLAY
@@ -731,6 +759,8 @@ function pickTheme(k) {
   startGame();
 }
 
+
+
 function begin(demo) {
   unlockAudio();
 
@@ -742,9 +772,12 @@ function begin(demo) {
   $('mode').style.display = 'block';
   $('quit-btn').style.display = 'block';
 
-  pauseLeft = CFG.PAUSE_MAX;
+  hintLeft = 1;
   usedChoice = false;
-  updPauseBtn();
+  updHintBtn();
+
+ /*  pauseLeft = CFG.PAUSE_MAX;
+ updPauseBtn(); 暫停功能用不到*/
 
   score = 0;
   shown = 0;
@@ -852,6 +885,9 @@ async function loadQuestion() {
   choiceMiss = false;
   isPaused = false;
   questionAttempts = 0;
+  // 每首新歌重新開放一次提示
+  hintLeft = 1;
+  updHintBtn();
 
   $('trow').classList.remove('done');
   $('banner').classList.remove('show');
