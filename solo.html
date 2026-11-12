@@ -148,9 +148,10 @@
     <div class="rules-title">遊戲規則</div>
     <div class="rules">
       <p><b>🎵 猜歌：</b>輸入完整歌名（不分大小寫、空格）</p>
-      <p><b>🪙 計分：</b>答題速度越快分數越多，連續答對再加碼</p>
-      <p><b>🎒 選擇卡：</b>讓題目變簡單！但分數也會變少哦</p>
-      <p><b>🎒 暫停卡：</b>每局可暫停 1 次，爭取思考時間！</p>
+      <p><b>🪙 計分：</b>打字手速越快，分數越高</p>
+      <p><b>🔥 Combo：</b>連續答對，額外加分</p>
+      <p><b>🆘 選擇提示：</b>降低難度，分數也打折</p>
+      <p><b>💡 首字提示：</b>每題可用 1 次</p>
     </div>
   </div>
 </div>
@@ -344,7 +345,8 @@ let active = false,
     halfPassed = false,
     choiceUsed = false,
     choiceMiss = false,
-    usedChoice = false;
+    usedChoice = false,
+    usedHint = false;
 
 // 分數與連擊
 let score = 0,
@@ -422,7 +424,8 @@ function songPool() {
    04. 計分系統 SCORING
 ========================================== */
 
-function calcScore(isChoice, tLeft, comboNow, lostCombo, attempts) {
+
+function calcScore(isChoice, tLeft, comboNow, lostCombo, attempts, usedHint = false) {
   // 依答題次數降低基本分
   const rates = [1, 0.79, 0.57, 0.36, 0.14];
   const attemptRate = rates[Math.min(attempts, 5) - 1] || 0.14;
@@ -441,14 +444,14 @@ function calcScore(isChoice, tLeft, comboNow, lostCombo, attempts) {
   );
 
   // 選擇題答錯後，不給速度分數
-if (isChoice && attempts > 1) {
-  speed = 0;
-}
+  if (isChoice && attempts > 1) {
+    speed = 0;
+  }
 
-// 自由輸入答錯後，速度分數最多一半
-if (!isChoice && attempts > 1) {
-  speed = Math.min(speed, Math.round(CFG.SPEED * 0.5));
-}
+  // 自由輸入答錯後，速度分數最多一半
+  if (!isChoice && attempts > 1) {
+    speed = Math.min(speed, Math.round(CFG.SPEED * 0.5));
+  }
 
   // 連擊分數
   const bonus = lostCombo ? 0 : Math.round(
@@ -456,8 +459,18 @@ if (!isChoice && attempts > 1) {
     (isChoice ? CFG.CHOICE_COMBO_RATE : 1)
   );
 
-  return { speed, bonus, total: base + speed + bonus };
+  // 提示折扣：首字提示 + 選擇題，額外降至 20%
+  const hintRate = usedHint && isChoice ? 0.2 : usedHint ? 0.8 : 1;
+
+  const totalScore = base + speed + bonus;
+
+  return {
+    speed,
+    bonus,
+    total: Math.round(totalScore * hintRate)
+  };
 }
+
 
 // 本局理論最高分
 function maxScore(n = total) {
@@ -618,8 +631,10 @@ function updPauseBtn() {
 // 一字提示
 function doHint() {
   if (!active || isPaused || hintLeft <= 0 || !cur) return;
+  if (usedChoice) return;
 
   hintLeft--;
+  usedHint = true;
   updHintBtn();
 
   $('inp').value = cur.title.trim().charAt(0);
@@ -884,6 +899,8 @@ async function loadQuestion() {
   choiceUsed = false;
   choiceMiss = false;
   isPaused = false;
+  usedChoice = false;
+  usedHint = false;
   questionAttempts = 0;
   // 每首新歌重新開放一次提示
   hintLeft = 1;
@@ -1005,6 +1022,7 @@ function toChoice() {
   choiceUsed = true;
   usedChoice = true;
   $('choice-btn').disabled = true;
+  $('pause-btn').disabled = true; /*首字提示(前生是暫停)*/
 
   if (CFG.CHOICE_COST) {
     setScore(Math.max(0, score - CFG.CHOICE_COST));
@@ -1051,7 +1069,14 @@ function correct(isChoice) {
   combo++;
   maxCombo = Math.max(maxCombo, combo);
 
-  const s = calcScore(isChoice, timeLeft, combo, choiceMiss, questionAttempts);
+  const s = calcScore(isChoice, timeLeft, combo, choiceMiss || (usedHint && isChoice), questionAttempts, usedHint);
+  
+  // 首字提示 + 選擇題：中斷連擊
+  if (usedHint && isChoice) {
+  combo = 0;
+  updCombo();
+}
+  
   // 累積 PR 的答對與速度分數
 prCorrect += calcCorrectPR(questionAttempts);
 prSpeed += calcSpeedPR(timeLeft, questionAttempts);
