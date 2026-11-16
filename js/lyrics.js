@@ -3,11 +3,11 @@ const SONG_DATABASE = [
     id: 1,
     title: "晴天",
     artist: "周杰倫 Jay Chou",
-    genre: "2000s 經典華語",
+    genre: "亞洲創作天王",
     itunesQuery: "晴天 周杰倫",
     customPreviewUrl: "",
-    playUntil: 9,            // 從頭播放到第幾秒（0~30）
-    prevLyric: "吹著前奏望著天空　我想起_____",
+    playUntil: 9,
+    prevLyric: "吹著前奏望著天空　我想起＿＿＿＿＿",
     correctNext: "花瓣試著掉落",
     distractors: [
       "風兒吹散的夢",
@@ -19,11 +19,11 @@ const SONG_DATABASE = [
     id: 2,
     title: "小幸運",
     artist: "田馥甄 Hebe Tien",
-    genre: "電影主題曲",
+    genre: "YouTube 破億神曲",
     itunesQuery: "小幸運 田馥甄",
     customPreviewUrl: "",
-    playUntil: 19.5,            // 從頭播放到第幾秒（0~30）
-    prevLyric: "也許當時忙著_____　忙著追逐天空中的流星",
+    playUntil: 19.5,
+    prevLyric: "也許當時忙著＿＿＿＿＿　忙著追逐天空中的流星",
     correctNext: "微笑和哭泣",
     distractors: [
       "賞月和登頂",
@@ -35,11 +35,11 @@ const SONG_DATABASE = [
     id: 3,
     title: "心電心",
     artist: "王心凌",
-    genre: "動感舞曲",
+    genre: "甜心舞曲",
     itunesQuery: "心電心 王心凌",
     customPreviewUrl: "",
-    playUntil: 16,            // 從頭播放到第幾秒（0~30）
-    prevLyric: "手心貼手心　一起心電心　_____　__________",
+    playUntil: 16,
+    prevLyric: "手心貼手心　一起心電心　＿＿＿＿＿",
     correctNext: "高矮不在意　也不管你幾公斤",
     distractors: [
       "幸福在洋溢　全世界我最吸睛",
@@ -51,11 +51,11 @@ const SONG_DATABASE = [
     id: 4,
     title: "稻香",
     artist: "周杰倫 Jay Chou",
-    genre: "療癒民謠風",
+    genre: "亞洲創作天王",
     itunesQuery: "稻香 周杰倫",
     customPreviewUrl: "",
-    playUntil: 13,            // 從頭播放到第幾秒（0~30）
-    prevLyric: "還記得你說家是唯一的城堡　_____",
+    playUntil: 13,
+    prevLyric: "還記得你說家是唯一的城堡　＿＿＿＿＿",
     correctNext: "隨著稻香河流繼續奔跑",
     distractors: [
       "微風吹過田野間的微笑",
@@ -67,11 +67,11 @@ const SONG_DATABASE = [
     id: 5,
     title: "不是因為天氣晴朗才愛你",
     artist: "理想混蛋",
-    genre: "抒情",
+    genre: "人氣樂團",
     itunesQuery: "不是因為天氣晴朗才愛你 理想混蛋",
     customPreviewUrl: "",
-    playUntil: 20,            // 從頭播放到第幾秒（0~30）
-    prevLyric: "才一直　一直　________　擁抱你　什麼角度最合適",
+    playUntil: 20,
+    prevLyric: "才一直　一直　＿＿＿＿＿　擁抱你　什麼角度最合適",
     correctNext: "一直在腦海裡複習",
     distractors: [
       "一直在人海裡嘆息",
@@ -83,11 +83,11 @@ const SONG_DATABASE = [
     id: 6,
     title: "美麗新世界",
     artist: "S.H.E",
-    genre: "N/A",
+    genre: "亞洲女子天團",
     itunesQuery: "美麗新世界 S.H.E",
     customPreviewUrl: "",
-    playUntil: 19,            // 從頭播放到第幾秒（0~30）
-    prevLyric: "別再記著昨天　還有什麼悲傷　_____",
+    playUntil: 19,
+    prevLyric: "別再記著昨天　還有什麼悲傷　＿＿＿＿＿",
     correctNext: "Baby don't cry",
     distractors: [
       "Honey don't lie",
@@ -99,11 +99,11 @@ const SONG_DATABASE = [
     id: 7,
     title: "修煉愛情",
     artist: "林俊傑 JJ Lin",
-    genre: "金曲抒情",
+    genre: "華語金曲歌王",
     itunesQuery: "修煉愛情 林俊傑",
     customPreviewUrl: "",
-    playUntil: 11,            // 從頭播放到第幾秒（0~30）
-    prevLyric: "我們那些信仰　_____",
+    playUntil: 11,
+    prevLyric: "我們那些信仰　＿＿＿＿＿",
     correctNext: "要忘記多難",
     distractors: [
       "該怎麼原諒",
@@ -115,11 +115,11 @@ const SONG_DATABASE = [
     id: 8,
     title: "後來",
     artist: "劉若英 Rene Liu",
-    genre: "華語金曲",
+    genre: "療癒系天后",
     itunesQuery: "後來 劉若英",
     customPreviewUrl: "",
-    playUntil: 8,            // 從頭播放到第幾秒（0~30）
-    prevLyric: "後來　我總算學會了如何去愛　可惜你　_______________",
+    playUntil: 8,
+    prevLyric: "後來　我總算學會了如何去愛　可惜你　＿＿＿＿＿",
     correctNext: "早已遠去消失在人海",
     distractors: [
       "已經離開不等我回來",
@@ -131,11 +131,11 @@ const SONG_DATABASE = [
     id: 9,
     title: "突然好想你",
     artist: "五月天 Mayday",
-    genre: "華語搖滾",
+    genre: "人氣樂團",
     itunesQuery: "突然好想你 五月天",
     customPreviewUrl: "",
-    playUntil: 19,            // 從頭播放到第幾秒（0~30）
-    prevLyric: "突然好想你　突然_____",
+    playUntil: 19,
+    prevLyric: "突然好想你　突然＿＿＿＿＿",
     correctNext: "鋒利的回憶",
     distractors: [
       "諷刺的情書",
@@ -150,8 +150,8 @@ const SONG_DATABASE = [
     genre: "影視主題曲",
     itunesQuery: "我愛他 丁噹",
     customPreviewUrl: "",
-    playUntil: 17,            // 從頭播放到第幾秒（0~30）
-    prevLyric: "曾為他相信明天就是未來　_____有多壞都不肯醒來",
+    playUntil: 17,
+    prevLyric: "曾為他相信明天就是未來　＿＿＿＿＿有多壞都不肯醒來",
     correctNext: "情節",
     distractors: [
       "劇情",
@@ -163,11 +163,11 @@ const SONG_DATABASE = [
     id: 11,
     title: "想見你想見你想見你",
     artist: "八三夭 831",
-    genre: "戲劇神曲",
+    genre: "影視主題曲",
     itunesQuery: "想見你想見你想見你 八三夭",
     customPreviewUrl: "",
-    playUntil: 22,            // 從頭播放到第幾秒（0~30）
-    prevLyric: "想見你只想見你　未來過去_____",
+    playUntil: 22,
+    prevLyric: "想見你只想見你　未來過去＿＿＿＿＿",
     correctNext: "我只想見你",
     distractors: [
       "全都是為你",
@@ -179,11 +179,11 @@ const SONG_DATABASE = [
     id: 12,
     title: "勇氣",
     artist: "梁靜茹 Fish Leong",
-    genre: "經典情歌",
+    genre: "療癒系天后",
     itunesQuery: "勇氣 梁靜茹",
     customPreviewUrl: "",
-    playUntil: 19,            // 從頭播放到第幾秒（0~30）
-    prevLyric: "只要你一個眼神肯定　_____",
+    playUntil: 19,
+    prevLyric: "只要你一個眼神肯定　＿＿＿＿＿",
     correctNext: "我的愛就有意義",
     distractors: [
       "就跨越所有距離",
@@ -192,4 +192,3 @@ const SONG_DATABASE = [
     ]
   }
 ];
-

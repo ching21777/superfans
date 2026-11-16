@@ -62,8 +62,15 @@
 
     <div id="lyric-stage">
       <div class="ls-wait" id="ls-wait" style="display:none">
-        <i class="ls-lamp"></i><span id="ls-wait-text">播放中</span>
-      </div>
+  <i class="ls-lamp"></i>
+  <span id="ls-wait-text">播放中</span>
+
+  <div class="ls-stars" id="ls-stars">
+    <span>★</span>
+    <span>★</span>
+    <span>★</span>
+  </div>
+</div>
 
       <div id="lyric-prompt" class="lyric-card" style="display:none">
         <div class="lc-label">換你唱！</div>
@@ -73,7 +80,7 @@
       <div class="ls-listen">
         <div class="ls-ring" id="ls-ring">
           <div class="ls-vinyl" id="ls-vinyl"></div>
-          <div class="ls-core"><b>♪</b></div>
+          <div class="ls-core"><b>♫</b></div>
         </div>
         <div class="ls-genre" id="ls-genre"></div>
         <div class="ls-text" id="ls-text"></div>
@@ -175,7 +182,7 @@
       <button class="tb" data-k="she" onclick="pickTheme('she')">✬✬｜ S.H.E 鐵粉爭霸戰 ➔</button>
       <button class="tb" data-k="fish" onclick="pickTheme('fish')">✬✬｜ 梁靜茹精選情歌 ➔</button>
       <button class="tb" data-k="vagabond" onclick="pickTheme('vagabond')">✬✬✬｜走啊聽團！2026 浪人祭 ➔</button>
-      <button class="tb" data-k="lyrics" onclick="pickTheme('lyrics')">TEST｜接歌詞題庫 ➔</button>
+      <button class="tb" data-k="lyrics" onclick="pickTheme('lyrics')">✬｜歌詞接唱王 ➔</button>
     </div>
   </div>
 </div>
@@ -184,7 +191,7 @@
 <div class="ov" id="m-demo">
   <div class="mc">
     <div class="mt" style="color:var(--magenta)">試玩結束！</div>
-    <p style="line-height:1.6;color:var(--text-sub)">接著要選歌單，10 首歌連番出擊，準備好迎戰了嗎？</p>
+    <p style="line-height:1.6;color:var(--text-sub)">接下來選歌單，總共 10 首連番出擊，準備好迎戰了嗎？</p>
     <div class="actions-pair">
       <button class="bevel" onclick="startDemo()">再練一回</button>
       <button class="bevel go" onclick="toTheme()">正式上場</button>
@@ -746,9 +753,9 @@ function begin(demo) {
 
   document.querySelectorAll('.ov').forEach(m => m.style.display = 'none');
   isDemo = demo;
-  total = demo ? 3 : (theme === 'lyrics' ? SONG_DATABASE.length : 10);
+  total = demo ? 3 : 10;
 
-  $('mode').textContent = demo ? '試玩模式' : (theme === 'lyrics' ? '接歌詞模式' : '計分模式');
+  $('mode').textContent = demo ? '試玩模式' : (theme === 'lyrics' ? '歌詞接唱' : '歌名搶答');
   $('mode').style.display = 'block';
   $('quit-btn').style.display = 'block';
 
@@ -770,7 +777,9 @@ function begin(demo) {
   cds = [];
   halfPassed = false;
 
-  queue = isLyricsMode() ? shuffle([...SONG_DATABASE]) : shuffle(uniq(songPool()));
+  queue = isLyricsMode()
+  ? shuffle([...SONG_DATABASE]).slice(0, 10)
+  : shuffle(uniq(songPool())).slice(0, total);
 
   $('score').textContent = '0';
   updCombo();
@@ -905,7 +914,8 @@ function setLyricStage(playing) {
 
 /* 接歌詞：歌詞字幕出現（取代狀態燈號） */
 function showLyricText() {
-  $('ls-wait').style.display = 'none';
+  $('ls-wait').style.display = 'flex';
+  $('ls-wait').style.visibility = 'hidden';
   $('lyric-prompt').style.display = 'block';
 }
 
@@ -919,9 +929,18 @@ function startLsTick() {
   clearInterval(lsTick);
   const t0 = Date.now();
 
+  const stars = $('ls-stars').children;
+[...stars].forEach(star => star.classList.remove('off'));
+
   const upd = () => {
     const remain = Math.max(0, clip.dur - (Date.now() - t0) / 1000);
     const ready = remain > 0 && remain <= LY_WARN_SEC;
+
+    const offCount = Math.min(3, Math.max(0, Math.floor(LY_WARN_SEC - remain)));
+
+[...stars].forEach((star, i) => {
+  star.classList.toggle('off', i >= stars.length - offCount);
+});
 
     $('ls-ring').classList.toggle('warn', ready);
     $('ls-wait').classList.toggle('ready', ready);
@@ -940,7 +959,7 @@ function startLsTick() {
 /* 轉場節奏設定（毫秒） */
 const LY_FADE_MS  = 100;   // 音樂淡出
 const LY_LEAVE_MS = 300;   // 聽歌畫面退場
-const LY_ENTER_MS = 800;   // 題目與選項依序進場（結束後才開始作答倒數）
+const LY_ENTER_MS = 500;   // 題目與選項依序進場（結束後才開始作答倒數）
 const LY_HOLD_MS  = 2000;  // 答對後停留在選項畫面（音樂續播）的時間
 
 /* 音量漸漸降到 0 再暫停（iOS Safari 不支援調音量，會直接停） */
@@ -1014,15 +1033,14 @@ function showLyricQuestion() {
     st.classList.add('ly-enter');
 
     $('trow').style.display = '';
-    $('trow').style.visibility = 'hidden';   // 先保留位置，避免版面跳動
+    $('trow').style.visibility = '';
+    $('trow').classList.add('tin');
+
     $('choice-sec').style.display = 'block';
     $('items').style.display = '';
 
     clipTimer = setTimeout(() => {
       if (my !== reqId) return;
-
-      $('trow').style.visibility = '';
-      $('trow').classList.add('tin');
 
       active = true;
       questionStartAt = Date.now();
@@ -1231,7 +1249,9 @@ async function loadLyricsQuestion(my) {
   $('items').style.display = 'none';
   $('tap').style.display = 'none';
   $('stage').classList.add('lyrics-q', 'ly-listen');
-  $('trow').style.display = 'none';
+  $('trow').style.display = '';
+  $('ls-wait').style.visibility = '';
+  $('trow').style.visibility = 'hidden';
 
   const previewUrl = item.customPreviewUrl || track?.previewUrl || '';
   clip = {
@@ -1241,10 +1261,10 @@ async function loadLyricsQuestion(my) {
   };
   replayLeft = previewUrl ? 1 : 0;
 
-  $('ls-genre').textContent = item.genre ? '♪ ' + item.genre : '';
+  $('ls-genre').textContent = item.genre ? item.genre : '';
   $('ls-ring').classList.remove('warn');
   $('ls-wait').classList.remove('ready');      // 重設回黃燈
-  $('ls-wait-text').textContent = '播放中';
+  $('ls-wait-text').textContent = '歌手演唱中';
   $('ls-wait').style.display = 'flex';
   $('lyric-prompt').style.display = 'none';
   $('ls-text').classList.remove('beat');
@@ -1488,7 +1508,7 @@ function saveHistory() {
       score,
       combo: maxCombo,
       time: fmtTime(Math.floor(totalAnswerTime)),
-      playlist: (typeof names !== 'undefined' && names[theme]) || (theme === 'lyrics' ? '接歌詞題庫' : theme)
+      playlist: (typeof names !== 'undefined' && names[theme]) || (theme === 'lyrics' ? '歌詞接唱' : theme)
     });
 
     h.sort((a, b) => b.score - a.score);
@@ -1510,7 +1530,8 @@ function loadHistory() {
     '經典偶像劇': '偶像劇金曲',
     'S.H.E 特輯': 'S.H.E 精選',
     '梁靜茹特輯': '梁靜茹精選',
-    '2026 浪人祭': '浪人祭合輯'
+    '2026 浪人祭': '浪人祭合輯',
+    '歌詞接唱': '歌詞接唱'
   };
 
   // 固定顯示三個名額
