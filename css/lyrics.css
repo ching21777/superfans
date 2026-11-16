@@ -1,0 +1,153 @@
+/* ===== 接歌詞：題目（舞台上方的銀色襯底卡片） ===== */
+.lyric-card{
+  width:100%; padding:12px 16px; text-align:center; color:var(--ink);
+  border-radius:var(--r-sm);
+  background:linear-gradient(145deg,#F4F2F0 0%,#E2DFDE 55%,#C9C6C7 100%);
+  box-shadow:inset 0 2px 1px rgba(255,255,255,.9), inset 0 -2px 1px rgba(100,90,95,.18),
+             0 2px 0 rgba(75,70,75,.7), 0 5px 10px rgba(0,0,0,.3);
+}
+.lyric-card{ animation:lsopt .4s ease-out backwards; }
+.lyric-card .lc-label{ font-size:11px; font-weight:800; letter-spacing:.14em; color:var(--text-sub); margin-bottom:4px; }
+.lyric-card .lc-prev{ font-family:var(--serif); font-size:clamp(16px,4.6vw,20px); line-height:1.45; font-weight:900; color:var(--ink); text-wrap:balance; }
+.lyric-card .lc-prev::before{ content:"“"; color:var(--red); margin-right:4px; }
+.lyric-card .lc-prev::after{ content:"”"; color:var(--red); margin-left:4px; }
+
+/* ===== 接歌詞：選項 ===== */
+.lyric-opt{
+  display:grid; grid-template-columns:26px 1fr; align-items:center; gap:10px;
+  width:100%; min-height:38px; padding:5px 12px;
+  text-align:left; white-space:normal; line-height:1.35;
+  font-size:clamp(13px,3.5vw,15px);
+  transition:transform .12s, opacity .2s;
+}
+.lyric-opt:active:not(:disabled){ transform:scale(.98); }
+.lyric-opt .lo-key{
+  position:relative;
+  width:26px; height:26px; border-radius:50%;
+  display:flex; align-items:center; justify-content:center;
+  font-weight:800; font-size:12px; color:#fff;
+  background:var(--cobalt,#19a7d8);
+}
+.lyric-opt .lo-text{ font-weight:700; }
+.lyric-opt.wrong,
+.lyric-opt.removed{ opacity:.35; }
+
+/* 答對後停留：標示正解、其餘變暗 */
+.ogrid.held{ pointer-events:none; }
+.ogrid.held .lyric-opt:not(.correct){ opacity:.35; }
+.lyric-opt.correct{
+  color:#2B2108;
+  background:linear-gradient(180deg,#FBEBB8 0%,#E7C56F 55%,#C49A3C 100%);
+  box-shadow:inset 0 2px 1px rgba(255,255,255,.8), 0 4px 0 #8A6A22, 0 0 14px rgba(217,180,91,.6);
+}
+.lyric-opt.correct .lo-key{ background:var(--red); font-size:0; }
+.lyric-opt.correct .lo-key::after{ content:"✓"; font-size:14px; }
+.lyric-opt.wrong .lo-text,
+.lyric-opt.removed .lo-text{ text-decoration:line-through; }
+.lyric-opt.wrong .lo-key,
+.lyric-opt.removed .lo-key{ background:#888; }
+.lyric-opt.wrong .lo-key{ font-size:0; }
+.lyric-opt.wrong .lo-key::after{ content:"✖"; font-size:12px; }
+
+/* ===== 接歌詞：舞台（聽歌：唱片＋環形倒數 / 出題：題目卡片） ===== */
+#lyric-stage{
+  display:none; flex:1; min-height:0; width:100%;
+  flex-direction:column; align-items:center; justify-content:flex-start;
+  gap:var(--sp-2); padding-top:var(--sp-1); overflow:hidden;
+}
+#stage.lyrics-q .cwrap{ display:none; }
+#stage.lyrics-q #lyric-stage{ display:flex; }
+/* 聽歌時不顯示底部銀色面板，避免空白面板殘留 */
+#stage.ly-listen + .ibox{ display:none; }
+
+.ls-listen{ display:none; flex:1; min-height:0; width:100%; flex-direction:column; align-items:center; justify-content:center; gap:var(--sp-2); }
+#stage.ly-listen .ls-listen{ display:flex; }
+
+.ls-ring{
+  position:relative; flex:none;
+  width:min(54vw,26dvh,210px); min-width:110px; aspect-ratio:1;
+  border-radius:50%;
+  transition:box-shadow var(--t-base);
+}
+.ls-ring.on{ box-shadow:0 0 16px rgba(255,255,255,.1); }
+/* 出題預備：圓心變紅、放大、跳動；唱片邊緣只泛一圈柔和紅光 */
+.ls-ring.warn{ box-shadow:0 0 14px rgba(213,31,59,.4); }
+.ls-ring.warn .ls-vinyl{ border-color:rgba(240,107,121,.9); }
+.ls-ring.warn .ls-core{
+  width:50%;
+  background:radial-gradient(circle at 35% 30%, #F06B79, #C52B43 60%, #791B30);
+  border-color:#FFD0D5;
+  animation:lsbeat .5s ease-in-out infinite alternate;
+}
+.ls-ring.warn .ls-core b{ color:#fff; }
+
+.ls-vinyl{
+  width:100%; height:100%; border-radius:50%;
+  border:1px solid rgba(255,255,255,.55);
+  background:
+    radial-gradient(circle, #171719 0 8%, #D51F3B 8.5% 10%, #D8D5D5 10.5% 14%, transparent 14.5%),
+    repeating-radial-gradient(circle, transparent 0 3px, rgba(0,0,0,.08) 4px 5px),
+    conic-gradient(var(--disc-1), var(--disc-2), var(--disc-3), var(--disc-2), var(--disc-4), var(--disc-2), var(--disc-5), var(--disc-1));
+  animation:spin 3.6s linear infinite;
+  animation-play-state:paused;
+}
+.ls-vinyl.spin{ animation-play-state:running; }
+
+.ls-core{
+  position:absolute; left:50%; top:50%; width:36%; aspect-ratio:1; transition:width .35s ease;
+  transform:translate(-50%,-50%); border-radius:50%;
+  display:flex; flex-direction:column; align-items:center; justify-content:center;
+  color:var(--paper);
+  background:radial-gradient(circle at 35% 30%, #3A3540, var(--black) 70%);
+  border:2px solid var(--red);
+  box-shadow:0 0 0 3px rgba(0,0,0,.35), 0 2px 6px rgba(0,0,0,.5);
+}
+.ls-core b{ font-family:var(--serif); font-size:clamp(20px,6dvh,34px); font-weight:900; line-height:1; font-variant-numeric:tabular-nums; }
+.ls-core small{ margin-top:2px; font-size:9px; font-weight:800; letter-spacing:1px; color:rgba(232,231,231,.6); }
+
+.ls-genre{
+  padding:3px 12px; border-radius:var(--r-pill);
+  font-size:var(--fs-xs); font-weight:700; letter-spacing:.08em;
+  color:var(--paper); background:rgba(255,255,255,.1); border:1px solid rgba(255,255,255,.2);
+}
+.ls-genre:empty{ display:none; }
+.ls-text:empty{ display:none; }
+
+/* 狀態提示：燈號 + 小字（不是題目，刻意比歌詞低調） */
+.ls-wait{
+  width:100%; min-height:72px;
+  display:flex; align-items:center; justify-content:center; gap:10px;
+  font-size:var(--fs-sm); font-weight:600; letter-spacing:.2em;
+  color:rgba(232,231,231,.75);
+  --lamp:#F2B93B;            /* 預設：黃燈（播放中） */
+}
+.ls-wait.ready{ --lamp:#E5334F; color:#fff; }   /* 紅燈（出題預備） */
+
+.ls-lamp{
+  width:10px; height:10px; border-radius:50%; flex:none;
+  background:var(--lamp);
+  box-shadow:0 0 8px var(--lamp);
+  animation:lamp 1.6s ease-in-out infinite alternate;
+}
+.ls-wait.ready .ls-lamp{ animation-duration:.45s; }
+
+@keyframes lamp{
+  from{ opacity:.45; box-shadow:0 0 3px var(--lamp); }
+  to  { opacity:1;   box-shadow:0 0 10px var(--lamp); }
+}
+
+.ls-text.beat{ font-family:var(--serif); font-size:var(--fs-lg); font-weight:900; opacity:1; animation:lsfade .3s ease both; }
+
+/* ===== 接歌詞：聽歌 → 出題 轉場 ===== */
+#stage.ly-leave .ls-listen{ animation:lsleave .7s ease-in forwards; }
+#stage.ly-enter + .ibox{ animation:lsup .4s ease-out backwards; }
+#stage.ly-enter + .ibox .lyric-opt{ animation:lsopt .3s ease-out backwards; animation-delay:calc(.3s + var(--i,0) * .06s); }
+#stage.ly-enter + .ibox .items{ animation:lsopt .3s ease-out .6s backwards; }
+#trow.tin{ animation:lsfade .3s ease both; }
+
+@keyframes lsleave{ to{ transform:scale(.7); opacity:0; } }
+@keyframes lsup{ from{ transform:translateY(36px); opacity:0; } to{ transform:none; opacity:1; } }
+@keyframes lsopt{ from{ transform:translateY(10px); opacity:0; } to{ transform:none; opacity:1; } }
+@keyframes lsfade{ from{ opacity:0; } to{ opacity:1; } }
+@keyframes lsbeat{ from{ transform:translate(-50%,-50%) scale(1); } to{ transform:translate(-50%,-50%) scale(1.09); } }
+.ls-text{ font-size:var(--fs-sm); font-weight:700; letter-spacing:.1em; color:var(--paper); opacity:.85; }

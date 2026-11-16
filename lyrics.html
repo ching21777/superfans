@@ -11,6 +11,8 @@
 <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@400;500;600;700&display=swap" rel="stylesheet">
 
 <link rel="stylesheet" href="css/solo.css">
+<link rel="stylesheet" href="css/lyrics.css">
+
 </head>
 <body>
 
@@ -19,31 +21,18 @@
   <header class="header">
     <h1 class="logo">Super Fans</h1>
     <div class="header-actions">
-  <div class="mode-badge" id="mode" style="display:none">Loading</div>
+      <div class="mode-badge" id="mode" style="display:none">Loading</div>
 
-  <button class="rules-open"
-        onclick="show('m-rules')"
-        aria-label="計分方式"
-        title="計分方式">
+      <button class="rules-open" onclick="show('m-rules')" aria-label="計分方式" title="計分方式">
+        <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="12" cy="12" r="10"/>
+          <line x1="12" y1="11" x2="12" y2="16"/>
+          <circle cx="12" cy="8" r=".8" fill="currentColor" stroke="none"/>
+        </svg>
+      </button>
 
-  <svg viewBox="0 0 24 24"
-       width="20"
-       height="20"
-       fill="none"
-       stroke="currentColor"
-       stroke-width="1.8"
-       stroke-linecap="round"
-       stroke-linejoin="round">
-
-    <circle cx="12" cy="12" r="10"/>
-    <line x1="12" y1="11" x2="12" y2="16"/>
-    <circle cx="12" cy="8" r=".8" fill="currentColor" stroke="none"/>
-
-  </svg>
-</button>
-
-  <button class="quit-btn" id="quit-btn" onclick="confirmQuit()">HOME</button>
-</div>
+      <button class="quit-btn" id="quit-btn" onclick="confirmQuit()">HOME</button>
+    </div>
   </header>
 
   <div class="progress">
@@ -71,6 +60,27 @@
       <div class="case" id="case"><div class="q">?</div><img id="art" alt=""></div>
     </div></div>
 
+    <div id="lyric-stage">
+      <div class="ls-wait" id="ls-wait" style="display:none">
+        <i class="ls-lamp"></i><span id="ls-wait-text">播放中</span>
+      </div>
+
+      <div id="lyric-prompt" class="lyric-card" style="display:none">
+        <div class="lc-label">換你唱！</div>
+        <div class="lc-prev" id="lyric-prev"></div>
+      </div>
+
+      <div class="ls-listen">
+        <div class="ls-ring" id="ls-ring">
+          <div class="ls-vinyl" id="ls-vinyl"></div>
+          <div class="ls-core"><b>♪</b></div>
+        </div>
+        <div class="ls-genre" id="ls-genre"></div>
+        <div class="ls-text" id="ls-text"></div>
+      </div>
+
+    </div>
+
     <div class="timeout-overlay" id="timeout-overlay">
       <div class="timeout-title">TIME'S UP!</div>
       <div class="timeout-sub">時間到！</div>
@@ -92,24 +102,18 @@
         <button class="bevel go" style="padding:0 var(--sp-4)" onclick="submitAnswer()">送出</button>
       </div>
     </div>
-    
+
     <div id="choice-sec" style="display:none"><div class="ogrid" id="ogrid"></div></div>
 
     <div class="items" id="items">
-  <button class="item" id="choice-btn" onclick="toChoice()">
-    <span class="ic">🆘</span><span class="tx"><b>改選擇題</b><small id="choice-sub">分數打折</small></span>
-  </button>
+      <button class="item" id="choice-btn" onclick="toChoice()">
+        <span class="ic">🆘</span><span class="tx"><b>改選擇題</b><small id="choice-sub">分數打折</small></span>
+      </button>
 
-  <!-- 原本的暫停功能，暫時保留
-  <button class="item" id="pause-btn" onclick="doPause()">
-    <span class="ic">⏸</span><span class="tx"><b>暫停</b><small id="pause-sub">可用一次</small></span>
-  </button>
-  -->
-
-  <button class="item" id="pause-btn" onclick="doHint()">
-    <span class="ic">💡</span><span class="tx"><b>首字提示</b><small id="pause-sub">可用一次</small></span>
-  </button>
-</div>
+      <button class="item" id="pause-btn" onclick="doHint()">
+        <span class="ic">💡</span><span class="tx"><b>首字提示</b><small id="pause-sub">可用一次</small></span>
+      </button>
+    </div>
 
     <div id="next-sec" style="display:none"></div>
   </div>
@@ -132,9 +136,9 @@
     </div>
 
     <div class="copyright-notice">
-  Song Source: Apple Music<br>
-  Personal Project ． Beta Version<br>
-</div>
+      Song Source: Apple Music<br>
+      Personal Project ． Beta Version<br>
+    </div>
 
     <!-- 開發用：網址加 ?dev 才會顯示 -->
     <button class="bevel btn-sm" id="test-btn" hidden onclick="testResult()">[test] 預覽結算畫面</button>
@@ -152,17 +156,17 @@
       <p><b>🔥 Combo：</b>連續答對，額外加分</p>
       <p><b>🆘 選擇提示：</b>降低難度，分數也打折</p>
       <p><b>💡 首字提示：</b>每題可用 1 次</p>
+      <p><b>🎤 接歌詞：</b>閱讀上句歌詞，選出正確的下一句</p>
+      <p><b>✂️ 刪去一項：</b>接歌詞每題可用 1 次，分數打折</p>
+      <p><b>🔁 重播一次：</b>接歌詞每題可重聽 1 次（作答時間暫停）</p>
     </div>
   </div>
 </div>
 
-
 <!-- 選歌單 -->
 <div class="ov" id="m-theme">
   <div class="mc">
-
     <button class="x" onclick="hide('m-theme'); show('m-start')">✖</button>
-
     <div class="logo">Super Fans</div>
     <div class="theme-subtitle">選擇歌單，開始挑戰</div>
 
@@ -171,11 +175,10 @@
       <button class="tb" data-k="she" onclick="pickTheme('she')">✬✬｜ S.H.E 鐵粉爭霸戰 ➔</button>
       <button class="tb" data-k="fish" onclick="pickTheme('fish')">✬✬｜ 梁靜茹精選情歌 ➔</button>
       <button class="tb" data-k="vagabond" onclick="pickTheme('vagabond')">✬✬✬｜走啊聽團！2026 浪人祭 ➔</button>
+      <button class="tb" data-k="lyrics" onclick="pickTheme('lyrics')">TEST｜接歌詞題庫 ➔</button>
     </div>
-
   </div>
 </div>
-
 
 <!-- 試玩結束 -->
 <div class="ov" id="m-demo">
@@ -188,21 +191,6 @@
     </div>
   </div>
 </div>
-
-<!--
-中場休息功能（停用中）
-<div class="ov" id="m-half">
-  <div class="mc">
-    <div class="mt">中場休息</div>
-    <p style="color:var(--text-sub)">休息一下，喝水上廁所</p>
-    <div class="stats">
-      <div>目前金幣<br><span id="h-score" style="font-size:var(--fs-lg);color:var(--magenta)">0</span></div>
-      <div>目前連擊<br><span id="h-combo" style="font-size:var(--fs-lg);color:var(--cobalt)">0</span></div>
-    </div>
-    <button class="bevel go btn-lg" onclick="resumeHalf()">▶ 繼續下半場</button>
-  </div>
-</div>
--->
 
 <!-- 暫停 -->
 <div class="ov" id="m-pause">
@@ -224,7 +212,6 @@
     </div>
   </div>
 </div>
-
 
 
 <!-- ==================== 結算畫面 ==================== -->
@@ -285,6 +272,206 @@
 <script>
 
 /* ==========================================
+   接歌詞題庫 LYRICS DATABASE
+========================================== */
+
+const SONG_DATABASE = [
+  {
+    id: 1,
+    title: "晴天",
+    artist: "周杰倫 Jay Chou",
+    genre: "2000s 經典華語",
+    itunesQuery: "晴天 周杰倫",
+    customPreviewUrl: "",
+    playUntil: 9,            // 從頭播放到第幾秒（0~30）
+    prevLyric: "吹著前奏望著天空　我想起_____",
+    correctNext: "花瓣試著掉落",
+    distractors: [
+      "風兒吹散的夢",
+      "妳卻消失街角",
+      "陽台衣服沒收"
+    ]
+  },
+  {
+    id: 2,
+    title: "小幸運",
+    artist: "田馥甄 Hebe Tien",
+    genre: "電影主題曲",
+    itunesQuery: "小幸運 田馥甄",
+    customPreviewUrl: "",
+    playUntil: 19.5,            // 從頭播放到第幾秒（0~30）
+    prevLyric: "也許當時忙著_____　忙著追逐天空中的流星",
+    correctNext: "微笑和哭泣",
+    distractors: [
+      "賞月和登頂",
+      "微醺和生氣",
+      "哭哭又啼啼"
+    ]
+  },
+  {
+    id: 3,
+    title: "心電心",
+    artist: "王心凌",
+    genre: "動感舞曲",
+    itunesQuery: "心電心 王心凌",
+    customPreviewUrl: "",
+    playUntil: 16,            // 從頭播放到第幾秒（0~30）
+    prevLyric: "手心貼手心　一起心電心　_____　__________",
+    correctNext: "高矮不在意　也不管你幾公斤",
+    distractors: [
+      "幸福在洋溢　全世界我最吸睛",
+      "張開你的手　跟著我大聲黏TT",
+      "第一次赴約　如此緊張又刺激"
+    ]
+  },
+  {
+    id: 4,
+    title: "稻香",
+    artist: "周杰倫 Jay Chou",
+    genre: "療癒民謠風",
+    itunesQuery: "稻香 周杰倫",
+    customPreviewUrl: "",
+    playUntil: 13,            // 從頭播放到第幾秒（0~30）
+    prevLyric: "還記得你說家是唯一的城堡　_____",
+    correctNext: "隨著稻香河流繼續奔跑",
+    distractors: [
+      "微風吹過田野間的微笑",
+      "帶著童年的紙飛機尋找",
+      "回到最初最溫暖的懷抱"
+    ]
+  },
+  {
+    id: 5,
+    title: "不是因為天氣晴朗才愛你",
+    artist: "理想混蛋",
+    genre: "抒情",
+    itunesQuery: "不是因為天氣晴朗才愛你 理想混蛋",
+    customPreviewUrl: "",
+    playUntil: 20,            // 從頭播放到第幾秒（0~30）
+    prevLyric: "才一直　一直　________　擁抱你　什麼角度最合適",
+    correctNext: "一直在腦海裡複習",
+    distractors: [
+      "一直在人海裡嘆息",
+      "一直在睡夢中清醒",
+      "一直在幻想裡預習"
+    ]
+  },
+  {
+    id: 6,
+    title: "美麗新世界",
+    artist: "S.H.E",
+    genre: "N/A",
+    itunesQuery: "美麗新世界 S.H.E",
+    customPreviewUrl: "",
+    playUntil: 19,            // 從頭播放到第幾秒（0~30）
+    prevLyric: "別再記著昨天　還有什麼悲傷　_____",
+    correctNext: "Baby don't cry",
+    distractors: [
+      "Honey don't lie",
+      "Jump to the sky",
+      "Trust we can fly"
+    ]
+  },
+  {
+    id: 7,
+    title: "修煉愛情",
+    artist: "林俊傑 JJ Lin",
+    genre: "金曲抒情",
+    itunesQuery: "修煉愛情 林俊傑",
+    customPreviewUrl: "",
+    playUntil: 11,            // 從頭播放到第幾秒（0~30）
+    prevLyric: "我們那些信仰　_____",
+    correctNext: "要忘記多難",
+    distractors: [
+      "該怎麼原諒",
+      "還依然滾燙",
+      "要如何前往"
+    ]
+  },
+  {
+    id: 8,
+    title: "後來",
+    artist: "劉若英 Rene Liu",
+    genre: "華語金曲",
+    itunesQuery: "後來 劉若英",
+    customPreviewUrl: "",
+    playUntil: 8,            // 從頭播放到第幾秒（0~30）
+    prevLyric: "後來　我總算學會了如何去愛　可惜你　_______________",
+    correctNext: "早已遠去消失在人海",
+    distractors: [
+      "已經離開不等我回來",
+      "被帶走了青春的對白",
+      "在人海中走散了未來"
+    ]
+  },
+  {
+    id: 9,
+    title: "突然好想你",
+    artist: "五月天 Mayday",
+    genre: "華語搖滾",
+    itunesQuery: "突然好想你 五月天",
+    customPreviewUrl: "",
+    playUntil: 19,            // 從頭播放到第幾秒（0~30）
+    prevLyric: "突然好想你　突然_____",
+    correctNext: "鋒利的回憶",
+    distractors: [
+      "諷刺的情書",
+      "瘋掉的回應",
+      "風鈴的回音"
+    ]
+  },
+  {
+    id: 10,
+    title: "我愛他",
+    artist: "丁噹",
+    genre: "影視主題曲",
+    itunesQuery: "我愛他 丁噹",
+    customPreviewUrl: "",
+    playUntil: 17,            // 從頭播放到第幾秒（0~30）
+    prevLyric: "曾為他相信明天就是未來　_____有多壞都不肯醒來",
+    correctNext: "情節",
+    distractors: [
+      "劇情",
+      "奇蹟",
+      "夢境"
+    ]
+  },
+  {
+    id: 11,
+    title: "想見你想見你想見你",
+    artist: "八三夭 831",
+    genre: "戲劇神曲",
+    itunesQuery: "想見你想見你想見你 八三夭",
+    customPreviewUrl: "",
+    playUntil: 22,            // 從頭播放到第幾秒（0~30）
+    prevLyric: "想見你只想見你　未來過去_____",
+    correctNext: "我只想見你",
+    distractors: [
+      "全都是為你",
+      "穿越了世紀",
+      "不能沒有你"
+    ]
+  },
+  {
+    id: 12,
+    title: "勇氣",
+    artist: "梁靜茹 Fish Leong",
+    genre: "經典情歌",
+    itunesQuery: "勇氣 梁靜茹",
+    customPreviewUrl: "",
+    playUntil: 19,            // 從頭播放到第幾秒（0~30）
+    prevLyric: "只要你一個眼神肯定　_____",
+    correctNext: "我的愛就有意義",
+    distractors: [
+      "就跨越所有距離",
+      "把真心交給了你",
+      "我們到下個世紀"
+    ]
+  }
+];
+
+
+/* ==========================================
    01. 遊戲設定 CONFIG
 ========================================== */
 
@@ -300,13 +487,13 @@ const CFG = {
   PAUSE_MAX: 1,
   CHOICE_COST: 0,
   MAX_TIME: 20,
-  REVEAL_MS: 5000
+  REVEAL_MS: 5000,
+  LYRIC_PLAY_SEC: 8   // 接歌詞：題庫沒填 playUntil 時的預設秒數
 };
 
 /* ---- PR 表現指數設定 ---- */
 const PR_CFG = {
   TOTAL: 100,
-
   WEIGHT: {
     CORRECT: 70,
     SPEED: 15,
@@ -375,11 +562,16 @@ let reqId = 0,
     hintLeft = 1,
     wasRunning = false;
 
-/*  pauseLeft = 0, 暫停功能用不到*/
-
-
 // 選擇題選項
 let opts = [];
+
+// 接歌詞：片段播放
+let clipTimer = null,
+    pendingClip = null,
+    replayLeft = 1,
+    lsTick = null,
+    fadeT = null,
+    clip = { url: '', start: 0, dur: 8 };
 
 
 /* ==========================================
@@ -403,7 +595,7 @@ function focusInput() {
 // 統一文字格式，方便比對歌名
 function sanitize(s) {
   return (s || '').toLowerCase()
-    .replace(/\(.*?\)|（.*?）|\[.*?\]|【.*?】/g, '')
+    .replace(/\([^)]*\)|（[^）]*）|\[[^\]]*\]|【[^】]*】/g, '')
     .replace(/[\s\-_()（）\[\]【】.,?!'"]/g, '');
 }
 
@@ -413,6 +605,10 @@ function fmtTime(sec) {
 }
 
 // 目前可用的歌曲清單（試玩模式混合三個歌單）
+function isLyricsMode() {
+  return !isDemo && theme === 'lyrics';
+}
+
 function songPool() {
   return isDemo
     ? [...playlists.drama, ...playlists.she, ...playlists.fish]
@@ -424,17 +620,12 @@ function songPool() {
    04. 計分系統 SCORING
 ========================================== */
 
-
 function calcScore(isChoice, tLeft, comboNow, lostCombo, attempts, usedHint = false) {
   // 依答題次數降低基本分
   const rates = [1, 0.79, 0.57, 0.36, 0.14];
   const attemptRate = rates[Math.min(attempts, 5) - 1] || 0.14;
 
-  const base = Math.round(
-    CFG.BASE *
-    attemptRate *
-    (isChoice ? 0.5 : 1)
-  );
+  const base = Math.round(CFG.BASE * attemptRate * (isChoice ? 0.5 : 1));
 
   // 速度分數
   let speed = Math.round(
@@ -471,7 +662,6 @@ function calcScore(isChoice, tLeft, comboNow, lostCombo, attempts, usedHint = fa
   };
 }
 
-
 // 本局理論最高分
 function maxScore(n = total) {
   let m = n * (CFG.BASE + CFG.SPEED);
@@ -483,7 +673,6 @@ function maxScore(n = total) {
 function grade(s) {
   const mx = maxScore(),
         r = mx > 0 ? s / mx : 0;
-
   return GRADES.find(g => r >= g.min);
 }
 
@@ -491,7 +680,6 @@ function grade(s) {
 function calcCorrectPR(attempts) {
   const base = PR_CFG.WEIGHT.CORRECT / total;
   const rates = [1, 5.5 / 7, 4 / 7, 2.5 / 7, 1 / 7];
-
   return base * (rates[Math.min(attempts, 5) - 1] || 0);
 }
 
@@ -506,19 +694,15 @@ function calcSpeedPR(tLeft, attempts) {
   if (attempts > 1) {
     points = Math.min(points, base * 0.5);
   }
-
   return points;
 }
 
 // 計算目前 PR
 function calcPR() {
   const comboPR = PR_CFG.WEIGHT.COMBO * maxCombo / total;
-
-  return Math.min(
-    PR_CFG.TOTAL,
-    prCorrect + prSpeed + comboPR
-  );
+  return Math.min(PR_CFG.TOTAL, prCorrect + prSpeed + comboPR);
 }
+
 
 /* ==========================================
    05. 音訊與計時 AUDIO & TIMER
@@ -570,7 +754,12 @@ function runTimer() {
 
 function stopAll() {
   clearInterval(tick);
+  clearTimeout(clipTimer);
+  clearInterval(lsTick);
+  clearInterval(fadeT);
+  pendingClip = null;
   audio.pause();
+  audio.volume = 1;
   $('disc').classList.remove('spin');
   $('cd').classList.remove('on');
   $('trow').classList.remove('danger');
@@ -579,57 +768,33 @@ function stopAll() {
 function playNow() {
   return audio.play()
     .then(() => {
-  $('tap').style.display = 'none';
-  $('disc').classList.add('spin');
-  $('cd').classList.add('on');
+      $('tap').style.display = 'none';
+      $('disc').classList.add('spin');
+      $('cd').classList.add('on');
 
-  questionStartAt = Date.now();
+      questionStartAt = Date.now();
 
-  runTimer();
-})
+      runTimer();
+    })
     .catch(() => {
       $('tap').style.display = 'flex';
     });
 }
 
 $('tap').onclick = () => {
+  if (pendingClip) {
+    const f = pendingClip;
+    pendingClip = null;
+    $('tap').style.display = 'none';
+    f();
+    return;
+  }
   if (active && !isPaused) playNow();
 };
 
-/*停用中：暫停功能
-
-function doPause() {
-  if (!active || isPaused || pauseLeft <= 0) return;
-
-  pauseLeft--;
-  updPauseBtn();
-
-  isPaused = true;
-  accumulateQuestionTime();
-  clearInterval(tick);
-  audio.pause();
-  $('disc').classList.remove('spin');
-
-  $('pause-note').textContent = '長頸鹿跟河馬去逛街買新衣服試穿時，長頸鹿問河馬：「我適合嗎？」河馬說：「你是長頸鹿，我才是河馬。」';
-  show('m-pause');
-}
-
-function resumePause() {
-  isPaused = false;
-  hide('m-pause');
-
-  focusInput();
-  playNow();
-}
-
-function updPauseBtn() {
-  $('pause-btn').disabled = pauseLeft <= 0;
-  $('pause-sub').textContent = pauseLeft > 0 ? `可用一次` : '已使用';
-}
-*/
-
 // 一字提示
 function doHint() {
+  if (isLyricsMode()) return;
   if (!active || isPaused || hintLeft <= 0 || !cur) return;
   if (usedChoice) return;
 
@@ -645,6 +810,7 @@ function updHintBtn() {
   $('pause-btn').disabled = hintLeft <= 0;
   $('pause-sub').textContent = hintLeft > 0 ? '每題一次' : '已使用';
 }
+
 
 /* ==========================================
    06. 畫面與動畫 DISPLAY
@@ -774,16 +940,14 @@ function pickTheme(k) {
   startGame();
 }
 
-
-
 function begin(demo) {
   unlockAudio();
 
   document.querySelectorAll('.ov').forEach(m => m.style.display = 'none');
   isDemo = demo;
-  total = demo ? 3 : 10;
+  total = demo ? 3 : (theme === 'lyrics' ? SONG_DATABASE.length : 10);
 
-  $('mode').textContent = demo ? '試玩模式' : '計分模式';
+  $('mode').textContent = demo ? '試玩模式' : (theme === 'lyrics' ? '接歌詞模式' : '計分模式');
   $('mode').style.display = 'block';
   $('quit-btn').style.display = 'block';
 
@@ -791,23 +955,21 @@ function begin(demo) {
   usedChoice = false;
   updHintBtn();
 
- /*  pauseLeft = CFG.PAUSE_MAX;
- updPauseBtn(); 暫停功能用不到*/
-
   score = 0;
   shown = 0;
   combo = 0;
   maxCombo = 0;
+
   // 重置 PR 數據
-questionAttempts = 0;
-prCorrect = 0;
-prSpeed = 0;
+  questionAttempts = 0;
+  prCorrect = 0;
+  prSpeed = 0;
   qDone = 0;
   qPtr = 0;
   cds = [];
   halfPassed = false;
 
-  queue = shuffle(uniq(songPool()));
+  queue = isLyricsMode() ? shuffle([...SONG_DATABASE]) : shuffle(uniq(songPool()));
 
   $('score').textContent = '0';
   updCombo();
@@ -863,7 +1025,7 @@ function next() {
   if (qDone >= total) return finish();
 
   // 載入下一題
-loadQuestion();
+  loadQuestion();
 }
 
 function finish() {
@@ -888,6 +1050,207 @@ function finish() {
    08. 題目與答題 QUESTION
 ========================================== */
 
+/* 依模式切換道具列 */
+function applyItemMode() {
+  const c = $('choice-btn'), h = $('pause-btn');
+
+  if (isLyricsMode()) {
+    c.querySelector('.ic').textContent = '✂️';
+    c.querySelector('b').textContent = '刪去一項';
+    $('choice-sub').textContent = '可用一次';
+    c.disabled = false;
+    c.onclick = useEliminate;
+
+    h.querySelector('.ic').textContent = '🔁';
+    h.querySelector('b').textContent = '重播一次';
+    $('pause-sub').textContent = '可用一次';
+    h.disabled = false;
+    h.onclick = useReplay;
+  } else {
+    c.querySelector('.ic').textContent = '🆘';
+    c.querySelector('b').textContent = '改選擇題';
+    c.onclick = toChoice;
+
+    h.querySelector('.ic').textContent = '💡';
+    h.querySelector('b').textContent = '首字提示';
+    h.onclick = doHint;
+  }
+}
+
+/* 接歌詞道具：隨機刪掉一個錯誤選項（分數 ×0.8，不影響連擊） */
+function useEliminate() {
+  if (!active || isPaused || !isLyricsMode()) return;
+
+  const wrongs = [...$('ogrid').querySelectorAll('.opt:not(:disabled)')]
+    .filter(b => opts[+b.dataset.i] !== cur.correctNext);
+  if (wrongs.length < 2) return;   // 至少留一個錯誤選項，避免只剩正解
+
+  const b = wrongs[Math.floor(Math.random() * wrongs.length)];
+  b.disabled = true;
+  b.classList.add('removed');
+
+  usedHint = true;                 // 沿用既有的提示折扣 0.8
+  $('choice-btn').disabled = true;
+  $('choice-sub').textContent = '已使用';
+}
+
+/* 接歌詞：舞台狀態（唱片轉動 / 停止） */
+function setLyricStage(playing) {
+  document.querySelectorAll('.ls-vinyl').forEach(v => v.classList.toggle('spin', playing));
+  $('ls-ring').classList.toggle('on', playing);
+  $('ls-text').textContent = '';
+  $('ls-text').classList.remove('beat');
+}
+
+/* 接歌詞：歌詞字幕出現（取代狀態燈號） */
+function showLyricText() {
+  $('ls-wait').style.display = 'none';
+  $('lyric-prompt').style.display = 'block';
+}
+
+/* 出題前的預告時機（秒，指「距離音樂停止還剩幾秒」） */
+const LY_WARN_SEC = 6;   // 唱片變紅、燈號轉紅「出題預備」
+const LY_Q_SEC    = 3;   // 歌詞出現
+
+/* 接歌詞：三段式狀態
+   播放中（黃燈）→ 出題預備（紅燈、唱片變紅）→ 歌詞出現 */
+function startLsTick() {
+  clearInterval(lsTick);
+  const t0 = Date.now();
+
+  const upd = () => {
+    const remain = Math.max(0, clip.dur - (Date.now() - t0) / 1000);
+    const ready = remain > 0 && remain <= LY_WARN_SEC;
+
+    $('ls-ring').classList.toggle('warn', ready);
+    $('ls-wait').classList.toggle('ready', ready);
+
+    if (remain <= LY_Q_SEC) {
+      showLyricText();
+    } else if (ready) {
+      $('ls-wait-text').textContent = '出題預備';
+    }
+  };
+
+  upd();
+  lsTick = setInterval(upd, 100);
+}
+
+/* 轉場節奏設定（毫秒） */
+const LY_FADE_MS  = 100;   // 音樂淡出
+const LY_LEAVE_MS = 300;   // 聽歌畫面退場
+const LY_ENTER_MS = 800;   // 題目與選項依序進場（結束後才開始作答倒數）
+const LY_HOLD_MS  = 2000;  // 答對後停留在選項畫面（音樂續播）的時間
+
+/* 音量漸漸降到 0 再暫停（iOS Safari 不支援調音量，會直接停） */
+function fadeOutAudio(ms, cb) {
+  clearInterval(fadeT);
+  const v0 = audio.volume, t0 = Date.now();
+
+  fadeT = setInterval(() => {
+    const p = ms > 0 ? Math.min(1, (Date.now() - t0) / ms) : 1;
+    audio.volume = Math.max(0, v0 * (1 - p));
+
+    if (p >= 1) {
+      clearInterval(fadeT);
+      audio.pause();
+      audio.volume = 1;
+      cb();
+    }
+  }, 40);
+}
+
+/* 接歌詞：播放指定秒數的片段（結尾淡出），停止後呼叫 done
+   leaveEarly = true：音樂開始淡出時，唱片就同步慢慢退場，停止時直接接出題，不會突然跳畫面 */
+function playClip(my, done, leaveEarly = false) {
+  clearTimeout(clipTimer);
+
+  const go = () => {
+    if (my !== reqId) return;
+
+    try { audio.currentTime = clip.start; } catch (e) {}
+    audio.volume = 1;
+
+    audio.play().then(() => {
+      if (my !== reqId) return;
+
+      $('tap').style.display = 'none';
+      setLyricStage(true);
+      startLsTick();
+
+      // 在結束前 LY_FADE_MS 開始淡出，剛好在 playUntil 那一秒靜音
+      clipTimer = setTimeout(() => {
+        if (leaveEarly) $('stage').classList.add('ly-leave');
+
+        fadeOutAudio(LY_FADE_MS, () => {
+          clearInterval(lsTick);
+          setLyricStage(false);
+          if (my === reqId) done();
+        });
+      }, Math.max(0, clip.dur * 1000 - LY_FADE_MS));
+    }).catch(() => {
+      if (my !== reqId) return;
+      pendingClip = go;
+      $('tap').style.display = 'flex';
+    });
+  };
+
+  go();
+}
+
+/* 接歌詞：轉場到出題（唱片縮小 → 面板滑上 → 題目與選項依序出現 → 才開始作答倒數） */
+function showLyricQuestion() {
+  const my = reqId, st = $('stage');
+  showLyricText();   // 太短或沒音檔的題目，確保歌詞一定會出現
+
+  const wait = st.classList.contains('ly-leave') ? 0 : LY_LEAVE_MS;   // 已在淡出時退場就不用再等
+  st.classList.add('ly-leave');
+
+  clipTimer = setTimeout(() => {
+    if (my !== reqId) return;
+
+    st.classList.remove('ly-leave', 'ly-listen');
+    st.classList.add('ly-enter');
+
+    $('trow').style.display = '';
+    $('trow').style.visibility = 'hidden';   // 先保留位置，避免版面跳動
+    $('choice-sec').style.display = 'block';
+    $('items').style.display = '';
+
+    clipTimer = setTimeout(() => {
+      if (my !== reqId) return;
+
+      $('trow').style.visibility = '';
+      $('trow').classList.add('tin');
+
+      active = true;
+      questionStartAt = Date.now();
+      runTimer();
+    }, LY_ENTER_MS);
+  }, wait);
+}
+
+/* 接歌詞道具：重播一次（作答時間暫停，播完才繼續） */
+function useReplay() {
+  if (!active || isPaused || !isLyricsMode() || replayLeft <= 0 || !clip.url) return;
+
+  const my = reqId;
+  replayLeft--;
+  say('🔁 重播中…', '#A9233B');
+  $('pause-btn').disabled = true;
+  $('pause-sub').textContent = '已使用';
+
+  active = false;
+  accumulateQuestionTime();
+  clearInterval(tick);
+
+  playClip(my, () => {
+    active = true;
+    questionStartAt = Date.now();
+    runTimer();
+  });
+}
+
 async function loadQuestion() {
   const my = ++reqId;
 
@@ -902,11 +1265,15 @@ async function loadQuestion() {
   usedChoice = false;
   usedHint = false;
   questionAttempts = 0;
+
   // 每首新歌重新開放一次提示
   hintLeft = 1;
   updHintBtn();
 
   $('trow').classList.remove('done');
+  $('trow').style.display = '';
+  $('trow').style.visibility = '';
+  $('trow').classList.remove('tin');
   $('banner').classList.remove('show');
   $('timeout-overlay').style.display = 'none';
   $('case').classList.remove('rev');
@@ -914,8 +1281,16 @@ async function loadQuestion() {
 
   $('type-sec').style.display = '';
   $('choice-sec').style.display = 'none';
+  $('lyric-prompt').style.display = 'none';
+  $('ls-wait').style.display = 'none';
+  $('ogrid').classList.remove('held');
+  $('ogrid').style.gridTemplateColumns = '';
+  $('ogrid').style.maxHeight = '';
+  $('ogrid').style.overflowY = '';
+  $('ogrid').style.gap = '';
+
   $('next-sec').style.display = 'none';
-  $('stage').classList.remove('rev');
+  $('stage').classList.remove('rev', 'lyrics-q', 'ly-listen', 'ly-leave', 'ly-enter');
   $('inp').value = '';
   $('inp').classList.remove('shake');
 
@@ -924,12 +1299,18 @@ async function loadQuestion() {
   $('choice-btn').disabled = false;
   $('choice-sub').textContent = CFG.CHOICE_COST ? `花 ${CFG.CHOICE_COST} 金幣` : '分數打折';
   $('items').style.display = '';
+  applyItemMode();
 
   timeLeft = CFG.MAX_TIME;
   $('tbar').style.width = '100%';
   $('tnum').textContent = CFG.MAX_TIME + 's';
 
   renderProg();
+
+  if (isLyricsMode()) {
+    await loadLyricsQuestion(my);
+    return;
+  }
 
   while (qPtr < queue.length) {
     const term = queue[qPtr++],
@@ -969,7 +1350,7 @@ async function loadQuestion() {
         active = true;
 
         focusInput();
-        playNow();;
+        playNow();
         return;
       }
     } catch (e) {
@@ -981,6 +1362,104 @@ async function loadQuestion() {
   total = qDone;
   finish();
 }
+
+
+async function loadLyricsQuestion(my) {
+  const item = queue[qPtr++];
+
+  if (!item) {
+    total = qDone;
+    finish();
+    return;
+  }
+
+  let track = null;
+
+  try {
+    const response = await fetch(
+      `https://itunes.apple.com/search?term=${encodeURIComponent(item.itunesQuery)}&entity=song&limit=10&country=TW`
+    );
+    const data = await response.json();
+
+    if (my !== reqId) return;
+
+    const results = (data.results || []).filter(x => x.previewUrl);
+    track = results.find(x =>
+      sanitize(x.trackName).includes(sanitize(item.title)) &&
+      x.artistName.toLowerCase().includes(item.artist.split(' ')[0].toLowerCase())
+    ) || results.find(x =>
+      sanitize(x.trackName).includes(sanitize(item.title))
+    ) || results[0] || null;
+  } catch (error) {
+    if (my !== reqId) return;
+  }
+
+  if (my !== reqId) return;
+
+  cur = {
+    id: item.id,
+    title: item.title,
+    artist: item.artist,
+    genre: item.genre,
+    prevLyric: item.prevLyric,
+    correctNext: item.correctNext,
+    art: track?.artworkUrl100
+      ? track.artworkUrl100.replace('100x100', '600x600')
+      : '',
+    album: track?.collectionName || '',
+    year: (track?.releaseDate || '').slice(0, 4)
+  };
+
+  $('lyric-prev').textContent = item.prevLyric;
+
+  opts = shuffle([item.correctNext, ...item.distractors]);
+  const LETTERS = ['A', 'B', 'C', 'D'];
+
+  $('ogrid').style.gridTemplateColumns = '1fr';
+  $('ogrid').style.gap = '6px';
+  $('ogrid').innerHTML = opts.map((_, i) =>
+    `<button class="opt lyric-opt" data-i="${i}" style="--i:${i}">
+       <span class="lo-key">${LETTERS[i]}</span><span class="lo-text"></span>
+     </button>`
+  ).join('');
+  $('ogrid').querySelectorAll('.lo-text').forEach((el, i) => { el.textContent = opts[i]; });
+
+  // 聽歌階段：題目（上句歌詞）立刻顯示，選項與道具先隱藏
+  $('type-sec').style.display = 'none';
+  $('choice-sec').style.display = 'none';
+  $('items').style.display = 'none';
+  $('tap').style.display = 'none';
+  $('stage').classList.add('lyrics-q', 'ly-listen');
+  $('trow').style.display = 'none';
+
+  const previewUrl = item.customPreviewUrl || track?.previewUrl || '';
+  clip = {
+    url: previewUrl,
+    start: 0,                                          // 一律從頭播放
+    dur: item.playUntil || CFG.LYRIC_PLAY_SEC          // 播到第幾秒（題庫的 playUntil）
+  };
+  replayLeft = previewUrl ? 1 : 0;
+
+  $('ls-genre').textContent = item.genre ? '♪ ' + item.genre : '';
+  $('ls-ring').classList.remove('warn');
+  $('ls-wait').classList.remove('ready');      // 重設回黃燈
+  $('ls-wait-text').textContent = '播放中';
+  $('ls-wait').style.display = 'flex';
+  $('lyric-prompt').style.display = 'none';
+  $('ls-text').classList.remove('beat');
+
+  if (previewUrl) {
+    audio.src = previewUrl;
+    setLyricStage(true);
+    playClip(my, showLyricQuestion, true);
+  } else {
+    // 沒有試聽音檔：直接出題，重播道具停用
+    showLyricQuestion();
+    $('pause-btn').disabled = true;
+    $('pause-sub').textContent = '無音檔';
+  }
+}
+
 
 function submitAnswer() {
   if (!active || isPaused) return;
@@ -995,9 +1474,6 @@ function submitAnswer() {
     return;
   }
 
-  // 暫時中：答錯扣分機制
-  // setScore(Math.max(0, score - 10));
-
   // 答錯立即中斷連擊
   choiceMiss = true;
   combo = 0;
@@ -1011,12 +1487,13 @@ function submitAnswer() {
   b.classList.add('shake');
 
   if (window.matchMedia('(hover: none) and (pointer: coarse)').matches) {
-  b.focus({ preventScroll: true });
-}
+    b.focus({ preventScroll: true });
+  }
 }
 
 // 改選擇題
 function toChoice() {
+  if (isLyricsMode()) return;
   if (!active || isPaused || choiceUsed) return;
 
   choiceUsed = true;
@@ -1047,15 +1524,14 @@ $('ogrid').onclick = e => {
 
   questionAttempts++;
 
-  if (opts[+b.dataset.i] === cur.title) {
-    correct(true);
+  if (opts[+b.dataset.i] === (isLyricsMode() ? cur.correctNext : cur.title)) {
+    correct(isLyricsMode() ? false : true);
     return;
   }
 
-  // 暫時中：答錯扣分機制
-  // setScore(Math.max(0, score - 10));
   b.disabled = true;
-  b.textContent += ' ✖';
+  if (isLyricsMode()) b.classList.add('wrong');
+  else b.textContent += ' ✖';
 
   // 答錯立即中斷連擊
   choiceMiss = true;
@@ -1070,16 +1546,16 @@ function correct(isChoice) {
   maxCombo = Math.max(maxCombo, combo);
 
   const s = calcScore(isChoice, timeLeft, combo, choiceMiss || (usedHint && isChoice), questionAttempts, usedHint);
-  
+
   // 首字提示 + 選擇題：中斷連擊
   if (usedHint && isChoice) {
-  combo = 0;
-  updCombo();
-}
-  
+    combo = 0;
+    updCombo();
+  }
+
   // 累積 PR 的答對與速度分數
-prCorrect += calcCorrectPR(questionAttempts);
-prSpeed += calcSpeedPR(timeLeft, questionAttempts);
+  prCorrect += calcCorrectPR(questionAttempts);
+  prSpeed += calcSpeedPR(timeLeft, questionAttempts);
 
   // 專輯品質：剩餘時間越多越好
   let cond = 'near-mint';
@@ -1094,7 +1570,28 @@ prSpeed += calcSpeedPR(timeLeft, questionAttempts);
   if (s.speed) tag('r', `⚡ 速度 +${s.speed}`, '#4fd6ff', 0);
   if (s.bonus) tag('r', `🔥 連擊 +${s.bonus}`, '#ff5ca8', 100);
 
-  reveal();
+  if (isLyricsMode()) holdCorrectLyric();
+  else reveal();
+}
+
+/* 接歌詞：標示正解後停留在選項畫面，音樂從停止處續播，LY_HOLD_MS 後切到專輯 */
+function holdCorrectLyric() {
+  active = false;
+  clearInterval(tick);
+  $('trow').classList.remove('danger');
+
+  const right = [...$('ogrid').querySelectorAll('.opt')]
+    .find(b => opts[+b.dataset.i] === cur.correctNext);
+  if (right) right.classList.add('correct');
+  $('ogrid').classList.add('held');
+
+  if (clip.url) {
+    audio.volume = 1;
+    audio.play().catch(() => {});
+  }
+
+  clearTimeout(clipTimer);
+  clipTimer = setTimeout(reveal, LY_HOLD_MS);
 }
 
 function timeout() {
@@ -1107,9 +1604,18 @@ function timeout() {
   active = false;
   $('timeout-overlay').style.display = 'flex';
 
-  setTimeout(() => {
+  // 逾時後也要讓玩家看見正解，流程與答對時一致。
+  // 使用共用計時器，切換題目時 stopAll() 可以一併清除。
+  clearTimeout(clipTimer);
+  clipTimer = setTimeout(() => {
     $('timeout-overlay').style.display = 'none';
-    reveal();
+
+    if (isLyricsMode()) {
+      // 不計分，只借用答對時的「標示正解 → 停留 → 揭曉」流程。
+      holdCorrectLyric();
+    } else {
+      reveal();
+    }
   }, 1200);
 }
 
@@ -1124,6 +1630,19 @@ function reveal() {
   $('art').src = cur.art;
   $('case').classList.add('rev');
   $('stage').classList.add('rev');
+  $('stage').classList.remove('lyrics-q', 'ly-listen', 'ly-leave', 'ly-enter');
+  clearTimeout(clipTimer);
+  clearInterval(fadeT);
+  audio.volume = 1;
+  clearInterval(lsTick);
+
+  // 接歌詞：揭曉時從停止的位置繼續播放
+  if (isLyricsMode() && clip.url) {
+    audio.play().then(() => {
+      $('disc').classList.add('spin');
+      $('cd').classList.add('on');
+    }).catch(() => {});
+  }
 
   $('b-title').textContent = cur.title;
   $('b-artist').textContent = cur.artist;
@@ -1132,6 +1651,8 @@ function reveal() {
 
   $('type-sec').style.display = 'none';
   $('choice-sec').style.display = 'none';
+  $('lyric-prompt').style.display = 'none';
+  $('ls-wait').style.display = 'none';
   $('items').style.display = 'none';
 
   const n = $('next-sec');
@@ -1166,7 +1687,7 @@ function saveHistory() {
       score,
       combo: maxCombo,
       time: fmtTime(Math.floor(totalAnswerTime)),
-      playlist: names[theme]
+      playlist: (typeof names !== 'undefined' && names[theme]) || (theme === 'lyrics' ? '接歌詞題庫' : theme)
     });
 
     h.sort((a, b) => b.score - a.score);
@@ -1183,36 +1704,35 @@ function loadHistory() {
     h = JSON.parse(localStorage.getItem(HISTORY_KEY) || '[]');
   } catch (e) {}
 
-// 歌單簡稱對照表
-const playlistShort = {
-  '經典偶像劇': '偶像劇金曲',
-  'S.H.E 特輯': 'S.H.E 精選',
-  '梁靜茹特輯': '梁靜茹精選',
-  '2026 浪人祭': '浪人祭合輯'
-};
-
+  // 歌單簡稱對照表
+  const playlistShort = {
+    '經典偶像劇': '偶像劇金曲',
+    'S.H.E 特輯': 'S.H.E 精選',
+    '梁靜茹特輯': '梁靜茹精選',
+    '2026 浪人祭': '浪人祭合輯'
+  };
 
   // 固定顯示三個名額
   $('hist').innerHTML = Array.from({length: 3}, (_, i) => {
     const x = h[i];
 
     if (x) {
-  return `
-    <li class="hi">
-      <span class="hi-main">
-        <span class="g">${x.grade}</span>
-        <b class="hi-score">🪙${x.score}</b>
-        <span>${x.title}</span>
-      </span>
+      return `
+        <li class="hi">
+          <span class="hi-main">
+            <span class="g">${x.grade}</span>
+            <b class="hi-score">🪙${x.score}</b>
+            <span>${x.title}</span>
+          </span>
 
-      <span class="hi-info">
-        <span>🔥${x.combo}</span>
-        <span>⏱️${x.time}</span>
-        <small class="playlist-tag">${playlistShort[x.playlist] || x.playlist}</small>
-      </span>
-    </li>
-  `;
-}
+          <span class="hi-info">
+            <span>🔥${x.combo}</span>
+            <span>⏱️${x.time}</span>
+            <small class="playlist-tag">${playlistShort[x.playlist] || x.playlist}</small>
+          </span>
+        </li>
+      `;
+    }
 
     return `
       <li class="hi empty">
@@ -1245,11 +1765,7 @@ function showResult() {
   $('gal').innerHTML = cds.map(c => `<div class="gp ${c.cond}"><img src="${c.art}" alt=""></div>`).join('');
 
   // 評語
-  let d = g.desc;
-  if (usedChoice && score / maxScore() >= GRADES.find(x => x.k === 'S').min) {
-    
-  }
-  $('r-desc').textContent = d;
+  $('r-desc').textContent = g.desc;
 
   // 金光與紙花
   $('res-card').classList.toggle('gold', b === 'SS' || b === 'SSS');
@@ -1307,127 +1823,6 @@ function testResult() {
 
   ({score, maxCombo, startAt, cds, total, usedChoice} = backup);
 }
-
-
-// 自動測試作答時間計算
-function testTimer() {
-  const backup = {
-    totalAnswerTime,
-    questionStartAt,
-    questionElapsed,
-    now: Date.now
-  };
-
-  let mockNow = 0;
-  Date.now = () => mockNow;
-
-  const results = [];
-
-  function check(name, condition, detail) {
-    results.push({
-      測試項目: name,
-      結果: condition ? 'PASS' : 'FAIL',
-      說明: detail
-    });
-  }
-
-  try {
-    // 測試 1：正常作答 5 秒
-    totalAnswerTime = 0;
-    questionElapsed = 0;
-    questionStartAt = 1000;
-    mockNow = 6000;
-
-    finishQuestionTime();
-
-    check(
-      '正常作答',
-      totalAnswerTime === 5,
-      `預期 5 秒，實際 ${totalAnswerTime} 秒`
-    );
-
-    // 測試 2：作答 5 秒，暫停，再作答 3 秒
-    totalAnswerTime = 0;
-    questionElapsed = 0;
-    questionStartAt = 1000;
-    mockNow = 6000;
-
-    accumulateQuestionTime();
-
-    questionStartAt = 9000;
-    mockNow = 12000;
-
-    finishQuestionTime();
-
-    check(
-      '暫停後恢復',
-      totalAnswerTime === 8,
-      `預期 8 秒，實際 ${totalAnswerTime} 秒`
-    );
-
-    // 測試 3：HOME 開啟期間仍然累積 3 秒
-    totalAnswerTime = 0;
-    questionElapsed = 0;
-    questionStartAt = 1000;
-    mockNow = 9000;
-
-    // 模擬 HOME 視窗停留 3 秒，不呼叫暫停函式
-    mockNow = 12000;
-
-    finishQuestionTime();
-
-    check(
-      'HOME 期間持續計時',
-      totalAnswerTime === 11,
-      `預期 11 秒，實際 ${totalAnswerTime} 秒`
-    );
-
-    // 測試 4：揭曉答案後等待 5 秒不計時
-    totalAnswerTime = 0;
-    questionElapsed = 0;
-    questionStartAt = 1000;
-    mockNow = 6000;
-
-    finishQuestionTime();
-
-    mockNow = 11000;
-
-    check(
-      '揭曉等待不計時',
-      totalAnswerTime === 5,
-      `預期 5 秒，實際 ${totalAnswerTime} 秒`
-    );
-
-    // 測試 5：下一題繼續累加，不重複計算
-    questionElapsed = 0;
-    questionStartAt = 11000;
-    mockNow = 14000;
-
-    finishQuestionTime();
-
-    check(
-      '跨題累積',
-      totalAnswerTime === 8,
-      `預期 8 秒，實際 ${totalAnswerTime} 秒`
-    );
-
-  } finally {
-    // 還原原本的時間與遊戲狀態
-    Date.now = backup.now;
-    totalAnswerTime = backup.totalAnswerTime;
-    questionStartAt = backup.questionStartAt;
-    questionElapsed = backup.questionElapsed;
-  }
-
-  console.table(results);
-
-  const passed = results.filter(x => x.結果 === 'PASS').length;
-
-  console.log(`計時測試完成：${passed}/${results.length} 項通過`);
-
-  return results;
-}
-
 
 
 /* ==========================================
@@ -1501,7 +1896,6 @@ loadHistory();
   inp.addEventListener('focus', updateKeyboard);
   inp.addEventListener('blur', updateKeyboard);
 })();
-
 
 </script>
 </body>
