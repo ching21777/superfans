@@ -871,11 +871,11 @@ function applyItemMode() {
     c.disabled = false;
     c.onclick = useEliminate;
 
-    h.querySelector('.ic').textContent = '🔁';
-    h.querySelector('b').textContent = '重播一次';
+    h.querySelector('.ic').textContent = '💡';
+    h.querySelector('b').textContent = '顯示歌詞';
     $('pause-sub').textContent = '可用一次';
     h.disabled = false;
-    h.onclick = useReplay;
+    h.onclick = revealLyricHint;
   } else {
     c.querySelector('.ic').textContent = '🆘';
     c.querySelector('b').textContent = '改選擇題';
@@ -1049,25 +1049,16 @@ function showLyricQuestion() {
   }, wait);
 }
 
-/* 接歌詞道具：重播一次（作答時間暫停，播完才繼續） */
-function useReplay() {
-  if (!active || isPaused || !isLyricsMode() || replayLeft <= 0 || !clip.url) return;
+/* 歌詞接唱：顯示上一句歌詞 */
+function revealLyricHint() {
+  const card = $('lyric-prev').closest('.lyric-card');
+  if (!card) return;
 
-  const my = reqId;
-  replayLeft--;
-  say('🔁 重播中…', '#A9233B');
-  $('pause-btn').disabled = true;
+  card.classList.add('lyric-revealed');
+
+  const h = $('pause-btn');
+  h.disabled = true;
   $('pause-sub').textContent = '已使用';
-
-  active = false;
-  accumulateQuestionTime();
-  clearInterval(tick);
-
-  playClip(my, () => {
-    active = true;
-    questionStartAt = Date.now();
-    runTimer();
-  });
 }
 
 async function loadQuestion() {
@@ -1230,6 +1221,7 @@ async function loadLyricsQuestion(my) {
   };
 
   $('lyric-prev').textContent = item.prevLyric;
+  $('lyric-prev').closest('.lyric-card').classList.remove('lyric-revealed');
 
   opts = shuffle([item.correctNext, ...item.distractors]);
   const LETTERS = ['A', 'B', 'C', 'D'];

@@ -18,6 +18,37 @@
 .lyric-card .lc-prev::before{ content:"“"; color:var(--purple-light); margin-right:4px; }
 .lyric-card .lc-prev::after{ content:"”"; color:var(--purple-light); margin-left:4px; }
 
+/* 歌詞提示遮罩 */
+.lyric-card {
+  overflow: hidden;
+}
+
+.lyric-card::after {
+  content: "💡\A 點擊右下角「顯示歌詞」";
+  white-space: pre-line;
+
+  position: absolute;
+  inset: 0;
+  z-index: 3;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+
+  background: linear-gradient(145deg, #383239 0%, #211D24 55%, #151318 100%);
+  color: var(--purple-light);
+  font-size: 13px;
+  font-weight: 700;
+  line-height: 1.8;
+  letter-spacing: .04em;
+}
+
+/* 使用提示後，移除整張卡片的遮罩 */
+.lyric-card.lyric-revealed::after {
+  display: none;
+}
+
 /* ===== 接歌詞：選項 ===== */
 .lyric-opt{
   display:grid; grid-template-columns:26px 1fr; align-items:center; gap:10px;
