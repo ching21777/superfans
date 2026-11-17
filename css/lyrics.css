@@ -77,9 +77,8 @@
 
 /* --- 歌詞提示遮罩 --- */
 
-.lyric-card::after {
-  content: "換你唱！ \A (或點提示看歌詞)";
-  white-space: pre-line;
+.lyric-card::before {
+  content: "換你唱！";
 
   position: absolute;
   inset: 0;
@@ -89,18 +88,39 @@
   align-items: center;
   justify-content: center;
 
-  text-align: center;
+  padding-bottom: 42px;
 
-  background: linear-gradient(145deg, #383239 0%, #211D24 55%, #151318 100%);
+  text-align: center;
   color: var(--purple-light);
 
-  font-size: 20px;
+  font-size: 16px;
   font-weight: 700;
-  line-height: 1.8;
   letter-spacing: .04em;
+
+  background: linear-gradient(145deg, #383239 0%, #211D24 55%, #151318 100%);
+}
+
+.lyric-card::after {
+  content: var(--lyric-stars, "✦ ✦ ✦");
+
+  position: absolute;
+  inset: 0;
+  z-index: 4;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  padding-top: 26px;
+
+  color: var(--purple-light);
+  font-size: 26px;
+  font-weight: 700;
+  letter-spacing: .12em;
 }
 
 /* 使用提示後，移除整張卡片的遮罩 */
+.lyric-card.lyric-revealed::before,
 .lyric-card.lyric-revealed::after {
   display: none;
 }
@@ -209,7 +229,6 @@
 /* ========================================
    04. 遊戲流程
 ======================================== */
-
 
 /* --- 聽歌舞台與版面切換 --- */
 
