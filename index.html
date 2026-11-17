@@ -81,7 +81,6 @@
       </div>
 
       <div id="lyric-prompt" class="lyric-card" style="display:none">
-        <div class="lc-label">換你唱！</div>
         <div class="lc-prev" id="lyric-prev"></div>
       </div>
 
@@ -672,9 +671,18 @@ function calcPR() {
 function useEliminate() {
   if (!active || isPaused || !isLyricsMode()) return;
 
-  const wrongs = [...$('ogrid').querySelectorAll('.opt:not(:disabled)')]
-    .filter(b => opts[+b.dataset.i] !== cur.correctNext);
-  if (wrongs.length < 2) return;   // 至少留一個錯誤選項，避免只剩正解
+  const remaining = [...$('ogrid').querySelectorAll('.opt:not(:disabled)')];
+
+const wrongs = remaining
+  .filter(b => opts[+b.dataset.i] !== cur.correctNext);
+
+    
+    // 剩餘選項只剩 2 個，或錯誤選項不足 2 個時，停用道具
+if (remaining.length <= 2 || wrongs.length < 2) {
+  $('choice-btn').disabled = true;
+  $('choice-sub').textContent = '無法使用';
+  return;
+}
 
   const b = wrongs[Math.floor(Math.random() * wrongs.length)];
   b.disabled = true;
@@ -767,6 +775,10 @@ updCombo();
 
 const remaining = [...$('ogrid').querySelectorAll('.opt:not(:disabled)')];
 
+if (isLyricsMode() && remaining.length <= 2) {
+  $('choice-btn').disabled = true;
+  $('choice-sub').textContent = '無法使用';
+}
 
 if (remaining.length <= 1) {
   // 最後一次答錯：保留紅框並閃爍
@@ -837,6 +849,8 @@ function holdCorrectChoice() {
   clearInterval(tick);
   $('trow').classList.remove('danger');
 
+  if (isLyricsMode()) revealLyricCard();
+
   const answer = isLyricsMode() ? cur.correctNext : cur.title;
 
   const right = [...$('ogrid').querySelectorAll('.opt')]
@@ -876,8 +890,8 @@ function timeout() {
     $('timeout-overlay').style.display = 'none';
 
     if (isLyricsMode()) {
-      // 不計分，只借用答對時的「標示正解 → 停留 → 揭曉」流程。
-      holdCorrectLyric();
+      // 逾時也沿用答對時的正解揭曉流程
+      holdCorrectChoice();
     } else {
       reveal();
     }
@@ -1169,16 +1183,20 @@ function showLyricQuestion() {
   }, wait);
 }
 
-/* 歌詞接唱：顯示上一句歌詞 */
+/* 歌詞提示：顯示上一句歌詞 */
 function revealLyricHint() {
+  revealLyricCard();
+
+  $('pause-btn').disabled = true;
+  $('pause-sub').textContent = '已使用';
+}
+
+/* 答對答錯：顯示上一句歌詞 */
+function revealLyricCard() {
   const card = $('lyric-prev').closest('.lyric-card');
   if (!card) return;
 
   card.classList.add('lyric-revealed');
-
-  const h = $('pause-btn');
-  h.disabled = true;
-  $('pause-sub').textContent = '已使用';
 }
 
 async function loadQuestion() {
@@ -1565,8 +1583,14 @@ function reveal() {
   $('banner').classList.add('show');
 
   $('type-sec').style.display = 'none';
-  $('choice-sec').style.display = 'none';
+$('choice-sec').style.display = 'none';
+
+if (isLyricsMode()) {
+  $('lyric-prompt').style.display = 'block';
+  revealLyricCard();
+} else {
   $('lyric-prompt').style.display = 'none';
+}
   $('ls-wait').style.display = 'none';
   $('items').style.display = 'none';
 
