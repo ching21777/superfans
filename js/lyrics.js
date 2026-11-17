@@ -180,3 +180,156 @@ const SONG_DATABASE = [
     ]
   }
 ];
+
+const HELLO_NICO_DATABASE = [
+  {
+    id: 1,
+    title: "花",
+    artist: "Hello Nico",
+    genre: "大合唱經典",
+    itunesQuery: "花 Hello Nico",
+    playUntil: 20,
+    prevLyric: "我只是想　＿＿＿＿＿",
+    correctNext: "和你玩耍",
+    distractors: [
+      "在你身旁",
+      "聽你說話",
+      "讓你受傷"
+    ]
+  },
+  {
+    id: 2,
+    title: "哭泣的橄欖樹",
+    artist: "Hello Nico",
+    genre: "入坑必聽神曲",
+    itunesQuery: "哭泣的橄欖樹 Hello Nico",
+    playUntil: 18,
+    prevLyric: "一個還一個　＿＿＿＿＿",
+    correctNext: "永無平息的上演著",
+    distractors: [
+      "等待某天化作花香",
+      "他們不再恐懼失慌",
+      "贈還予你熟悉荒涼"
+    ]
+  },
+  {
+    id: 3,
+    title: "接下來如何",
+    artist: "Hello Nico",
+    genre: "入坑必聽神曲",
+    itunesQuery: "接下來如何 Hello Nico",
+    playUntil: 15,
+    prevLyric: "＿＿＿＿＿　黑色我關上了燈",
+    correctNext: "以為從此就不會愛了",
+    distractors: [
+      "白色是自己弄髒的",
+      "未來沒人能夠預測",
+      "忘了出口是哪扇門"
+    ]
+  },
+  {
+    id: 4,
+    title: "面向自己",
+    artist: "Hello Nico",
+    genre: "樂迷私房愛歌",
+    itunesQuery: "面向自己 Hello Nico",
+    playUntil: 18,
+    prevLyric: "悲傷的　喜悅的　＿＿＿＿＿",
+    correctNext: "不算是全部吧",
+    distractors: [
+      "是該順從了嗎",
+      "是太擁擠了嗎",
+      "隱藏哪個部分"
+    ]
+  },
+  {
+    id: 5,
+    title: "變成一隻魚",
+    artist: "Hello Nico",
+    genre: "沉靜抒情獨白",
+    itunesQuery: "變成一隻魚 Hello Nico",
+    playUntil: 11,
+    prevLyric: "我變成一隻魚　＿＿＿＿＿",
+    correctNext: "靜靜徘徊水裡",
+    distractors: [
+      "緩緩游向天際",
+      "悄悄躲進雨裡",
+      "慢慢忘記呼吸"
+    ]
+  },
+  {
+    id: 6,
+    title: "看不見",
+    artist: "Hello Nico",
+    genre: "樂迷私房愛歌",
+    itunesQuery: "看不見 Hello Nico",
+    playUntil: 15,
+    prevLyric: "這裡破了一個無底的洞 ＿＿＿＿＿",
+    correctNext: "就著你身邊依然陷落",
+    distractors: [
+      "每個都守住自己的窩",
+      "我寧願什麼都看不懂",
+      "太遙遠太不切實際了"
+    ]
+  },
+  {
+    id: 7,
+    title: "規格化的城市、商品、人",
+    artist: "Hello Nico",
+    genre: "暗黑電氣搖滾",
+    itunesQuery: "規格化的城市 商品 人 Hello Nico",
+    playUntil: 19,
+    prevLyric: "＿＿＿＿＿就給你最好的",
+    correctNext: "乖乖的",
+    distractors: [
+      "空空的",
+      "靜靜的",
+      "壞壞的"
+    ]
+  },
+  {
+    id: 8,
+    title: "返程",
+    artist: "Hello Nico",
+    genre: "沉澱回歸新作",
+    itunesQuery: "返程 Hello Nico",
+    playUntil: 15,
+    prevLyric: "眼淚才沒有氾濫　＿＿＿＿＿",
+    correctNext: "等會兒要吃早餐",
+    distractors: [
+      "等會兒要吃午餐",
+      "等會兒要吃晚餐",
+      "等會兒要去看海"
+    ]
+  },
+  {
+    id: 9,
+    title: "光",
+    artist: "Hello Nico",
+    genre: "沉澱回歸新作",
+    itunesQuery: "光 Hello Nico",
+    playUntil: 16,
+    prevLyric: "離別之前＿＿＿＿＿",
+    correctNext: "我擁抱你",
+    distractors: [
+      "我已老去",
+      "我會老去",
+      "我在老去"
+    ]
+  },
+  {
+    id: 10,
+    title: "我會想你",
+    artist: "Hello Nico",
+    genre: "最新發行主打",
+    itunesQuery: "我會想你 Hello Nico",
+    playUntil: 16,
+    prevLyric: "會不會你也曾想念　＿＿＿＿＿",
+    correctNext: "若我不在這段時間",
+    distractors: [
+      "想回到相遇那一天",
+      "又經過幾次的冬天",
+      "想留我在你的身邊"
+    ]
+  }
+];

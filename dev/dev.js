@@ -361,7 +361,7 @@ updateDevMuteButton();
 
   document.getElementById('dev-lyrics-btn')
     .addEventListener('click', () => {
-      previewLyricsItem(SONG_DATABASE[0]);
+      previewLyricsItem(HELLO_NICO_DATABASE[0]);
     });
 
 
@@ -380,7 +380,7 @@ updateDevMuteButton();
 
     const searchText = keyword.trim().toLowerCase();
 
-    const songs = SONG_DATABASE.filter(item => {
+    const songs = HELLO_NICO_DATABASE.filter(item => {
 
       const titleMatch =
         item.title.toLowerCase().includes(searchText);
@@ -526,7 +526,7 @@ updateDevMuteButton();
 
     const songId = Number(btn.dataset.songId);
 
-    const item = SONG_DATABASE.find(song => song.id === songId);
+    const item = HELLO_NICO_DATABASE.find(song => song.id === songId);
 
     if (!item) return;
 

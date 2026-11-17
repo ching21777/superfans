@@ -187,7 +187,11 @@
       <button class="tb" data-k="she" onclick="pickTheme('she')">✬✬｜ S.H.E 鐵粉爭霸戰 ➔</button>
       <button class="tb" data-k="fish" onclick="pickTheme('fish')">✬✬｜ 梁靜茹精選情歌 ➔</button>
       <button class="tb" data-k="vagabond" onclick="pickTheme('vagabond')">✬✬✬｜走啊聽團！2026 浪人祭 ➔</button>
+      
+      <div class="theme-divider"></div>
+
       <button class="tb" data-k="lyrics" onclick="pickTheme('lyrics')">✬｜歌詞接唱王 ➔</button>
+      <button class="tb" data-k="helloNico" onclick="pickTheme('helloNico')">✬✬✬｜Hello Nico 歌詞接唱 ➔</button>
     </div>
   </div>
 </div>
@@ -481,14 +485,14 @@ function fmtTime(sec) {
 }
 
 // 目前可用的歌曲清單（試玩模式混合三個歌單）
-function isLyricsMode() {
-  return !isDemo && theme === 'lyrics';
-}
-
 function songPool() {
   return isDemo
     ? [...playlists.drama, ...playlists.she, ...playlists.fish]
     : playlists[theme];
+}
+
+function isLyricsMode() {
+  return !isDemo && ['lyrics', 'helloNico'].includes(theme);
 }
 
 function unlockAudio() {
@@ -916,7 +920,11 @@ function begin(demo) {
   isDemo = demo;
   total = demo ? 3 : 10;
 
-  $('mode').textContent = demo ? '試玩模式' : (theme === 'lyrics' ? '歌詞接唱' : '歌名搶答');
+  $('mode').textContent = demo
+  ? '試玩模式'
+  : (isLyricsMode()
+      ? (theme === 'helloNico' ? '歌詞接唱' : '歌詞接唱')
+      : '歌名搶答');
   $('mode').style.display = 'block';
   $('quit-btn').style.display = 'block';
 
@@ -939,7 +947,9 @@ function begin(demo) {
   halfPassed = false;
 
   queue = isLyricsMode()
-  ? shuffle([...SONG_DATABASE]).slice(0, 10)
+  ? shuffle([
+      ...(theme === 'helloNico' ? HELLO_NICO_DATABASE : SONG_DATABASE)
+    ]).slice(0, total)
   : shuffle(uniq(songPool())).slice(0, total);
 
   $('score').textContent = '0';
