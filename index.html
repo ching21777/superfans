@@ -69,7 +69,7 @@
     </div>
 
     <div id="lyric-stage">
-      <div class="ls-wait" id="ls-wait" style="display:none">
+      <div class="ls-wait" id="ls-wait" style="visibility:hidden">
         <i class="ls-lamp"></i>
         <span id="ls-wait-text">播放中</span>
 
@@ -1171,7 +1171,7 @@ async function loadQuestion() {
   $('type-sec').style.display = '';
   $('choice-sec').style.display = 'none';
   $('lyric-prompt').style.display = 'none';
-  $('ls-wait').style.display = 'none';
+  $('ls-wait').style.visibility = 'hidden';
   $('ogrid').classList.remove('held');
   $('ogrid').style.gridTemplateColumns = '';
   $('ogrid').style.maxHeight = '';
