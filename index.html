@@ -155,9 +155,6 @@
       Song Source: Apple Music<br>
       Personal Project ． Beta Version<br>
     </div>
-
-    <!-- 開發用：網址加 ?dev 才會顯示 -->
-    <button class="bevel btn-sm" id="test-btn" hidden onclick="testResult()">[test] 預覽結算畫面</button>
   </div>
 </div>
 
@@ -458,6 +455,13 @@ function sanitize(s) {
   return (s || '').toLowerCase()
     .replace(/\([^)]*\)|（[^）]*）|\[[^\]]*\]|【[^】]*】/g, '')
     .replace(/[\s\-_()（）\[\]【】.,?!'"]/g, '');
+}
+
+// 歌曲比對：保留 Live、Remix 等版本資訊
+function normalizeMatchText(s) {
+  return (s || '').toLowerCase()
+    .replace(/[()[\]{}（）【】]/g, '')
+    .replace(/[\s\-_.,?!'"]/g, '');
 }
 
 // 秒數 → mm:ss
@@ -1202,11 +1206,9 @@ async function loadQuestion() {
       const rs = (d.results || []).filter(x => x.previewUrl);
 
       const t = rs.find(x =>
-        x.artistName.toLowerCase().includes(artist.toLowerCase()) &&
-        sanitize(x.trackName).includes(sanitize(title))
-      ) || rs.find(x =>
-        x.artistName.toLowerCase().includes(artist.toLowerCase())
-      );
+  normalizeMatchText(x.artistName) === normalizeMatchText(artist) &&
+  normalizeMatchText(x.trackName) === normalizeMatchText(title)
+);
 
       if (t) {
         cur = {
@@ -1257,11 +1259,10 @@ async function loadLyricsQuestion(my) {
 
     const results = (data.results || []).filter(x => x.previewUrl);
     track = results.find(x =>
-      sanitize(x.trackName).includes(sanitize(item.title)) &&
-      x.artistName.toLowerCase().includes(item.artist.split(' ')[0].toLowerCase())
-    ) || results.find(x =>
-      sanitize(x.trackName).includes(sanitize(item.title))
-    ) || results[0] || null;
+  normalizeMatchText(x.trackName).includes(normalizeMatchText(item.title)) &&
+  normalizeMatchText(x.artistName) === normalizeMatchText(item.artist)
+) || null;
+
   } catch (error) {
     if (my !== reqId) return;
   }
@@ -1307,7 +1308,7 @@ async function loadLyricsQuestion(my) {
   $('ls-wait').style.visibility = '';
   $('trow').style.visibility = 'hidden';
 
-  const previewUrl = item.customPreviewUrl || track?.previewUrl || '';
+  const previewUrl = track?.previewUrl || '';
   clip = {
     url: previewUrl,
     start: 0,                                          // 一律從頭播放
@@ -1631,34 +1632,6 @@ function showResult() {
   }
 }
 
-if (location.search.includes('dev')) {
-  $('test-btn').hidden = false;
-}
-
-// 用假資料預覽結算畫面（不影響正在進行的遊戲）
-function testResult() {
-  const backup = {score, maxCombo, startAt, cds, total, usedChoice};
-
-  // 用純色 SVG 當假封面，不依賴外部圖片
-  const cover = hue => 'data:image/svg+xml,' + encodeURIComponent(
-    `<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100"><rect width="100" height="100" fill="hsl(${hue},45%,45%)"/></svg>`
-  );
-  const conds = ['gem-mint','near-mint','good','gem-mint','near-mint','good','poor','gem-mint','near-mint','gem-mint'];
-
-  score = 1280;
-  maxCombo = 12;
-  startAt = Date.now() - 102000;
-  usedChoice = false;
-  total = 10;
-  cds = conds.map((cond, i) => ({art: cover(i * 36), cond}));
-
-  stopAll();
-  document.querySelectorAll('.ov').forEach(m => m.style.display = 'none');
-  showResult();
-
-  ({score, maxCombo, startAt, cds, total, usedChoice} = backup);
-}
-
 $('inp').addEventListener('compositionstart', () => { composing = true; });
 
 $('inp').addEventListener('compositionend', () => {
@@ -1712,6 +1685,9 @@ loadHistory();
   inp.addEventListener('focus', updateKeyboard);
   inp.addEventListener('blur', updateKeyboard);
 })();
+
 </script>
+<script src="./dev/dev.js"></script>
+
 </body>
 </html>
