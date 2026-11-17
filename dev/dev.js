@@ -7,7 +7,7 @@
 if (new URLSearchParams(location.search).has('dev')) {
 
   // ========================================
-  // 開發測試面板
+  // 01. 開發測試面板
   // ========================================
 
   const devPanel = document.createElement('section');
@@ -16,15 +16,32 @@ if (new URLSearchParams(location.search).has('dev')) {
   devPanel.innerHTML = `
     <div class="dev-heading">🛠 開發測試工具</div>
 
+  <button class="bevel btn-sm" id="dev-mute-btn">
+  🔊 音量：開啟
+</button>
+
     <div class="dev-section">介面快速預覽</div>
 
-    <button class="bevel btn-sm" id="dev-result-btn">
-      預覽結算畫面
-    </button>
+<div class="dev-preview-buttons">
+  <button class="bevel btn-sm" id="dev-result-btn">
+    成績頁
+  </button>
 
-    <button class="bevel btn-sm" id="dev-lyrics-btn">
-      預覽歌詞接龍選擇題
-    </button>
+  <button class="bevel btn-sm" id="dev-lyrics-btn">
+    歌詞接唱
+  </button>
+</div>
+
+    <div class="dev-section">指定歌曲測試</div>
+
+    <input
+      type="text"
+      id="dev-song-search"
+      placeholder="輸入歌名或編號"
+      autocomplete="off"
+    >
+
+    <div id="dev-song-results"></div>
 
     <div class="dev-section">自動模擬答題</div>
 
@@ -40,7 +57,11 @@ if (new URLSearchParams(location.search).has('dev')) {
     </button>
   `;
 
-  // 面板樣式
+
+  // ========================================
+  // 02. 開發測試面板樣式
+  // ========================================
+
   const devStyle = document.createElement('style');
 
   devStyle.textContent = `
@@ -121,17 +142,88 @@ if (new URLSearchParams(location.search).has('dev')) {
       font-size: 12px;
     }
 
-    /* 電腦：滑鼠移入展開 */
-    @media (hover: hover) {
-      #dev-dock:hover #dev-panel {
-        display: flex;
-      }
+    /* 指定歌曲搜尋 */
+
+    #dev-song-search {
+      width: 100%;
+      box-sizing: border-box;
+      padding: 8px;
+      border: 1px solid rgba(240,214,164,.3);
+      border-radius: 6px;
+      background: #252525;
+      color: white;
+      font-size: 12px;
     }
+
+    #dev-song-search::placeholder {
+      color: rgba(255,255,255,.4);
+    }
+
+    #dev-song-results {
+      display: flex;
+      flex-direction: column;
+      gap: 5px;
+      max-height: 180px;
+      overflow-y: auto;
+    }
+
+    .dev-song-item {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .dev-song-name {
+      flex: 1;
+      min-width: 0;
+      color: white;
+      font-size: 11px;
+      text-align: left;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .dev-song-no {
+      color: #F0D6A4;
+      font-size: 10px;
+      font-weight: 800;
+      flex-shrink: 0;
+    }
+
+    .dev-song-item button {
+      width: auto !important;
+      flex-shrink: 0;
+    }
+
+    .dev-song-empty {
+      color: rgba(255,255,255,.45);
+      font-size: 11px;
+      text-align: center;
+      padding: 8px 0;
+    }
+
+    /* 介面快速預覽按鈕 */
+
+.dev-preview-buttons {
+  display: flex;
+  gap: 6px;
+}
+
+.dev-preview-buttons button {
+  flex: 1;
+  min-width: 0;
+  width: 0;
+}
   `;
 
   document.head.appendChild(devStyle);
 
-  // 建立浮動工具區
+
+  // ========================================
+  // 03. 建立浮動工具區
+  // ========================================
+
   const devDock = document.createElement('div');
   devDock.id = 'dev-dock';
 
@@ -145,30 +237,53 @@ if (new URLSearchParams(location.search).has('dev')) {
   devDock.appendChild(devPanel);
   document.body.appendChild(devDock);
 
+  // ========================================
+// 測試環境音量開關
+// ========================================
+
+// ========================================
+// 測試環境音量開關
+// ========================================
+
+const devMuteBtn = $('dev-mute-btn');
+
+function updateDevMuteButton() {
+  devMuteBtn.textContent = audio.muted
+    ? '🔇 音量：關閉'
+    : '🔊 音量：開啟';
+}
+
+devMuteBtn.addEventListener('click', () => {
+  audio.muted = !audio.muted;
+  updateDevMuteButton();
+});
+
+updateDevMuteButton();
+
   // 手機：點擊展開 / 收合
+
   devToggle.addEventListener('click', () => {
-    if (window.matchMedia('(hover: none)').matches) {
-      devPanel.style.display =
-        devPanel.style.display === 'flex' ? 'none' : 'flex';
-    }
-  });
+  devPanel.style.display =
+    devPanel.style.display === 'flex' ? 'none' : 'flex';
+});
 
   // 移除舊的測試按鈕
+
   document.getElementById('test-btn')?.remove();
 
 
   // ========================================
-  // 介面快速預覽
+  // 04. 歌詞接唱題目預覽
   // ========================================
 
-  // 直接預覽歌詞接龍選擇題
-  document.getElementById('dev-lyrics-btn').addEventListener('click', () => {
+  function previewLyricsItem(item) {
+
     stopAll();
 
-    const item = SONG_DATABASE[0];
     const LETTERS = ['A', 'B', 'C', 'D'];
 
     // 設定預覽題目
+
     theme = 'lyrics';
     isDemo = false;
     active = false;
@@ -180,6 +295,7 @@ if (new URLSearchParams(location.search).has('dev')) {
     cds = [];
 
     // 更新遊戲資訊
+
     $('mode').textContent = '歌詞接唱';
     $('mode').style.display = 'block';
     $('quit-btn').style.display = 'block';
@@ -190,10 +306,13 @@ if (new URLSearchParams(location.search).has('dev')) {
     renderProg();
 
     // 設定歌詞題目
+
     $('lyric-prev').textContent = item.prevLyric;
-    $('lyric-prev').closest('.lyric-card').classList.remove('lyric-revealed');
+    $('lyric-prev').closest('.lyric-card')
+      .classList.remove('lyric-revealed');
 
     // 建立選項
+
     $('ogrid').style.gridTemplateColumns = '1fr';
     $('ogrid').style.gap = '6px';
     $('ogrid').classList.remove('held');
@@ -206,6 +325,7 @@ if (new URLSearchParams(location.search).has('dev')) {
     `).join('');
 
     // 切換至歌詞選擇題畫面
+
     document.querySelectorAll('.ov').forEach(m => {
       m.style.display = 'none';
     });
@@ -234,11 +354,205 @@ if (new URLSearchParams(location.search).has('dev')) {
     $('next-sec').style.display = 'none';
 
     applyItemMode();
+  }
+
+
+  // 預覽第一首歌曲
+
+  document.getElementById('dev-lyrics-btn')
+    .addEventListener('click', () => {
+      previewLyricsItem(SONG_DATABASE[0]);
+    });
+
+
+  // ========================================
+  // 05. 指定歌曲搜尋測試
+  // ========================================
+
+  const devSongSearch = $('dev-song-search');
+  const devSongResults = $('dev-song-results');
+
+  // 搜尋並顯示歌曲清單
+
+  function renderDevSongList(keyword = '') {
+
+    devSongResults.innerHTML = '';
+
+    const searchText = keyword.trim().toLowerCase();
+
+    const songs = SONG_DATABASE.filter(item => {
+
+      const titleMatch =
+        item.title.toLowerCase().includes(searchText);
+
+      const idText = String(item.id).padStart(3, '0');
+
+      const idMatch =
+        idText.includes(searchText) ||
+        (
+          /^\d+$/.test(searchText) &&
+          Number(searchText) === item.id
+        );
+
+      return !searchText || titleMatch || idMatch;
+    });
+
+    if (!songs.length) {
+      const empty = document.createElement('div');
+      empty.className = 'dev-song-empty';
+      empty.textContent = '找不到歌曲';
+
+      devSongResults.appendChild(empty);
+      return;
+    }
+
+    songs.forEach(item => {
+
+      const row = document.createElement('div');
+      row.className = 'dev-song-item';
+
+      // 歌曲編號：直接對照 SONG_DATABASE.id
+
+      const no = document.createElement('span');
+      no.className = 'dev-song-no';
+      no.textContent = String(item.id).padStart(3, '0');
+
+      // 歌曲名稱
+
+      const name = document.createElement('span');
+      name.className = 'dev-song-name';
+      name.textContent = item.title;
+
+      // 測試按鈕
+
+      const btn = document.createElement('button');
+      btn.className = 'bevel btn-sm';
+      btn.textContent = '測試';
+      btn.dataset.songId = item.id;
+
+      row.append(no, name, btn);
+      devSongResults.appendChild(row);
+    });
+  }
+
+  // 輸入時即時搜尋
+
+  devSongSearch.addEventListener('input', () => {
+    renderDevSongList(devSongSearch.value);
   });
 
-  // 直接預覽結算畫面
+
+  // ========================================
+  // 05-1. 指定歌曲單題測試
+  // ========================================
+
+  let devSingleSong = false;
+  let devSingleSongItem = null;
+
+  // 保留原本的 loadQuestion
+
+  const oldLoadQuestion = loadQuestion;
+
+  // 單曲測試時，將題庫暫時限制為指定歌曲
+
+  loadQuestion = async function () {
+
+    if (devSingleSong && devSingleSongItem) {
+
+      total = 1;
+      queue = [devSingleSongItem];
+      qPtr = 0;
+      qDone = 0;
+    }
+
+    return oldLoadQuestion();
+  };
+
+
+  // 保留原本的 finish
+
+  const oldFinish = finish;
+
+  // 單曲測試結束後清除測試狀態
+
+  finish = function () {
+
+    const wasSingleSongTest = devSingleSong;
+
+    oldFinish();
+
+    if (wasSingleSongTest) {
+      devSingleSong = false;
+      devSingleSongItem = null;
+      devSession = false;
+    }
+  };
+
+
+  // 啟動指定歌曲測試
+
+  function startDevSingleSong(item) {
+
+    // 停止目前遊戲
+
+    stopAll();
+
+    // 設定單曲測試狀態
+
+    devSingleSong = true;
+    devSingleSongItem = item;
+
+    // 不寫入正式戰績，但保留真實音檔播放
+
+    devSession = true;
+    devRunning = false;
+
+    // 指定使用歌詞接唱模式
+
+    theme = 'lyrics';
+
+    // 沿用原本遊戲初始化與倒數流程
+
+    begin(false);
+  }
+
+
+  // 點擊歌曲開始測試
+
+  devSongResults.addEventListener('click', event => {
+
+    const btn = event.target.closest('[data-song-id]');
+    if (!btn) return;
+
+    const songId = Number(btn.dataset.songId);
+
+    const item = SONG_DATABASE.find(song => song.id === songId);
+
+    if (!item) return;
+
+    startDevSingleSong(item);
+  });
+
+
+  // 初始顯示全部歌曲
+
+  renderDevSongList();
+
+
+  // ========================================
+  // 06. 預覽結算畫面
+  // ========================================
+
   document.getElementById('dev-result-btn').addEventListener('click', () => {
-    const backup = { score, maxCombo, startAt, cds, total, usedChoice };
+
+    const backup = {
+      score,
+      maxCombo,
+      startAt,
+      cds,
+      total,
+      usedChoice
+    };
 
     const cover = hue => 'data:image/svg+xml,' + encodeURIComponent(
       `<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100"><rect width="100" height="100" fill="hsl(${hue},45%,45%)"/></svg>`
@@ -255,18 +569,32 @@ if (new URLSearchParams(location.search).has('dev')) {
     startAt = Date.now() - 102000;
     usedChoice = false;
     total = 10;
-    cds = conds.map((cond, i) => ({ art: cover(i * 36), cond }));
+    cds = conds.map((cond, i) => ({
+      art: cover(i * 36),
+      cond
+    }));
 
     stopAll();
-    document.querySelectorAll('.ov').forEach(m => m.style.display = 'none');
+
+    document.querySelectorAll('.ov').forEach(m => {
+      m.style.display = 'none';
+    });
+
     showResult();
 
-    ({ score, maxCombo, startAt, cds, total, usedChoice } = backup);
+    ({
+      score,
+      maxCombo,
+      startAt,
+      cds,
+      total,
+      usedChoice
+    } = backup);
   });
 
 
   // ========================================
-  // 自動模擬答題
+  // 07. 自動模擬答題
   // ========================================
 
   let devPending = false;
@@ -275,20 +603,25 @@ if (new URLSearchParams(location.search).has('dev')) {
   let devMode = 'correct';
 
   const waitDev = async (check, limit = 30000) => {
+
     const start = Date.now();
 
     while (Date.now() - start < limit) {
       if (check()) return true;
+
       await new Promise(resolve => setTimeout(resolve, 100));
     }
 
     throw new Error('模擬等待逾時');
   };
 
+
   // 模擬時略過實際音檔播放
+
   const oldPlayNow = playNow;
 
   playNow = function () {
+
     if (!devRunning) return oldPlayNow();
 
     $('tap').style.display = 'none';
@@ -297,45 +630,65 @@ if (new URLSearchParams(location.search).has('dev')) {
 
     questionStartAt = Date.now();
     runTimer();
+
     return Promise.resolve();
   };
 
+
   // 接歌詞模式：縮短音檔播放階段
+
   const oldPlayClip = playClip;
 
   playClip = function (my, done, leaveEarly = false) {
-    if (!devRunning) return oldPlayClip(my, done, leaveEarly);
+
+    if (!devRunning) {
+      return oldPlayClip(my, done, leaveEarly);
+    }
 
     clip.url = '';
     setLyricStage(true);
 
     clipTimer = setTimeout(() => {
+
       if (my !== reqId) return;
 
       setLyricStage(false);
       done();
+
     }, 700);
   };
 
+
   // 測試成績不寫入玩家歷史紀錄
+
   const oldSaveHistory = saveHistory;
 
   saveHistory = function () {
+
     if (devSession) return;
+
     oldSaveHistory();
   };
 
+
   // 按下自動模擬後，先選擇歌單
+
   $('dev-auto-btn').addEventListener('click', () => {
+
     devMode = $('dev-mode').value;
     devPending = true;
+
     toTheme();
   });
 
+
   // 選擇歌單後，自動開始模擬
+
   const oldPickTheme = pickTheme;
 
   pickTheme = function (k) {
+
+
     const shouldRun = devPending;
 
     if (shouldRun) {
@@ -350,9 +703,26 @@ if (new URLSearchParams(location.search).has('dev')) {
     if (shouldRun) runDevSimulation();
   };
 
+  
+// 測試環境：跳過開始前的倒數
+
+const oldCountdown = countdown;
+
+countdown = function (callback) {
+  if (devSession || devSingleSong) {
+    callback();
+    return;
+  }
+
+  return oldCountdown(callback);
+};
+
   // 逐題模擬
+
   async function runDevSimulation() {
+
     try {
+
       for (let i = 0; i < 10; i++) {
 
         await waitDev(() =>
@@ -363,6 +733,7 @@ if (new URLSearchParams(location.search).has('dev')) {
         if ($('m-result').style.display === 'flex') break;
 
         // 混合模式：每三題有一題答錯
+
         const isCorrect =
           devMode === 'correct' ||
           (devMode === 'mixed' && i % 3 !== 2);
@@ -370,12 +741,14 @@ if (new URLSearchParams(location.search).has('dev')) {
         if (isCorrect) {
 
           if (isLyricsMode()) {
+
             const right = [...$('ogrid').querySelectorAll('.opt')]
               .find(b => opts[+b.dataset.i] === cur.correctNext);
 
             right?.click();
 
           } else {
+
             $('inp').value = cur.title;
             submitAnswer();
           }
@@ -383,13 +756,16 @@ if (new URLSearchParams(location.search).has('dev')) {
         } else {
 
           // 先送出一次錯誤答案
+
           if (isLyricsMode()) {
+
             const wrong = [...$('ogrid').querySelectorAll('.opt')]
               .find(b => opts[+b.dataset.i] !== cur.correctNext);
 
             wrong?.click();
 
           } else {
+
             $('inp').value = '錯誤答案';
             submitAnswer();
           }
@@ -400,6 +776,7 @@ if (new URLSearchParams(location.search).has('dev')) {
         }
 
         // 等待揭曉並切換下一題
+
         await waitDev(() =>
           qDone > i ||
           $('m-result').style.display === 'flex'
@@ -414,9 +791,11 @@ if (new URLSearchParams(location.search).has('dev')) {
       );
 
     } catch (error) {
+
       alert('自動模擬發生問題：' + error.message);
 
     } finally {
+
       devRunning = false;
       devSession = false;
       CFG.REVEAL_MS = 5000;

@@ -1058,6 +1058,16 @@ body {
    04. 遊戲流程與畫面
 ======================================== */
 
+.copyright-notice {
+  margin: 12px auto 0;
+  padding: 0 16px 12px;
+  font-size: 10px;
+  line-height: 1.6;
+  color: rgba(255, 255, 255, 0.4);
+  text-align: center;
+  letter-spacing: 0.3px;
+}
+
 /* ---- 通用彈窗 ---- */
 
 .ov {
