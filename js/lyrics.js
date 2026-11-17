@@ -2,10 +2,9 @@ const SONG_DATABASE = [
   {
     id: 1,
     title: "晴天",
-    artist: "周杰倫 Jay Chou",
+    artist: "周杰倫",
     genre: "亞洲創作天王",
     itunesQuery: "晴天 周杰倫",
-    customPreviewUrl: "",
     playUntil: 9,
     prevLyric: "吹著前奏望著天空　我想起＿＿＿＿＿",
     correctNext: "花瓣試著掉落",
@@ -18,17 +17,16 @@ const SONG_DATABASE = [
   {
     id: 2,
     title: "小幸運",
-    artist: "田馥甄 Hebe Tien",
+    artist: "田馥甄",
     genre: "YouTube 破億神曲",
     itunesQuery: "小幸運 田馥甄",
-    customPreviewUrl: "",
-    playUntil: 19.5,
-    prevLyric: "也許當時忙著＿＿＿＿＿　忙著追逐天空中的流星",
+    playUntil: 18.5,
+    prevLyric: "也許當時＿＿＿＿＿　忙著追逐天空中的流星",
     correctNext: "微笑和哭泣",
     distractors: [
-      "賞月和登頂",
-      "微醺和生氣",
-      "哭哭又啼啼"
+      "忙著賞月和登頂",
+      "忙著微醺和生氣",
+      "忙著哭哭又啼啼"
     ]
   },
   {
@@ -37,23 +35,21 @@ const SONG_DATABASE = [
     artist: "王心凌",
     genre: "甜心舞曲",
     itunesQuery: "心電心 王心凌",
-    customPreviewUrl: "",
     playUntil: 16,
     prevLyric: "手心貼手心　一起心電心　＿＿＿＿＿",
     correctNext: "高矮不在意　也不管你幾公斤",
     distractors: [
       "幸福在洋溢　全世界我最吸睛",
-      "張開你的手　跟著我大聲黏TT",
-      "第一次赴約　如此緊張又刺激"
+      "張開你的手　戀愛精彩又刺激",
+      "現在聽口令　跟我大聲黏ＴＴ"
     ]
   },
   {
     id: 4,
     title: "稻香",
-    artist: "周杰倫 Jay Chou",
+    artist: "周杰倫",
     genre: "亞洲創作天王",
     itunesQuery: "稻香 周杰倫",
-    customPreviewUrl: "",
     playUntil: 12.5,
     prevLyric: "還記得你說家是唯一的城堡　＿＿＿＿＿",
     correctNext: "隨著稻香河流繼續奔跑",
@@ -69,7 +65,6 @@ const SONG_DATABASE = [
     artist: "理想混蛋",
     genre: "人氣樂團",
     itunesQuery: "不是因為天氣晴朗才愛你 理想混蛋",
-    customPreviewUrl: "",
     playUntil: 22,
     prevLyric: "才一直　一直　＿＿＿＿＿　擁抱你　什麼角度最合適",
     correctNext: "一直在腦海裡複習",
@@ -85,7 +80,6 @@ const SONG_DATABASE = [
     artist: "S.H.E",
     genre: "亞洲女子天團",
     itunesQuery: "美麗新世界 S.H.E",
-    customPreviewUrl: "",
     playUntil: 19,
     prevLyric: "別再記著昨天　還有什麼悲傷　＿＿＿＿＿",
     correctNext: "Baby don't cry",
@@ -98,10 +92,9 @@ const SONG_DATABASE = [
   {
     id: 7,
     title: "修煉愛情",
-    artist: "林俊傑 JJ Lin",
+    artist: "林俊傑",
     genre: "華語金曲歌王",
     itunesQuery: "修煉愛情 林俊傑",
-    customPreviewUrl: "",
     playUntil: 11,
     prevLyric: "我們那些信仰　＿＿＿＿＿",
     correctNext: "要忘記多難",
@@ -114,26 +107,24 @@ const SONG_DATABASE = [
   {
     id: 8,
     title: "後來",
-    artist: "劉若英 Rene Liu",
+    artist: "劉若英",
     genre: "療癒系天后",
     itunesQuery: "後來 劉若英",
-    customPreviewUrl: "",
-    playUntil: 17,
-    prevLyric: "後來　我總算學會了如何去愛　可惜你　＿＿＿＿＿",
-    correctNext: "早已遠去消失在人海",
+    playUntil: 11.5,
+    prevLyric: "梔子花　＿＿＿＿＿　落在我藍色百褶裙上",
+    correctNext: "白花瓣",
     distractors: [
-      "已經離開不等我回來",
-      "被帶走了青春的對白",
-      "在人海中走散了未來"
+      "紅花瓣",
+      "黃花瓣",
+      "橙花瓣"
     ]
   },
   {
     id: 9,
     title: "突然好想你",
-    artist: "五月天 Mayday",
+    artist: "五月天",
     genre: "人氣樂團",
     itunesQuery: "突然好想你 五月天",
-    customPreviewUrl: "",
     playUntil: 19,
     prevLyric: "突然好想你　突然＿＿＿＿＿",
     correctNext: "鋒利的回憶",
@@ -149,24 +140,22 @@ const SONG_DATABASE = [
     artist: "丁噹",
     genre: "影視主題曲",
     itunesQuery: "我愛他 丁噹",
-    customPreviewUrl: "",
     playUntil: 17,
-    prevLyric: "曾為他相信明天就是未來　＿＿＿＿＿有多壞都不肯醒來",
-    correctNext: "情節",
+    prevLyric: "曾為他相信明天就是未來　＿＿＿＿＿都不肯醒來",
+    correctNext: "情節有多壞",
     distractors: [
-      "劇情",
-      "奇蹟",
-      "夢境"
+      "劇情有多壞",
+      "奇蹟有多壞",
+      "夢境有多壞"
     ]
   },
   {
     id: 11,
     title: "想見你想見你想見你",
-    artist: "八三夭 831",
+    artist: "八三夭",
     genre: "影視主題曲",
     itunesQuery: "想見你想見你想見你 八三夭",
-    customPreviewUrl: "",
-    playUntil: 23,
+    playUntil: 22.5,
     prevLyric: "想見你只想見你　未來過去＿＿＿＿＿",
     correctNext: "我只想見你",
     distractors: [
@@ -178,16 +167,15 @@ const SONG_DATABASE = [
   {
     id: 12,
     title: "勇氣",
-    artist: "梁靜茹 Fish Leong",
+    artist: "梁靜茹",
     genre: "療癒系天后",
     itunesQuery: "勇氣 梁靜茹",
-    customPreviewUrl: "",
     playUntil: 19,
     prevLyric: "只要你一個眼神肯定　＿＿＿＿＿",
     correctNext: "我的愛就有意義",
     distractors: [
       "就跨越所有距離",
-      "把真心交給了你",
+      "就把真心交給你",
       "我們到下個世紀"
     ]
   }

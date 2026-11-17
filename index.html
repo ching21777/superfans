@@ -457,6 +457,13 @@ function sanitize(s) {
     .replace(/[\s\-_()（）\[\]【】.,?!'"]/g, '');
 }
 
+// 歌曲比對：保留 Live、Remix 等版本資訊
+function normalizeMatchText(s) {
+  return (s || '').toLowerCase()
+    .replace(/[()[\]{}（）【】]/g, '')
+    .replace(/[\s\-_.,?!'"]/g, '');
+}
+
 // 秒數 → mm:ss
 function fmtTime(sec) {
   return String(Math.floor(sec / 60)).padStart(2, '0') + ':' + String(sec % 60).padStart(2, '0');
@@ -1199,11 +1206,9 @@ async function loadQuestion() {
       const rs = (d.results || []).filter(x => x.previewUrl);
 
       const t = rs.find(x =>
-        x.artistName.toLowerCase().includes(artist.toLowerCase()) &&
-        sanitize(x.trackName).includes(sanitize(title))
-      ) || rs.find(x =>
-        x.artistName.toLowerCase().includes(artist.toLowerCase())
-      );
+  normalizeMatchText(x.artistName) === normalizeMatchText(artist) &&
+  normalizeMatchText(x.trackName) === normalizeMatchText(title)
+);
 
       if (t) {
         cur = {
@@ -1254,11 +1259,10 @@ async function loadLyricsQuestion(my) {
 
     const results = (data.results || []).filter(x => x.previewUrl);
     track = results.find(x =>
-      sanitize(x.trackName).includes(sanitize(item.title)) &&
-      x.artistName.toLowerCase().includes(item.artist.split(' ')[0].toLowerCase())
-    ) || results.find(x =>
-      sanitize(x.trackName).includes(sanitize(item.title))
-    ) || results[0] || null;
+  normalizeMatchText(x.trackName).includes(normalizeMatchText(item.title)) &&
+  normalizeMatchText(x.artistName) === normalizeMatchText(item.artist)
+) || null;
+
   } catch (error) {
     if (my !== reqId) return;
   }
@@ -1304,7 +1308,7 @@ async function loadLyricsQuestion(my) {
   $('ls-wait').style.visibility = '';
   $('trow').style.visibility = 'hidden';
 
-  const previewUrl = item.customPreviewUrl || track?.previewUrl || '';
+  const previewUrl = track?.previewUrl || '';
   clip = {
     url: previewUrl,
     start: 0,                                          // 一律從頭播放
