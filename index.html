@@ -155,9 +155,6 @@
       Song Source: Apple Music<br>
       Personal Project ． Beta Version<br>
     </div>
-
-    <!-- 開發用：網址加 ?dev 才會顯示 -->
-    <button class="bevel btn-sm" id="test-btn" hidden onclick="testResult()">[test] 預覽結算畫面</button>
   </div>
 </div>
 
@@ -1629,34 +1626,6 @@ function showResult() {
       cf.appendChild(c);
     }
   }
-}
-
-if (location.search.includes('dev')) {
-  $('test-btn').hidden = false;
-}
-
-// 用假資料預覽結算畫面（不影響正在進行的遊戲）
-function testResult() {
-  const backup = {score, maxCombo, startAt, cds, total, usedChoice};
-
-  // 用純色 SVG 當假封面，不依賴外部圖片
-  const cover = hue => 'data:image/svg+xml,' + encodeURIComponent(
-    `<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100"><rect width="100" height="100" fill="hsl(${hue},45%,45%)"/></svg>`
-  );
-  const conds = ['gem-mint','near-mint','good','gem-mint','near-mint','good','poor','gem-mint','near-mint','gem-mint'];
-
-  score = 1280;
-  maxCombo = 12;
-  startAt = Date.now() - 102000;
-  usedChoice = false;
-  total = 10;
-  cds = conds.map((cond, i) => ({art: cover(i * 36), cond}));
-
-  stopAll();
-  document.querySelectorAll('.ov').forEach(m => m.style.display = 'none');
-  showResult();
-
-  ({score, maxCombo, startAt, cds, total, usedChoice} = backup);
 }
 
 $('inp').addEventListener('compositionstart', () => { composing = true; });
