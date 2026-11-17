@@ -54,7 +54,7 @@ const SONG_DATABASE = [
     genre: "亞洲創作天王",
     itunesQuery: "稻香 周杰倫",
     customPreviewUrl: "",
-    playUntil: 13,
+    playUntil: 12.5,
     prevLyric: "還記得你說家是唯一的城堡　＿＿＿＿＿",
     correctNext: "隨著稻香河流繼續奔跑",
     distractors: [
@@ -70,7 +70,7 @@ const SONG_DATABASE = [
     genre: "人氣樂團",
     itunesQuery: "不是因為天氣晴朗才愛你 理想混蛋",
     customPreviewUrl: "",
-    playUntil: 20,
+    playUntil: 22,
     prevLyric: "才一直　一直　＿＿＿＿＿　擁抱你　什麼角度最合適",
     correctNext: "一直在腦海裡複習",
     distractors: [
@@ -118,7 +118,7 @@ const SONG_DATABASE = [
     genre: "療癒系天后",
     itunesQuery: "後來 劉若英",
     customPreviewUrl: "",
-    playUntil: 8,
+    playUntil: 17,
     prevLyric: "後來　我總算學會了如何去愛　可惜你　＿＿＿＿＿",
     correctNext: "早已遠去消失在人海",
     distractors: [
@@ -166,7 +166,7 @@ const SONG_DATABASE = [
     genre: "影視主題曲",
     itunesQuery: "想見你想見你想見你 八三夭",
     customPreviewUrl: "",
-    playUntil: 22,
+    playUntil: 23,
     prevLyric: "想見你只想見你　未來過去＿＿＿＿＿",
     correctNext: "我只想見你",
     distractors: [
