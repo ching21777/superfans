@@ -753,15 +753,50 @@ $('ogrid').onclick = e => {
     return;
   }
 
-  b.disabled = true;
-  if (isLyricsMode()) b.classList.add('wrong');
-  else b.textContent += ' ✖';
+b.disabled = true;
+if (isLyricsMode()) b.classList.add('wrong');
+else b.textContent += ' ✖';
 
-  // 答錯立即中斷連擊
-  choiceMiss = true;
-  combo = 0;
-  updCombo();
+// 所有答錯都先顯示紅框
+b.classList.add('wrong-flash');
+
+// 答錯立即中斷連擊
+choiceMiss = true;
+combo = 0;
+updCombo();
+
+const remaining = [...$('ogrid').querySelectorAll('.opt:not(:disabled)')];
+
+
+if (remaining.length <= 1) {
+  // 最後一次答錯：保留紅框並閃爍
+  b.classList.remove('wrong-flash');
+  b.classList.add('final-wrong');
+
+  // 歌詞接唱才播放錯誤音效
+  if (isLyricsMode()) {
+    const wrongSound = $('wrong-sound');
+    wrongSound.currentTime = 0;
+    wrongSound.play().catch(() => {});
+  }
+
+  active = false;
+  finishQuestionTime();
+
+  cds.push({ art: cur.art, cond: 'poor' });
+
+  // 先讓錯誤回饋出現 0.3 秒，再揭曉正解
+  setTimeout(holdCorrectChoice, 300);
+
+} else {
+  // 一般答錯：短暫紅框後恢復原本灰化狀態
+  setTimeout(() => {
+    b.classList.remove('wrong-flash');
+  }, 300);
+}
+
 };
+
 
 function correct(isChoice) {
   finishQuestionTime();
@@ -794,22 +829,24 @@ function correct(isChoice) {
   if (s.speed) tag('r', `⚡ 速度 +${s.speed}`, '#4fd6ff', 0);
   if (s.bonus) tag('r', `🔥 連擊 +${s.bonus}`, '#ff5ca8', 100);
 
-  if (isLyricsMode()) holdCorrectLyric();
-  else reveal();
+  holdCorrectChoice();
 }
 
-/* 接歌詞：標示正解後停留在選項畫面，音樂從停止處續播，LY_HOLD_MS 後切到專輯 */
-function holdCorrectLyric() {
+function holdCorrectChoice() {
   active = false;
   clearInterval(tick);
   $('trow').classList.remove('danger');
 
+  const answer = isLyricsMode() ? cur.correctNext : cur.title;
+
   const right = [...$('ogrid').querySelectorAll('.opt')]
-    .find(b => opts[+b.dataset.i] === cur.correctNext);
+    .find(b => opts[+b.dataset.i] === answer);
+
   if (right) right.classList.add('correct');
+
   $('ogrid').classList.add('held');
 
-  if (clip.url) {
+  if (isLyricsMode() && clip.url) {
     audio.volume = 1;
     audio.play().catch(() => {});
   }
@@ -817,6 +854,10 @@ function holdCorrectLyric() {
   clearTimeout(clipTimer);
   clipTimer = setTimeout(reveal, LY_HOLD_MS);
 }
+
+
+
+
 
 function timeout() {
   finishQuestionTime();
@@ -1715,5 +1756,6 @@ loadHistory();
 </script>
 <script src="./dev/dev.js"></script>
 
+<audio id="wrong-sound" src="audio/error-008.ogg" preload="auto"></audio>
 </body>
 </html>
