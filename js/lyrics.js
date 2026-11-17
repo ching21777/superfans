@@ -22,7 +22,7 @@ const SONG_DATABASE = [
     itunesQuery: "小幸運 田馥甄",
     playUntil: 18.5,
     prevLyric: "也許當時＿＿＿＿＿　忙著追逐天空中的流星",
-    correctNext: "微笑和哭泣",
+    correctNext: "忙著微笑和哭泣",
     distractors: [
       "忙著賞月和登頂",
       "忙著微醺和生氣",
@@ -85,7 +85,7 @@ const SONG_DATABASE = [
     correctNext: "Baby don't cry",
     distractors: [
       "Honey don't lie",
-      "Jump to the sky",
+      "Jump into sky",
       "Trust we can fly"
     ]
   },

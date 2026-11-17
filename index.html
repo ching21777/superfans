@@ -464,6 +464,18 @@ function normalizeMatchText(s) {
     .replace(/[\s\-_.,?!'"]/g, '');
 }
 
+// 歌詞字數轉換成星星（中文逐字、英文逐詞、數字逐字）
+function updateLyricStars(text) {
+  const units = text.match(/[\p{Script=Han}\p{N}]|[\p{L}]+(?:['’][\p{L}]+)?/gu) || [];
+
+  const stars = Array(units.length).fill('✦').join(' ');
+
+  $('lyric-prompt').style.setProperty(
+    '--lyric-stars',
+    JSON.stringify(stars)
+  );
+}
+
 // 秒數 → mm:ss
 function fmtTime(sec) {
   return String(Math.floor(sec / 60)).padStart(2, '0') + ':' + String(sec % 60).padStart(2, '0');
@@ -1167,6 +1179,11 @@ async function loadQuestion() {
   $('ogrid').style.gap = '';
 
   $('next-sec').style.display = 'none';
+
+  // 歌詞模式：切換整個遊戲畫面的顯示狀態
+document.querySelector('.app').classList.toggle('lyrics-mode', isLyricsMode());
+$('trow').style.visibility = isLyricsMode() ? 'hidden' : '';
+
   $('stage').classList.remove('rev', 'lyrics-q', 'ly-listen', 'ly-leave', 'ly-enter');
   $('inp').value = '';
   $('inp').classList.remove('shake');
@@ -1247,6 +1264,9 @@ async function loadLyricsQuestion(my) {
     return;
   }
 
+  // 先切換成歌詞模式，避免等待 iTunes 時閃出猜歌畫面
+  $('stage').classList.add('lyrics-q', 'ly-listen');
+
   let track = null;
 
   try {
@@ -1283,8 +1303,15 @@ async function loadLyricsQuestion(my) {
     year: (track?.releaseDate || '').slice(0, 4)
   };
 
+
   $('lyric-prev').textContent = item.prevLyric;
+
+// 依歌詞字數產生星星
+updateLyricStars(item.correctNext);
+
   $('lyric-prev').closest('.lyric-card').classList.remove('lyric-revealed');
+
+
 
   opts = shuffle([item.correctNext, ...item.distractors]);
   const LETTERS = ['A', 'B', 'C', 'D'];
@@ -1303,7 +1330,6 @@ async function loadLyricsQuestion(my) {
   $('choice-sec').style.display = 'none';
   $('items').style.display = 'none';
   $('tap').style.display = 'none';
-  $('stage').classList.add('lyrics-q', 'ly-listen');
   $('trow').style.display = '';
   $('ls-wait').style.visibility = '';
   $('trow').style.visibility = 'hidden';
