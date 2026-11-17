@@ -436,7 +436,9 @@
 /* 狀態提示：燈號 + 小字（不是題目，刻意比歌詞低調） */
 .ls-wait {
   width: 100%;
+  height: 72px;
   min-height: 72px;
+  flex: none;
 
   display: flex;
   align-items: center;
