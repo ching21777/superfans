@@ -20,8 +20,8 @@ if (new URLSearchParams(location.search).has('dev')) {
       <option value="wrong">全部答錯</option>
     </select>
 
-    <button class="bevel go" id="dev-auto-btn" disabled>
-      自動模擬答題（準備中）
+    <button class="bevel go" id="dev-auto-btn">
+      開始自動模擬答題
     </button>
 
     <button class="bevel btn-sm" id="dev-result-btn">
@@ -108,5 +108,165 @@ if (new URLSearchParams(location.search).has('dev')) {
 
     ({ score, maxCombo, startAt, cds, total, usedChoice } = backup);
   });
+
+
+
+  // ========================================
+  // 自動模擬答題
+  // ========================================
+
+  let devPending = false;
+  let devRunning = false;
+  let devSession = false;
+  let devMode = 'correct';
+
+  const waitDev = async (check, limit = 30000) => {
+    const start = Date.now();
+
+    while (Date.now() - start < limit) {
+      if (check()) return true;
+      await new Promise(resolve => setTimeout(resolve, 100));
+    }
+
+    throw new Error('模擬等待逾時');
+  };
+
+  // 模擬時略過實際音檔播放
+  const oldPlayNow = playNow;
+
+  playNow = function () {
+    if (!devRunning) return oldPlayNow();
+
+    $('tap').style.display = 'none';
+    $('disc').classList.add('spin');
+    $('cd').classList.add('on');
+
+    questionStartAt = Date.now();
+    runTimer();
+    return Promise.resolve();
+  };
+
+  // 接歌詞模式：縮短音檔播放階段
+  const oldPlayClip = playClip;
+
+  playClip = function (my, done, leaveEarly = false) {
+    if (!devRunning) return oldPlayClip(my, done, leaveEarly);
+
+    clip.url = '';
+    setLyricStage(true);
+
+    clipTimer = setTimeout(() => {
+      if (my !== reqId) return;
+
+      setLyricStage(false);
+      done();
+    }, 700);
+  };
+
+  // 測試成績不寫入玩家歷史紀錄
+  const oldSaveHistory = saveHistory;
+
+  saveHistory = function () {
+    if (devSession) return;
+    oldSaveHistory();
+  };
+
+  // 按下自動模擬後，先選擇歌單
+  $('dev-auto-btn').addEventListener('click', () => {
+    devMode = $('dev-mode').value;
+    devPending = true;
+    toTheme();
+  });
+
+  // 選擇歌單後，自動開始模擬
+  const oldPickTheme = pickTheme;
+
+  pickTheme = function (k) {
+    const shouldRun = devPending;
+
+    if (shouldRun) {
+      devPending = false;
+      devSession = true;
+      devRunning = true;
+      CFG.REVEAL_MS = 900;
+    }
+
+    oldPickTheme(k);
+
+    if (shouldRun) runDevSimulation();
+  };
+
+  // 逐題模擬
+  async function runDevSimulation() {
+    try {
+      for (let i = 0; i < 10; i++) {
+
+        await waitDev(() =>
+          (active && cur && qDone === i) ||
+          $('m-result').style.display === 'flex'
+        );
+
+        if ($('m-result').style.display === 'flex') break;
+
+        // 混合模式：每三題有一題答錯
+        const isCorrect =
+          devMode === 'correct' ||
+          (devMode === 'mixed' && i % 3 !== 2);
+
+        if (isCorrect) {
+
+          if (isLyricsMode()) {
+            const right = [...$('ogrid').querySelectorAll('.opt')]
+              .find(b => opts[+b.dataset.i] === cur.correctNext);
+
+            right?.click();
+
+          } else {
+            $('inp').value = cur.title;
+            submitAnswer();
+          }
+
+        } else {
+
+          // 先送出一次錯誤答案
+          if (isLyricsMode()) {
+            const wrong = [...$('ogrid').querySelectorAll('.opt')]
+              .find(b => opts[+b.dataset.i] !== cur.correctNext);
+
+            wrong?.click();
+
+          } else {
+            $('inp').value = '錯誤答案';
+            submitAnswer();
+          }
+
+          await new Promise(resolve => setTimeout(resolve, 350));
+
+          if (active) timeout();
+        }
+
+        // 等待揭曉並切換下一題
+        await waitDev(() =>
+          qDone > i ||
+          $('m-result').style.display === 'flex'
+        );
+
+        if ($('m-result').style.display === 'flex') break;
+      }
+
+      await waitDev(
+        () => $('m-result').style.display === 'flex',
+        60000
+      );
+
+    } catch (error) {
+      alert('自動模擬發生問題：' + error.message);
+
+    } finally {
+      devRunning = false;
+      devSession = false;
+      CFG.REVEAL_MS = 5000;
+    }
+  }
 
 }
