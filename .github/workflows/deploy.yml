@@ -44,6 +44,11 @@ jobs:
           rsync -a --exclude='.git' main-source/ _site/
           rsync -a --exclude='.git' test-source/ _site/test/
 
+          # 只在測試版注入開發工具
+          if [ -f _site/test/dev/dev.js ]; then
+            sed -i 's|</body>|<script src="./dev/dev.js"></script>\n</body>|' _site/test/index.html
+          fi
+
       - name: Configure Pages
         uses: actions/configure-pages@v5
 
