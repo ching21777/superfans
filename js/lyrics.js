@@ -218,13 +218,13 @@ const HELLO_NICO_DATABASE = [
     artist: "Hello Nico",
     genre: "入坑必聽神曲",
     itunesQuery: "接下來如何 Hello Nico",
-    playUntil: 15,
-    prevLyric: "＿＿＿＿＿　黑色我關上了燈",
-    correctNext: "以為從此就不會愛了",
+    playUntil: 21,
+    prevLyric: "以為從此就不會愛了　＿＿＿＿＿",
+    correctNext: "黑色我關上了燈",
     distractors: [
-      "白色是自己弄髒的",
-      "未來沒人能夠預測",
-      "忘了出口是哪扇門"
+      "白色是自己弄髒",
+      "未來沒人能預測",
+      "卻成弄壞的雕刻"
     ]
   },
   {
