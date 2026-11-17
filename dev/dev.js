@@ -6,12 +6,27 @@
 
 if (new URLSearchParams(location.search).has('dev')) {
 
+  // ========================================
   // 開發測試面板
+  // ========================================
+
   const devPanel = document.createElement('section');
 
   devPanel.id = 'dev-panel';
   devPanel.innerHTML = `
     <div class="dev-heading">🛠 開發測試工具</div>
+
+    <div class="dev-section">介面快速預覽</div>
+
+    <button class="bevel btn-sm" id="dev-result-btn">
+      預覽結算畫面
+    </button>
+
+    <button class="bevel btn-sm" id="dev-lyrics-btn">
+      預覽歌詞接龍選擇題
+    </button>
+
+    <div class="dev-section">自動模擬答題</div>
 
     <label for="dev-mode">模擬答題情境</label>
     <select id="dev-mode">
@@ -23,63 +38,203 @@ if (new URLSearchParams(location.search).has('dev')) {
     <button class="bevel go" id="dev-auto-btn">
       開始自動模擬答題
     </button>
-
-    <button class="bevel btn-sm" id="dev-result-btn">
-      直接預覽結算畫面
-    </button>
   `;
 
   // 面板樣式
   const devStyle = document.createElement('style');
 
   devStyle.textContent = `
-    #dev-panel {
+    #dev-dock {
+      position: fixed;
+      right: 12px;
+      bottom: 12px;
+      z-index: 10000;
+    }
+
+    #dev-toggle {
       display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 38px;
+      height: 38px;
+      padding: 0;
+      border: 1px solid rgba(240,214,164,.4);
+      border-radius: 50%;
+      background: #252525;
+      color: #F0D6A4;
+      font-size: 17px;
+      letter-spacing: 2px;
+      cursor: pointer;
+      box-shadow: 0 3px 12px rgba(0,0,0,.35);
+    }
+
+    #dev-panel {
+      display: none;
       flex-direction: column;
-      gap: 9px;
-      margin-top: 16px;
+      gap: 7px;
+      position: absolute;
+      right: 0;
+      bottom: 46px;
+      width: 210px;
+      max-width: calc(100vw - 24px);
+      margin: 0;
       padding: 12px;
-      border: 1px dashed rgba(240,214,164,.5);
+      border: 1px solid rgba(240,214,164,.4);
       border-radius: 10px;
-      background: rgba(0,0,0,.2);
+      background: #171717;
+      box-shadow: 0 4px 20px rgba(0,0,0,.45);
     }
 
     .dev-heading {
       color: #F0D6A4;
-      font-size: 14px;
+      font-size: 13px;
       font-weight: 900;
       text-align: left;
     }
 
     #dev-panel label {
       color: rgba(255,255,255,.7);
-      font-size: 12px;
+      font-size: 11px;
       text-align: left;
+    }
+
+    .dev-section {
+      color: #F0D6A4;
+      font-size: 11px;
+      font-weight: 800;
+      text-align: left;
+      margin-top: 5px;
     }
 
     #dev-mode {
       width: 100%;
-      padding: 9px;
+      padding: 7px;
       border: 0;
       border-radius: 6px;
-      font-size: 14px;
+      font-size: 12px;
     }
 
     #dev-panel button {
       width: 100%;
+      padding-top: 7px;
+      padding-bottom: 7px;
+      font-size: 12px;
+    }
+
+    /* 電腦：滑鼠移入展開 */
+    @media (hover: hover) {
+      #dev-dock:hover #dev-panel {
+        display: flex;
+      }
     }
   `;
 
   document.head.appendChild(devStyle);
 
-  // 放在主選單版權文字下方
-  const menu = document.querySelector('#m-start .mc');
-  const copyright = menu.querySelector('.copyright-notice');
+  // 建立浮動工具區
+  const devDock = document.createElement('div');
+  devDock.id = 'dev-dock';
 
-  copyright.after(devPanel);
+  const devToggle = document.createElement('button');
+  devToggle.id = 'dev-toggle';
+  devToggle.type = 'button';
+  devToggle.textContent = '•••';
+  devToggle.title = '開發測試工具';
+
+  devDock.appendChild(devToggle);
+  devDock.appendChild(devPanel);
+  document.body.appendChild(devDock);
+
+  // 手機：點擊展開 / 收合
+  devToggle.addEventListener('click', () => {
+    if (window.matchMedia('(hover: none)').matches) {
+      devPanel.style.display =
+        devPanel.style.display === 'flex' ? 'none' : 'flex';
+    }
+  });
 
   // 移除舊的測試按鈕
   document.getElementById('test-btn')?.remove();
+
+
+  // ========================================
+  // 介面快速預覽
+  // ========================================
+
+  // 直接預覽歌詞接龍選擇題
+  document.getElementById('dev-lyrics-btn').addEventListener('click', () => {
+    stopAll();
+
+    const item = SONG_DATABASE[0];
+    const LETTERS = ['A', 'B', 'C', 'D'];
+
+    // 設定預覽題目
+    theme = 'lyrics';
+    isDemo = false;
+    active = false;
+    total = 10;
+    qDone = 0;
+    qPtr = 1;
+    cur = item;
+    opts = shuffle([item.correctNext, ...item.distractors]);
+    cds = [];
+
+    // 更新遊戲資訊
+    $('mode').textContent = '歌詞接唱';
+    $('mode').style.display = 'block';
+    $('quit-btn').style.display = 'block';
+
+    $('score').textContent = '0';
+    combo = 0;
+    updCombo();
+    renderProg();
+
+    // 設定歌詞題目
+    $('lyric-prev').textContent = item.prevLyric;
+    $('lyric-prev').closest('.lyric-card').classList.remove('lyric-revealed');
+
+    // 建立選項
+    $('ogrid').style.gridTemplateColumns = '1fr';
+    $('ogrid').style.gap = '6px';
+    $('ogrid').classList.remove('held');
+
+    $('ogrid').innerHTML = opts.map((opt, i) => `
+      <button class="opt lyric-opt" data-i="${i}" style="--i:${i}">
+        <span class="lo-key">${LETTERS[i]}</span>
+        <span class="lo-text">${opt}</span>
+      </button>
+    `).join('');
+
+    // 切換至歌詞選擇題畫面
+    document.querySelectorAll('.ov').forEach(m => {
+      m.style.display = 'none';
+    });
+
+    $('stage').classList.remove(
+      'rev', 'ly-listen', 'ly-leave', 'ly-enter'
+    );
+    $('stage').classList.add('lyrics-q');
+
+    $('lyric-prompt').style.display = 'block';
+    $('ls-wait').style.display = 'none';
+    $('tap').style.display = 'none';
+
+    $('type-sec').style.display = 'none';
+    $('choice-sec').style.display = 'block';
+    $('items').style.display = '';
+
+    $('trow').style.display = '';
+    $('trow').style.visibility = '';
+    $('trow').classList.remove('done', 'danger');
+    $('tbar').style.width = '100%';
+    $('tnum').textContent = CFG.MAX_TIME + 's';
+
+    $('timeout-overlay').style.display = 'none';
+    $('banner').classList.remove('show');
+    $('next-sec').style.display = 'none';
+
+    applyItemMode();
+  });
 
   // 直接預覽結算畫面
   document.getElementById('dev-result-btn').addEventListener('click', () => {
@@ -108,7 +263,6 @@ if (new URLSearchParams(location.search).has('dev')) {
 
     ({ score, maxCombo, startAt, cds, total, usedChoice } = backup);
   });
-
 
 
   // ========================================
