@@ -192,9 +192,11 @@ if (new URLSearchParams(location.search).has('dev')) {
     }
 
     .dev-song-item button {
-      width: auto !important;
-      flex-shrink: 0;
-    }
+  width: 28px !important;
+  min-width: 28px;
+  padding: 5px 0 !important;
+  flex-shrink: 0;
+}
 
     .dev-song-empty {
       color: rgba(255,255,255,.45);
@@ -374,66 +376,73 @@ updateDevMuteButton();
 
   // 搜尋並顯示歌曲清單
 
-  function renderDevSongList(keyword = '') {
+function renderDevSongList(keyword = '') {
 
-    devSongResults.innerHTML = '';
+  devSongResults.innerHTML = '';
 
-    const searchText = keyword.trim().toLowerCase();
+  const searchText = keyword.trim().toLowerCase();
 
-    const songs = HELLO_NICO_DATABASE.filter(item => {
+  const songs = HELLO_NICO_DATABASE.filter(item => {
 
-      const titleMatch =
-        item.title.toLowerCase().includes(searchText);
+    const titleMatch =
+      item.title.toLowerCase().includes(searchText);
 
-      const idText = String(item.id).padStart(3, '0');
+    const idText = String(item.id).padStart(3, '0');
 
-      const idMatch =
-        idText.includes(searchText) ||
-        (
-          /^\d+$/.test(searchText) &&
-          Number(searchText) === item.id
-        );
+    const idMatch =
+      idText.includes(searchText) ||
+      (
+        /^\d+$/.test(searchText) &&
+        Number(searchText) === item.id
+      );
 
-      return !searchText || titleMatch || idMatch;
-    });
+    return !searchText || titleMatch || idMatch;
+  });
 
-    if (!songs.length) {
-      const empty = document.createElement('div');
-      empty.className = 'dev-song-empty';
-      empty.textContent = '找不到歌曲';
+  if (!songs.length) {
+    const empty = document.createElement('div');
+    empty.className = 'dev-song-empty';
+    empty.textContent = '找不到歌曲';
 
-      devSongResults.appendChild(empty);
-      return;
-    }
-
-    songs.forEach(item => {
-
-      const row = document.createElement('div');
-      row.className = 'dev-song-item';
-
-      // 歌曲編號：直接對照 SONG_DATABASE.id
-
-      const no = document.createElement('span');
-      no.className = 'dev-song-no';
-      no.textContent = String(item.id).padStart(3, '0');
-
-      // 歌曲名稱
-
-      const name = document.createElement('span');
-      name.className = 'dev-song-name';
-      name.textContent = item.title;
-
-      // 測試按鈕
-
-      const btn = document.createElement('button');
-      btn.className = 'bevel btn-sm';
-      btn.textContent = '測試';
-      btn.dataset.songId = item.id;
-
-      row.append(no, name, btn);
-      devSongResults.appendChild(row);
-    });
+    devSongResults.appendChild(empty);
+    return;
   }
+
+  songs.forEach(item => {
+
+    const row = document.createElement('div');
+    row.className = 'dev-song-item';
+
+    const no = document.createElement('span');
+    no.className = 'dev-song-no';
+    no.textContent = String(item.id).padStart(3, '0');
+
+    const name = document.createElement('span');
+    name.className = 'dev-song-name';
+    name.textContent = item.title;
+
+    // 完整測試
+    const fullBtn = document.createElement('button');
+    fullBtn.className = 'bevel btn-sm';
+    fullBtn.textContent = '全';
+    fullBtn.dataset.songId = item.id;
+    fullBtn.dataset.testMode = 'full';
+
+    // 快速測試
+    const quickBtn = document.createElement('button');
+    quickBtn.className = 'bevel btn-sm';
+    quickBtn.textContent = '快';
+    quickBtn.dataset.songId = item.id;
+    quickBtn.dataset.testMode = 'quick';
+
+    row.append(no, name, fullBtn, quickBtn);
+
+    // 將歌曲項目加入清單
+    devSongResults.appendChild(row);
+
+  });
+
+}
 
   // 輸入時即時搜尋
 
@@ -447,7 +456,8 @@ updateDevMuteButton();
   // ========================================
 
   let devSingleSong = false;
-  let devSingleSongItem = null;
+let devSingleSongItem = null;
+let devQuickSong = false;
 
   // 保留原本的 loadQuestion
 
@@ -482,56 +492,59 @@ updateDevMuteButton();
     oldFinish();
 
     if (wasSingleSongTest) {
-      devSingleSong = false;
-      devSingleSongItem = null;
-      devSession = false;
-    }
+  devSingleSong = false;
+  devSingleSongItem = null;
+  devQuickSong = false;
+  devSession = false;
+}
   };
 
 
   // 啟動指定歌曲測試
 
-  function startDevSingleSong(item) {
+  function startDevSingleSong(item, quick = false) {
 
-    // 停止目前遊戲
+  // 停止目前遊戲
 
-    stopAll();
+  stopAll();
 
-    // 設定單曲測試狀態
+  // 設定單曲測試狀態
 
-    devSingleSong = true;
-    devSingleSongItem = item;
+  devSingleSong = true;
+  devSingleSongItem = item;
+  devQuickSong = quick;
 
-    // 不寫入正式戰績，但保留真實音檔播放
+  // 不寫入正式戰績，但保留真實音檔播放
 
-    devSession = true;
-    devRunning = false;
+  devSession = true;
+  devRunning = false;
 
-    // 指定使用歌詞接唱模式
+  // 指定使用歌詞接唱模式
 
-    theme = 'lyrics';
+  theme = 'lyrics';
 
-    // 沿用原本遊戲初始化與倒數流程
+  // 沿用原本遊戲初始化與倒數流程
 
-    begin(false);
-  }
-
+  begin(false);
+}
 
   // 點擊歌曲開始測試
 
   devSongResults.addEventListener('click', event => {
 
-    const btn = event.target.closest('[data-song-id]');
-    if (!btn) return;
+  const btn = event.target.closest('[data-song-id]');
+  if (!btn) return;
 
-    const songId = Number(btn.dataset.songId);
+  const songId = Number(btn.dataset.songId);
 
-    const item = HELLO_NICO_DATABASE.find(song => song.id === songId);
+  const item = HELLO_NICO_DATABASE.find(song => song.id === songId);
 
-    if (!item) return;
+  if (!item) return;
 
-    startDevSingleSong(item);
-  });
+  const quick = btn.dataset.testMode === 'quick';
+
+  startDevSingleSong(item, quick);
+});
 
 
   // 初始顯示全部歌曲
@@ -637,13 +650,13 @@ updateDevMuteButton();
 
   // 接歌詞模式：縮短音檔播放階段
 
-  const oldPlayClip = playClip;
+const oldPlayClip = playClip;
 
-  playClip = function (my, done, leaveEarly = false) {
+playClip = function (my, done, leaveEarly = false) {
 
-    if (!devRunning) {
-      return oldPlayClip(my, done, leaveEarly);
-    }
+  // 自動模擬答題：沿用原本的快速流程
+
+  if (devRunning) {
 
     clip.url = '';
     setLyricStage(true);
@@ -656,7 +669,44 @@ updateDevMuteButton();
       done();
 
     }, 700);
-  };
+
+    return;
+  }
+
+  // 指定歌曲快速測試：只播放結尾前 3 秒
+
+  if (devSingleSong && devQuickSong && clip.url) {
+
+    const originalClip = clip;
+
+    const end = originalClip.start + originalClip.dur;
+    const quickStart = Math.max(
+      originalClip.start,
+      end - 3
+    );
+
+    // 建立新的播放設定，不修改原始設定
+
+    clip = {
+      ...originalClip,
+      start: quickStart,
+      dur: end - quickStart
+    };
+
+    return oldPlayClip(my, () => {
+
+      // 播放完成後還原原始設定
+
+      clip = originalClip;
+      done();
+
+    }, leaveEarly);
+  }
+
+  // 完整測試：照原本方式播放
+
+  return oldPlayClip(my, done, leaveEarly);
+};
 
 
   // 測試成績不寫入玩家歷史紀錄

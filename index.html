@@ -479,15 +479,12 @@ function updateLyricStars(text) {
   );
 }
 
-// 歌詞題型共用：取得正解，並依題型決定遮蔽範圍
+// 歌詞題型共用：所有題型統一從 answer 取得正解
 function getLyricAnswer() {
-  if (!cur) return '';
-  return cur.type === 'fill'
-    ? cur.blankAnswer
-    : cur.answerLyric;
+  return cur?.answer || '';
 }
 
-// 歌詞呈現：整句題遮住答案整句；填空題只遮住 {{blank}}
+// 歌詞呈現：prompt 與 answer 統一欄位，依 type 決定遮蔽位置
 function renderLyricPrompt(item) {
   const root = $('lyric-prev');
   root.replaceChildren();
@@ -499,34 +496,42 @@ function renderLyricPrompt(item) {
     return gap;
   };
 
+  const prompt = item.prompt || '';
+  const answer = item.answer || '';
+
   if (item.type === 'fill') {
-    const parts = (item.lyricText || '').split('{{blank}}');
-    root.classList.add('is-fill');
+  const parts = prompt.split('{{blank}}');
+  root.classList.add('is-fill');
 
-    root.append(document.createTextNode(parts[0] || ''));
-    root.append(addGap(item.blankAnswer));
+  const fill = document.createElement('div');
+  fill.className = 'lc-fill';
 
-    if (parts.length > 1) {
-      root.append(document.createTextNode(parts.slice(1).join('{{blank}}')));
-    }
-    return;
+  fill.append(document.createTextNode(parts[0] || ''));
+  fill.append(addGap(answer));
+
+  if (parts.length > 1) {
+    fill.append(document.createTextNode(parts.slice(1).join('{{blank}}')));
   }
+
+  root.append(fill);
+  return;
+}
 
   root.classList.remove('is-fill');
 
   const context = document.createElement('div');
   context.className = 'lc-context';
-  context.textContent = item.promptLyric || item.prevLyric || '';
+  context.textContent = prompt;
 
-  const answer = document.createElement('div');
-  answer.className = 'lc-answer';
-  answer.append(addGap(item.answerLyric || ''));
+  const answerLine = document.createElement('div');
+  answerLine.className = 'lc-answer';
+  answerLine.append(addGap(answer));
 
   if (item.type === 'previous') {
-  root.append(answer, context);
-} else {
-  root.append(context, answer);
-}
+    root.append(answerLine, context);
+  } else {
+    root.append(context, answerLine);
+  }
 }
 
 // 秒數 → mm:ss
@@ -1375,10 +1380,11 @@ $('trow').style.visibility = isLyricsMode() ? 'hidden' : '';
 }
 
 /*
-  歌詞題庫欄位：
-  - next / previous：type、promptLyric、answerLyric、distractors
-  - fill：type、lyricText（以 {{blank}} 標記挖空處）、blankAnswer、distractors
-  舊題庫可暫時不填 type，會以 next 題型相容。
+  歌詞題庫統一欄位：
+  - 歌曲資訊：id、title、artist、genre、itunesQuery、playUntil
+  - 題目資訊：type（previous / next / fill）、prompt、answer、distractors
+  - fill 題型的 prompt 使用 {{blank}} 標記挖空位置
+  舊題庫欄位暫時保留相容讀取，待 lyrics.js 更新後即可移除。
 */
 async function loadLyricsQuestion(my) {
   const item = queue[qPtr++];
@@ -1414,11 +1420,14 @@ async function loadLyricsQuestion(my) {
 
   if (my !== reqId) return;
 
-  // 舊題庫未標記 type 時，預設沿用原本的「選下一句」
+  // 舊題庫未標記 type 時，暫時沿用原本的「選下一句」
   const type = item.type || 'next';
-  const answerLyric = type === 'fill'
-    ? (item.blankAnswer || '')
-    : (item.answerLyric || item.correctNext || '');
+  const prompt = item.prompt || item.promptLyric || item.lyricText || item.prevLyric || '';
+  const answer = item.answer || (
+    type === 'fill'
+      ? (item.blankAnswer || '')
+      : (item.answerLyric || item.correctNext || '')
+  );
 
   cur = {
     id: item.id,
@@ -1426,12 +1435,8 @@ async function loadLyricsQuestion(my) {
     artist: item.artist,
     genre: item.genre,
     type,
-    promptLyric: item.promptLyric || item.prevLyric || '',
-    lyricText: item.lyricText || '',
-    blankAnswer: item.blankAnswer || '',
-    answerLyric,
-    prevLyric: item.prevLyric || '',
-    correctNext: item.correctNext || '',
+    prompt,
+    answer,
     art: track?.artworkUrl100
       ? track.artworkUrl100.replace('100x100', '600x600')
       : '',

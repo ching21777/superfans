@@ -22,7 +22,12 @@
 
 .lyric-card {
   width: 80%;
-  padding: 22px 16px;
+  padding: 16px;
+  height: clamp(80px, 18dvh, 150px);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
 
   position: absolute;
   top: var(--sp-1);
@@ -60,6 +65,26 @@
   font-weight: 700;
   color: var(--paper);
   text-wrap: balance;
+
+  width: 100%;
+  overflow-wrap: break-word;
+}
+
+
+/* 句中填空：獨立排版容器 */
+.lyric-card .lc-prev.is-fill {
+  position: static;
+  display: block;
+  transform: none;
+}
+
+.lyric-card .lc-prev.is-fill .lc-fill {
+  position: absolute;
+  top: 50%;
+  left: 16px;
+  width: calc(100% - 32px);
+  transform: translateY(-50%);
+  text-align: center;
 }
 
 /*lyric-card .lc-prev::before {
@@ -110,7 +135,7 @@
   text-wrap: balance;
 }
 
-/* 不規則遮蔽：局部挖空、整句遮蔽共用 */
+/* 不規則撕裂遮蔽：金屬質感 */
 .lyric-card .gap {
   position: relative;
   display: inline-block;
@@ -124,8 +149,15 @@
 
   white-space: normal;
   vertical-align: baseline;
+  user-select: none;
+}
 
-  border-radius: 3px 6px 4px 2px;
+/* 遮蔽本體 */
+.lyric-card .gap::before {
+  content: "";
+  position: absolute;
+  inset: 8% -2px 5%;
+  z-index: 1;
 
   background:
     linear-gradient(135deg, rgba(255,255,255,.12), transparent 38%),
@@ -144,41 +176,61 @@
     0 1px 2px rgba(0,0,0,.35);
 
   clip-path: polygon(
-    2% 8%,
-    97% 0,
-    100% 82%,
-    94% 100%,
-    4% 94%,
-    0 24%
+    0 31%, 5% 13%, 13% 22%, 19% 5%,
+    28% 17%, 37% 1%, 46% 14%, 55% 4%,
+    65% 18%, 75% 7%, 84% 19%, 94% 5%,
+    100% 25%, 97% 76%, 91% 92%,
+    80% 83%, 70% 100%, 59% 86%,
+    47% 97%, 36% 84%, 25% 98%,
+    15% 82%, 6% 93%, 2% 72%
   );
+
+  transition: opacity .4s ease;
 }
 
-/* 整句遮蔽 */
-.lyric-card .lc-answer .gap {
-  display: inline-block;
-  padding: 3px 12px 5px;
-  margin: 2px 0;
-  line-height: 1.45;
-  vertical-align: middle;
+/* 遮蔽表面細紋 */
+.lyric-card .gap::after {
+  content: "";
+  position: absolute;
+  inset: 15% -1px 12%;
+  z-index: 2;
+
+  background: repeating-linear-gradient(
+    105deg,
+    transparent 0 9px,
+    rgba(255,255,255,.09) 10px 11px,
+    transparent 12px 17px
+  );
+
+  opacity: .45;
+
+  clip-path: polygon(
+    0 31%, 5% 13%, 13% 22%, 19% 5%,
+    28% 17%, 37% 1%, 46% 14%, 55% 4%,
+    65% 18%, 75% 7%, 84% 19%, 94% 5%,
+    100% 25%, 97% 76%, 91% 92%,
+    80% 83%, 70% 100%, 59% 86%,
+    47% 97%, 36% 84%, 25% 98%,
+    15% 82%, 6% 93%, 2% 72%
+  );
+
+  transition: opacity .4s ease;
 }
 
-/* 揭曉：移除遮蔽，顯示完整答案 */
+/* 揭曉：遮罩快速淡出 */
+.lyric-card.lyric-revealed .gap::before,
+.lyric-card.lyric-revealed .gap::after {
+  opacity: 0;
+  pointer-events: none;
+}
+
+/* 揭曉後顯示完整答案 */
 .lyric-card.lyric-revealed .gap {
   color: var(--paper);
   -webkit-text-fill-color: currentColor;
-  background: transparent;
-  box-shadow: none;
-  clip-path: none;
-  padding-left: 0;
-  padding-right: 0;
+  text-shadow: none;
 }
 
-/* 揭曉後取消多餘間距 */
-.lyric-card.lyric-revealed .lc-prev .gap,
-.lyric-card.lyric-revealed .lc-answer .gap {
-  margin-left: 0;
-  margin-right: 0;
-}
 /* --- 歌詞提示遮罩 --- */
 
 /* 不再遮住整張卡片，改由 .gap 控制遮蔽 */
