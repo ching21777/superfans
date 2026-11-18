@@ -364,7 +364,7 @@ updateLyricStars(item.answer);
 
   document.getElementById('dev-lyrics-btn')
     .addEventListener('click', () => {
-      previewLyricsItem(HELLO_NICO_DATABASE[0]);
+      previewLyricsItem(SONG_DATABASE[0]);
     });
 
 
@@ -383,7 +383,7 @@ function renderDevSongList(keyword = '') {
 
   const searchText = keyword.trim().toLowerCase();
 
-  const songs = HELLO_NICO_DATABASE.filter(item => {
+  const songs = SONG_DATABASE.filter(item => {
 
     const titleMatch =
       item.title.toLowerCase().includes(searchText);
@@ -538,7 +538,7 @@ let devQuickSong = false;
 
   const songId = Number(btn.dataset.songId);
 
-  const item = HELLO_NICO_DATABASE.find(song => song.id === songId);
+  const item = SONG_DATABASE.find(song => song.id === songId);
 
   if (!item) return;
 

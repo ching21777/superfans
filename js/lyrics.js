@@ -8,7 +8,7 @@ const SONG_DATABASE = [
     playUntil: 9,
 
     type: "fill",
-    prompt: "吹著前奏望著天空 我想起{{blank}}",
+    prompt: "吹著前奏望著天空\n我想起{{blank}}",
     answer: "花瓣試著掉落",
 
     distractors: [
@@ -36,7 +36,7 @@ const SONG_DATABASE = [
     ]
   },
   {
-    id: 11,
+    id: 3,
     title: "心電心",
     artist: "王心凌",
     genre: "甜心舞曲",
@@ -61,8 +61,8 @@ const SONG_DATABASE = [
     itunesQuery: "稻香 周杰倫",
     playUntil: 12.5,
 
-    type: "fill",
-    prompt: "還記得你說家是唯一的城堡 {{blank}}",
+    type: "next",
+    prompt: "還記得你說家是唯一的城堡",
     answer: "隨著稻香河流繼續奔跑",
 
     distractors: [
@@ -75,7 +75,7 @@ const SONG_DATABASE = [
     id: 5,
     title: "不是因為天氣晴朗才愛你",
     artist: "理想混蛋",
-    genre: "人氣樂團",
+    genre: "民謠獨立樂團",
     itunesQuery: "不是因為天氣晴朗才愛你 理想混蛋",
     playUntil: 22,
 
@@ -97,14 +97,14 @@ const SONG_DATABASE = [
     itunesQuery: "美麗新世界 S.H.E",
     playUntil: 19,
 
-    type: "fill",
-    prompt: "別再記著昨天 還有什麼悲傷 {{blank}}",
+    type: "next",
+    prompt: "別再記著昨天 還有什麼悲傷",
     answer: "Baby don't cry",
 
     distractors: [
       "Honey don't lie",
-      "Jump into sky",
-      "Trust we can fly"
+      "Don't jump so high",
+      "Singing in the rain"
     ]
   },
   {
@@ -115,8 +115,8 @@ const SONG_DATABASE = [
     itunesQuery: "修煉愛情 林俊傑",
     playUntil: 11,
 
-    type: "fill",
-    prompt: "我們那些信仰 {{blank}}",
+    type: "next",
+    prompt: "我們那些信仰",
     answer: "要忘記多難",
 
     distractors: [
@@ -131,10 +131,10 @@ const SONG_DATABASE = [
     artist: "劉若英",
     genre: "療癒系天后",
     itunesQuery: "後來 劉若英",
-    playUntil: 11.5,
+    playUntil: 11,
 
     type: "fill",
-    prompt: "梔子花 {{blank}} 落在我藍色百褶裙上",
+    prompt: "梔子花 {{blank}}\n落在我藍色百褶裙上",
     answer: "白花瓣",
 
     distractors: [
@@ -152,7 +152,7 @@ const SONG_DATABASE = [
     playUntil: 19,
 
     type: "fill",
-    prompt: "突然好想你 突然{{blank}}",
+    prompt: "突然好想你\n突然{{blank}}",
     answer: "鋒利的回憶",
 
     distractors: [
@@ -170,13 +170,13 @@ const SONG_DATABASE = [
     playUntil: 17,
 
     type: "fill",
-    prompt: "曾為他相信明天就是未來 {{blank}}都不肯醒來",
-    answer: "情節有多壞",
+    prompt: "曾為他相信明天就是未來 {{blank}}有多壞都不肯醒來",
+    answer: "情節",
 
     distractors: [
-      "劇情有多壞",
-      "奇蹟有多壞",
-      "夢境有多壞"
+      "劇情",
+      "奇蹟",
+      "夢境"
     ]
   },
   {
@@ -188,7 +188,7 @@ const SONG_DATABASE = [
     playUntil: 22.5,
 
     type: "fill",
-    prompt: "想見你只想見你 未來過去{{blank}}",
+    prompt: "想見你只想見你\n未來過去{{blank}}",
     answer: "我只想見你",
 
     distractors: [
@@ -205,16 +205,89 @@ const SONG_DATABASE = [
     itunesQuery: "勇氣 梁靜茹",
     playUntil: 19,
 
-    type: "fill",
-    prompt: "只要你一個眼神肯定 {{blank}}",
+    type: "next",
+    prompt: "只要你一個眼神肯定",
     answer: "我的愛就有意義",
 
     distractors: [
       "就跨越所有距離",
       "就把真心交給你",
-      "我們到下個世紀"
+      "我們都需要勇氣"
+    ]
+  },
+  {
+    id: 13,
+    title: "江南",
+    artist: "林俊傑",
+    genre: "華語金曲歌王",
+    itunesQuery: "江南 林俊傑",
+    playUntil: 19,
+
+    type: "next",
+    prompt: "愛有萬分之一甜",
+    answer: "寧願我就葬在這一點",
+
+    distractors: [
+      "寧願我就葬在這一天",
+      "這一剎那凍結了時間",
+      "相愛就像風雲的善變"
+    ]
+  },
+  {
+    id: 14,
+    title: "頭號甜心",
+    artist: "張韶涵",
+    genre: "穿透力女聲",
+    itunesQuery: "張韶涵 頭號甜心",
+    playUntil: 14,
+
+    type: "previous",
+    prompt: "每一口 代表一個步驟",
+    answer: "像巧克力的誘惑",
+
+    distractors: [
+      "默契好的沒話說",
+      "最喜歡牽我的手",
+      "像棉花糖的誘惑"
+    ]
+  },
+  {
+    id: 15,
+    title: "千千萬萬",
+    artist: "鄭宜農",
+    genre: "難以捉摸的創作人",
+    itunesQuery: "鄭宜農 千千萬萬",
+    playUntil: 21,
+
+    type: "next",
+    prompt: "誰聽見了嗎",
+    answer: "在億萬光年之外",
+
+    distractors: [
+      "在三十公里之外",
+      "在一萬光年之外",
+      "在一片銀河之外"
+    ]
+  },
+  {
+    id: 16,
+    title: "你到底在選擇什麼",
+    artist: "公館青少年",
+    genre: "新生代人氣樂團",
+    itunesQuery: "公館青少年 你到底在選擇什麼",
+    playUntil: 19.5,
+
+    type: "previous",
+    prompt: "難道是早已經被誰偷走",
+    answer: "你怎麼還沒把心交給我",
+
+    distractors: [
+      "你到底到底在選擇什麼",
+      "要怎麼做你才能看向我",
+      "你怎麼沒說命中缺個我"
     ]
   }
+  
 ];
 
 const TEST_DATABASE = [
