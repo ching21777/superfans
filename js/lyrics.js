@@ -36,15 +36,15 @@ const SONG_DATABASE = [
     ]
   },
   {
-    id: 3,
+    id: 11,
     title: "心電心",
     artist: "王心凌",
     genre: "甜心舞曲",
     itunesQuery: "心電心 王心凌",
     playUntil: 16,
 
-    type: "fill",
-    prompt: "手心貼手心 一起心電心 {{blank}}",
+    type: "next",
+    prompt: "手心貼手心 一起心電心",
     answer: "高矮不在意 也不管你幾公斤",
 
     distractors: [
@@ -328,8 +328,8 @@ const HELLO_NICO_DATABASE = [
     itunesQuery: "面向自己 Hello Nico",
     playUntil: 18,
 
-    type: "fill",
-    prompt: "悲傷的 喜悅的 {{blank}}",
+    type: "next",
+    prompt: "悲傷的 喜悅的",
     answer: "不算是全部吧",
 
     distractors: [
@@ -383,7 +383,7 @@ const HELLO_NICO_DATABASE = [
     playUntil: 19,
 
     type: "fill",
-    prompt: "{{blank}}就給你最好的",
+    prompt: "{{blank}}就給你最好的\n代價是忘了你自己",
     answer: "乖乖的",
 
     distractors: [
@@ -400,8 +400,8 @@ const HELLO_NICO_DATABASE = [
     itunesQuery: "返程 Hello Nico",
     playUntil: 15,
 
-    type: "fill",
-    prompt: "眼淚才沒有氾濫 {{blank}}",
+    type: "next",
+    prompt: "眼淚才沒有氾濫",
     answer: "等會兒要吃早餐",
 
     distractors: [
@@ -445,5 +445,5 @@ const HELLO_NICO_DATABASE = [
       "又經過幾次的冬天",
       "想留我在你的身邊"
     ]
-  }
+  },
 ];

@@ -1217,6 +1217,23 @@ function playClip(my, done, leaveEarly = false) {
   go();
 }
 
+// 答案不換行：太寬就縮小字級，直到放得進卡片
+function fitLyricLine() {
+  const line = $('lyric-prompt').querySelector('.lc-answer')
+            || $('lyric-prompt').querySelector('.lc-prev');
+  const gap = line?.querySelector('.gap');
+  if (!gap) return;
+
+  line.style.fontSize = '';                       // 先還原成 CSS 設定的大小
+  const maxW = line.parentElement.clientWidth;    // 卡片內可用寬度
+  let size = parseFloat(getComputedStyle(line).fontSize);
+
+  while (gap.getBoundingClientRect().width > maxW && size > 12) {
+    size -= 1;
+    line.style.fontSize = size + 'px';
+  }
+}
+
 /* 接歌詞：轉場到出題（唱片縮小 → 面板滑上 → 題目與選項依序出現 → 才開始作答倒數） */
 function showLyricQuestion() {
   const my = reqId, st = $('stage');
@@ -1230,13 +1247,16 @@ function showLyricQuestion() {
     st.classList.remove('ly-leave', 'ly-listen');
     st.classList.add('ly-enter');
 
+    $('ls-wait').style.display = 'none';
+
     $('trow').style.display = '';
     $('trow').style.visibility = '';
     $('trow').classList.add('tin');
 
     $('choice-sec').style.display = 'block';
     $('items').style.display = '';
-    $('lyric-prompt').style.display = 'block';
+    $('lyric-prompt').style.display = 'flex';
+    fitLyricLine();
 
     clipTimer = setTimeout(() => {
       if (my !== reqId) return;
@@ -1663,7 +1683,7 @@ function reveal() {
 $('choice-sec').style.display = 'none';
 
 if (isLyricsMode()) {
-  $('lyric-prompt').style.display = 'block';
+  $('lyric-prompt').style.display = 'flex';
   revealLyricCard();
 } else {
   $('lyric-prompt').style.display = 'none';

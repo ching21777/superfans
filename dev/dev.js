@@ -293,7 +293,7 @@ updateDevMuteButton();
     qDone = 0;
     qPtr = 1;
     cur = item;
-    opts = shuffle([item.correctNext, ...item.distractors]);
+    opts = shuffle([item.answer, ...item.distractors]);
     cds = [];
 
     // 更新遊戲資訊
@@ -309,7 +309,8 @@ updateDevMuteButton();
 
     // 設定歌詞題目
 
-    $('lyric-prev').textContent = item.prevLyric;
+    renderLyricPrompt(item);
+updateLyricStars(item.answer);
     $('lyric-prev').closest('.lyric-card')
       .classList.remove('lyric-revealed');
 
