@@ -143,7 +143,7 @@
 <!-- ==================== 主選單 ==================== -->
 <div class="ov" id="m-start" style="display:flex">
   <div class="mc">
-    <div class="logo">Super Fans</div>
+    <div class="logo">Super Fan<span id="secret-trigger">s</span></div>
 
     <section class="history-panel">
       <div class="history-heading">我的戰績</div>
@@ -158,6 +158,24 @@
     <div class="copyright-notice">
       Song Source: Apple Music<br>
       Personal Project ． Beta Version<br>
+    </div>
+  </div>
+</div>
+
+<!-- ==================== 隱藏歌單 ==================== -->
+<div class="ov" id="m-secret" style="display:none">
+  <div class="mc">
+    <div class="logo">Secret Songs</div>
+
+    <div class="col">
+      <button class="bevel go btn-lg"
+              onclick="pickTheme('helloNico')">
+        ✬✬✬｜Hello Nico 歌詞接唱 ➔
+      </button>
+
+      <button class="bevel" onclick="hide('m-secret'); show('m-start')">
+  返回
+</button>
     </div>
   </div>
 </div>
@@ -196,7 +214,7 @@
       <div class="theme-divider"></div>
 
       <button class="tb" data-k="lyrics" onclick="pickTheme('lyrics')">✬｜歌詞接唱王 ➔</button>
-      <button class="tb" data-k="helloNico" onclick="pickTheme('helloNico')">✬✬✬｜Hello Nico 歌詞接唱 ➔</button>
+      <!-- <button class="tb" data-k="helloNico" onclick="pickTheme('helloNico')">✬✬✬｜Hello Nico 歌詞接唱 ➔</button> -->
     </div>
   </div>
 </div>
@@ -446,6 +464,29 @@ const $ = id => document.getElementById(id);
 const show = id => $(id).style.display = 'flex';
 
 const hide = id => $(id).style.display = 'none';
+
+// 隱藏歌單入口：主畫面 Logo 最後一個 s 連點 5 次
+(() => {
+  const trigger = $('secret-trigger');
+  let clicks = 0;
+  let timer = null;
+
+  trigger.addEventListener('click', () => {
+    clicks++;
+
+    clearTimeout(timer);
+    timer = setTimeout(() => {
+      clicks = 0;
+    }, 1500);
+
+    if (clicks >= 5) {
+      clearTimeout(timer);
+      clicks = 0;
+      hide('m-start');
+      show('m-secret');
+    }
+  });
+})();
 
 const uniq = a => [...new Set(a)];
 

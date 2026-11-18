@@ -385,6 +385,16 @@ body {
     drop-shadow(0 0 8px rgba(213,31,59,.4));
 }
 
+.logo #secret-trigger {
+  font: inherit;
+  letter-spacing: inherit;
+  color: inherit;
+  background: inherit;
+  background-clip: inherit;
+  -webkit-background-clip: inherit;
+  -webkit-text-stroke: inherit;
+}
+
 /* 小型星芒 */
 .logo::before,
 .logo::after {
@@ -2151,3 +2161,29 @@ button:focus-visible {
     );
   }
 }
+
+
+/* 隱藏歌單｜深藍配色 */
+#m-secret .mc {
+  background: #3f2840;
+  color: #F5F1E8;
+  border: 1px solid rgba(216, 154, 211, 0.35);
+  box-shadow: 0 8px 24px rgba(0,0,0,.4);
+}
+
+#m-secret .logo {
+  color: #D8C49A;
+}
+
+#m-secret .bevel.go {
+  color: #F5F1E8;
+  background: #337577;
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,.12),
+    0 3px 6px rgba(0,0,0,.25);
+}
+#m-secret .bevel:not(.go) {
+  background: #222;
+  color: #FFF;
+}
+
