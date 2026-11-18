@@ -327,7 +327,7 @@
 const CFG = {
   BASE: 60,
   SPEED: 50,
-  FULL_AT: 15,
+  FULL_AT: 20,
   COMBO_STEP: 11,
   COMBO_MAX: 99,
   CHOICE_SPEED_RATE: .5,
@@ -377,7 +377,8 @@ let active = false,
     choiceUsed = false,
     choiceMiss = false,
     usedChoice = false,
-    usedHint = false;
+    usedHint = false,
+    lyricsItemCount = 0;
 
 // 分數與連擊
 let score = 0,
@@ -694,7 +695,7 @@ function calcScore(isChoice, tLeft, comboNow, lostCombo, attempts, usedHint = fa
   const rates = [1, 0.79, 0.57, 0.36, 0.14];
   const attemptRate = rates[Math.min(attempts, 5) - 1] || 0.14;
 
-  const base = Math.round(CFG.BASE * attemptRate * (isChoice ? 0.5 : 1));
+  const base = Math.round(CFG.BASE * attemptRate * (isChoice ? 0.4 : 1));
 
   // 速度分數
   let speed = Math.round(
@@ -720,7 +721,13 @@ function calcScore(isChoice, tLeft, comboNow, lostCombo, attempts, usedHint = fa
   );
 
   // 提示折扣：首字提示 + 選擇題，額外降至 20%
-  const hintRate = usedHint && isChoice ? 0.2 : usedHint ? 0.8 : 1;
+  const hintRate = isLyricsMode()
+  ? Math.pow(0.5, lyricsItemCount)
+  : usedHint && isChoice
+    ? 0.2
+    : usedHint
+      ? 0.8
+      : 1;
 
   const totalScore = base + speed + bonus;
 
@@ -794,6 +801,7 @@ if (remaining.length <= 2 || wrongs.length < 2) {
   b.classList.add('removed');
 
   usedHint = true;                 // 沿用既有的提示折扣 0.8
+  lyricsItemCount++;
   $('choice-btn').disabled = true;
   $('choice-sub').textContent = '已使用';
 }
@@ -1319,6 +1327,9 @@ function revealLyricHint() {
   const card = $('lyric-prev').closest('.lyric-card');
   if (card) card.classList.add('lyric-cover-open');
 
+  usedHint = true;
+  lyricsItemCount++;
+
   $('pause-btn').disabled = true;
   $('pause-sub').textContent = '已使用';
 }
@@ -1344,6 +1355,7 @@ async function loadQuestion() {
   isPaused = false;
   usedChoice = false;
   usedHint = false;
+  lyricsItemCount = 0;
   questionAttempts = 0;
 
   // 每首新歌重新開放一次提示
