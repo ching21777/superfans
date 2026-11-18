@@ -126,28 +126,10 @@ const SONG_DATABASE = [
     ]
   },
   {
-    id: 8,
-    title: "後來",
-    artist: "劉若英",
-    genre: "療癒系天后",
-    itunesQuery: "後來 劉若英",
-    playUntil: 11,
-
-    type: "fill",
-    prompt: "梔子花 {{blank}}\n落在我藍色百褶裙上",
-    answer: "白花瓣",
-
-    distractors: [
-      "紅花瓣",
-      "黃花瓣",
-      "橙花瓣"
-    ]
-  },
-  {
     id: 9,
     title: "突然好想你",
     artist: "五月天",
-    genre: "人氣樂團",
+    genre: "華語搖滾天團",
     itunesQuery: "突然好想你 五月天",
     playUntil: 19,
 
@@ -286,6 +268,78 @@ const SONG_DATABASE = [
       "要怎麼做你才能看向我",
       "你怎麼沒說命中缺個我"
     ]
+  },
+  {
+    id: 17,
+    title: "若無你我欲去佗位",
+    artist: "黃奇斌",
+    genre: "臺語創作歌手",
+    itunesQuery: "黃奇斌 若無你我欲去佗位",
+    playUntil: 21,
+
+    type: "next",
+    prompt: "咱談情說愛的彼張相片 閣囥佇我的身邊",
+    answer: "親像咱猶原鬥陣",
+
+    distractors: [
+      "你講過咱攏袂改變",
+      "哪知你無欲閣轉來",
+      "我毋情願你離開"
+    ]
+  },
+  {
+    id: 18,
+    title: "Just the Way You Are",
+    artist: "Bruno Mars",
+    genre: "火星人布魯諾",
+    itunesQuery: "Bruno Mars Just the Way You Are",
+    playUntil: 19,
+
+    type: "next",
+    prompt: "'Cause you're amazing",
+    answer: "Just the way you are",
+
+    distractors: [
+      "When I see your face",
+      "Nothing I would change",
+      "I tell you everyday"
+    ]
+  },
+  {
+    id: 19,
+    title: "おどるポンポコリン",
+    artist: "B.B.QUEENS",
+    genre: "櫻桃小丸子主題曲",
+    itunesQuery: "B.B.QUEENS おどるポンポコリン",
+    playUntil: 10,
+
+    type: "next",
+    prompt: "ピーヒャラ　ピーヒャラ　おへそがちらり",
+    answer: "タッタタラリラ",
+
+    distractors: [
+      "パッパパラパ",
+      "ピーヒャラ",
+      "お腹がへったよ"
+    ]
+  },
+  {
+    id: 20,
+    title: "與浪之間",
+    artist: "VH Vast & Hazy",
+    genre: "出口系樂團",
+    itunesQuery: "VH Vast & Hazy 與浪之間",
+    playUntil: 15,
+
+    type: "fill",
+    prompt: "看不見你 也看不見自己\n看不見你 {{blank}}",
+    answer: "就看不見自己",
+
+    distractors: [
+      "就只想擁抱你",
+      "就尋一個出口",
+      "就只想抓住你"
+    ]
   }
   
 ];
@@ -334,6 +388,24 @@ const TEST_DATABASE = [
       "天空突然放晴",
       "回憶慢慢遠去",
       "世界不再轉動"
+    ]
+  },
+  {
+    id: 8,
+    title: "後來",
+    artist: "劉若英",
+    genre: "療癒系天后",
+    itunesQuery: "後來 劉若英",
+    playUntil: 11,
+
+    type: "fill",
+    prompt: "梔子花 {{blank}}\n落在我藍色百褶裙上",
+    answer: "白花瓣",
+
+    distractors: [
+      "紅花瓣",
+      "黃花瓣",
+      "橙花瓣"
     ]
   },
 ];
