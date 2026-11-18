@@ -62,7 +62,7 @@
   text-wrap: balance;
 }
 
-.lyric-card .lc-prev::before {
+/*lyric-card .lc-prev::before {
   content: "“";
   color: var(--purple-light);
   margin-right: 4px;
@@ -72,59 +72,121 @@
   content: "”";
   color: var(--purple-light);
   margin-left: 4px;
+}*/
+
+/* --- 歌詞呈現 --- */
+
+/* 提示歌詞 */
+.lyric-card .lc-context {
+  font-size: clamp(14px, 4vw, 17px);
+  line-height: 1.45;
+  font-weight: 600;
+  color: rgba(232,231,231,.72);
+  margin-bottom: 0px;
+  text-wrap: balance;
 }
 
+/* 整句題的上下間距統一 */
+.lyric-card .lc-context {
+  margin: 0;
+}
 
+.lyric-card .lc-context,
+.lyric-card .lc-answer {
+  display: block;
+}
+
+.lyric-card .lc-context + .lc-answer,
+.lyric-card .lc-answer + .lc-context {
+  margin-top: 4px;
+}
+
+/* 被挖空的答案句 */
+.lyric-card .lc-answer {
+  font-size: clamp(14px, 4vw, 17px);
+  line-height: 1.45;
+  font-weight: 600;
+  color: var(--paper);
+  text-wrap: balance;
+}
+
+/* 不規則遮蔽：局部挖空、整句遮蔽共用 */
+.lyric-card .gap {
+  position: relative;
+  display: inline-block;
+  max-width: 100%;
+  padding: 1px 9px 3px;
+  margin: 0 2px;
+
+  color: transparent;
+  -webkit-text-fill-color: transparent;
+  text-shadow: none;
+
+  white-space: normal;
+  vertical-align: baseline;
+
+  border-radius: 3px 6px 4px 2px;
+
+  background:
+    linear-gradient(135deg, rgba(255,255,255,.12), transparent 38%),
+    linear-gradient(
+      110deg,
+      #777078 0%,
+      #B0A9AE 24%,
+      #777078 52%,
+      #A39BA2 76%,
+      #625B63 100%
+    );
+
+  box-shadow:
+    inset 0 1px 1px rgba(255,255,255,.32),
+    inset 0 -2px 2px rgba(0,0,0,.28),
+    0 1px 2px rgba(0,0,0,.35);
+
+  clip-path: polygon(
+    2% 8%,
+    97% 0,
+    100% 82%,
+    94% 100%,
+    4% 94%,
+    0 24%
+  );
+}
+
+/* 整句遮蔽 */
+.lyric-card .lc-answer .gap {
+  display: inline-block;
+  padding: 3px 12px 5px;
+  margin: 2px 0;
+  line-height: 1.45;
+  vertical-align: middle;
+}
+
+/* 揭曉：移除遮蔽，顯示完整答案 */
+.lyric-card.lyric-revealed .gap {
+  color: var(--paper);
+  -webkit-text-fill-color: currentColor;
+  background: transparent;
+  box-shadow: none;
+  clip-path: none;
+  padding-left: 0;
+  padding-right: 0;
+}
+
+/* 揭曉後取消多餘間距 */
+.lyric-card.lyric-revealed .lc-prev .gap,
+.lyric-card.lyric-revealed .lc-answer .gap {
+  margin-left: 0;
+  margin-right: 0;
+}
 /* --- 歌詞提示遮罩 --- */
 
-.lyric-card::before {
-  content: "換你唱！";
-
-  position: absolute;
-  inset: 0;
-  z-index: 3;
-
-  display: flex;
-  align-items: center;
-  justify-content: center;
-
-  padding-bottom: 42px;
-
-  text-align: center;
-  color: var(--purple-light);
-
-  font-size: 16px;
-  font-weight: 700;
-  letter-spacing: .04em;
-
-  background: linear-gradient(145deg, #383239 0%, #211D24 55%, #151318 100%);
-}
-
+/* 不再遮住整張卡片，改由 .gap 控制遮蔽 */
+.lyric-card::before,
 .lyric-card::after {
-  content: var(--lyric-stars, "✦ ✦ ✦");
-
-  position: absolute;
-  inset: 0;
-  z-index: 4;
-
-  display: flex;
-  align-items: center;
-  justify-content: center;
-
-  padding-top: 26px;
-
-  color: var(--purple-light);
-  font-size: 26px;
-  font-weight: 700;
-  letter-spacing: .12em;
-}
-
-/* 使用提示後，移除整張卡片的遮罩 */
-.lyric-card.lyric-revealed::before,
-.lyric-card.lyric-revealed::after {
+  content: none;
   display: none;
 }
-
 
 /* --- 歌詞選項與作答狀態 --- */
 

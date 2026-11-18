@@ -183,13 +183,58 @@ const SONG_DATABASE = [
 
 const HELLO_NICO_DATABASE = [
   {
+    id: 101,
+    type: "previous",
+    title: "示意歌曲 A",
+    artist: "示意歌手",
+    promptLyric: "我曾經走過那段熟悉的街道",
+    answerLyric: "想起我們一起看過的星星",
+    correctNext: "想起我們一起看過的星星",
+    distractors: [
+      "那些日子早已經遠去",
+      "我還在等待你的消息",
+      "回憶停留在那個夏季"
+    ]
+  },
+  {
+    id: 102,
+    type: "next",
+    title: "示意歌曲 B",
+    artist: "示意歌手",
+    promptLyric: "風吹過耳邊　帶走昨天的悲傷",
+    answerLyric: "明天的陽光依然會到來",
+    correctNext: "明天的陽光依然會到來",
+    distractors: [
+      "雨落在窗邊　想起你的模樣",
+      "我們曾經一起追逐夢想",
+      "時間慢慢帶走所有遺憾"
+    ]
+  },
+  {
+    id: 103,
+    type: "fill",
+    title: "示意歌曲 C",
+    artist: "示意歌手",
+    lyricText: "也許有一天{{blank}}　我們還會再次相遇",
+    blankAnswer: "花朵再次盛開",
+    correctNext: "我們還會再次相遇",
+    distractors: [
+      "天空突然放晴",
+      "回憶慢慢遠去",
+      "世界不再轉動"
+    ]
+  },
+
+  {
     id: 1,
+    type: "next",
     title: "花",
     artist: "Hello Nico",
     genre: "大合唱經典",
     itunesQuery: "花 Hello Nico",
     playUntil: 20,
-    prevLyric: "我只是想　＿＿＿＿＿",
+    promptLyric: "我只是想",
+    answerLyric: "和你玩耍",
     correctNext: "和你玩耍",
     distractors: [
       "在你身旁",

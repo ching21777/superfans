@@ -168,7 +168,7 @@
       <p><b>🔥 Combo：</b>連續答對，額外加分</p>
       <p><b>🆘 選擇提示：</b>降低難度，分數也打折</p>
       <p><b>💡 首字提示：</b>每題可用 1 次</p>
-      <p><b>🎤 接歌詞：</b>閱讀上句歌詞，選出正確的下一句</p>
+      <p><b>🎤 歌詞挑戰：</b>選上一句、選下一句，或找出歌詞填空</p>
       <p><b>✂️ 刪去一項：</b>接歌詞每題可用 1 次，分數打折</p>
       <p><b>🔁 重播一次：</b>接歌詞每題可重聽 1 次（作答時間暫停）</p>
     </div>
@@ -479,6 +479,56 @@ function updateLyricStars(text) {
   );
 }
 
+// 歌詞題型共用：取得正解，並依題型決定遮蔽範圍
+function getLyricAnswer() {
+  if (!cur) return '';
+  return cur.type === 'fill'
+    ? cur.blankAnswer
+    : cur.answerLyric;
+}
+
+// 歌詞呈現：整句題遮住答案整句；填空題只遮住 {{blank}}
+function renderLyricPrompt(item) {
+  const root = $('lyric-prev');
+  root.replaceChildren();
+
+  const addGap = text => {
+    const gap = document.createElement('span');
+    gap.className = 'gap';
+    gap.textContent = text || '';
+    return gap;
+  };
+
+  if (item.type === 'fill') {
+    const parts = (item.lyricText || '').split('{{blank}}');
+    root.classList.add('is-fill');
+
+    root.append(document.createTextNode(parts[0] || ''));
+    root.append(addGap(item.blankAnswer));
+
+    if (parts.length > 1) {
+      root.append(document.createTextNode(parts.slice(1).join('{{blank}}')));
+    }
+    return;
+  }
+
+  root.classList.remove('is-fill');
+
+  const context = document.createElement('div');
+  context.className = 'lc-context';
+  context.textContent = item.promptLyric || item.prevLyric || '';
+
+  const answer = document.createElement('div');
+  answer.className = 'lc-answer';
+  answer.append(addGap(item.answerLyric || ''));
+
+  if (item.type === 'previous') {
+  root.append(answer, context);
+} else {
+  root.append(context, answer);
+}
+}
+
 // 秒數 → mm:ss
 function fmtTime(sec) {
   return String(Math.floor(sec / 60)).padStart(2, '0') + ':' + String(sec % 60).padStart(2, '0');
@@ -678,7 +728,7 @@ function useEliminate() {
   const remaining = [...$('ogrid').querySelectorAll('.opt:not(:disabled)')];
 
 const wrongs = remaining
-  .filter(b => opts[+b.dataset.i] !== cur.correctNext);
+  .filter(b => opts[+b.dataset.i] !== getLyricAnswer());
 
     
     // 剩餘選項只剩 2 個，或錯誤選項不足 2 個時，停用道具
@@ -760,7 +810,7 @@ $('ogrid').onclick = e => {
 
   questionAttempts++;
 
-  if (opts[+b.dataset.i] === (isLyricsMode() ? cur.correctNext : cur.title)) {
+  if (opts[+b.dataset.i] === (isLyricsMode() ? getLyricAnswer() : cur.title)) {
     correct(isLyricsMode() ? false : true);
     return;
   }
@@ -855,7 +905,7 @@ function holdCorrectChoice() {
 
   if (isLyricsMode()) revealLyricCard();
 
-  const answer = isLyricsMode() ? cur.correctNext : cur.title;
+  const answer = isLyricsMode() ? getLyricAnswer() : cur.title;
 
   const right = [...$('ogrid').querySelectorAll('.opt')]
     .find(b => opts[+b.dataset.i] === answer);
@@ -1324,6 +1374,12 @@ $('trow').style.visibility = isLyricsMode() ? 'hidden' : '';
   finish();
 }
 
+/*
+  歌詞題庫欄位：
+  - next / previous：type、promptLyric、answerLyric、distractors
+  - fill：type、lyricText（以 {{blank}} 標記挖空處）、blankAnswer、distractors
+  舊題庫可暫時不填 type，會以 next 題型相容。
+*/
 async function loadLyricsQuestion(my) {
   const item = queue[qPtr++];
 
@@ -1358,13 +1414,24 @@ async function loadLyricsQuestion(my) {
 
   if (my !== reqId) return;
 
+  // 舊題庫未標記 type 時，預設沿用原本的「選下一句」
+  const type = item.type || 'next';
+  const answerLyric = type === 'fill'
+    ? (item.blankAnswer || '')
+    : (item.answerLyric || item.correctNext || '');
+
   cur = {
     id: item.id,
     title: item.title,
     artist: item.artist,
     genre: item.genre,
-    prevLyric: item.prevLyric,
-    correctNext: item.correctNext,
+    type,
+    promptLyric: item.promptLyric || item.prevLyric || '',
+    lyricText: item.lyricText || '',
+    blankAnswer: item.blankAnswer || '',
+    answerLyric,
+    prevLyric: item.prevLyric || '',
+    correctNext: item.correctNext || '',
     art: track?.artworkUrl100
       ? track.artworkUrl100.replace('100x100', '600x600')
       : '',
@@ -1372,17 +1439,12 @@ async function loadLyricsQuestion(my) {
     year: (track?.releaseDate || '').slice(0, 4)
   };
 
-
-  $('lyric-prev').textContent = item.prevLyric;
-
-// 依歌詞字數產生星星
-updateLyricStars(item.correctNext);
+  renderLyricPrompt(cur);
+  updateLyricStars(getLyricAnswer());
 
   $('lyric-prev').closest('.lyric-card').classList.remove('lyric-revealed');
 
-
-
-  opts = shuffle([item.correctNext, ...item.distractors]);
+  opts = shuffle([getLyricAnswer(), ...item.distractors]);
   const LETTERS = ['A', 'B', 'C', 'D'];
 
   $('ogrid').style.gridTemplateColumns = '1fr';
