@@ -82,6 +82,11 @@
 
       <div id="lyric-prompt" class="lyric-card" style="display:none">
         <div class="lc-prev" id="lyric-prev"></div>
+        <div class="lyric-cover" aria-hidden="true">
+          <span class="lyric-cover-label">SUPER FANS</span>
+          <span class="lyric-cover-title">LYRICS</span>
+          <span class="lyric-cover-line"></span>
+        </div>
       </div>
 
       <div class="ls-listen">
@@ -138,7 +143,7 @@
 <!-- ==================== 主選單 ==================== -->
 <div class="ov" id="m-start" style="display:flex">
   <div class="mc">
-    <div class="logo">Super Fans</div>
+    <div class="logo">Super Fan<span id="secret-trigger">s</span></div>
 
     <section class="history-panel">
       <div class="history-heading">我的戰績</div>
@@ -157,6 +162,24 @@
   </div>
 </div>
 
+<!-- ==================== 隱藏歌單 ==================== -->
+<div class="ov" id="m-secret" style="display:none">
+  <div class="mc">
+    <div class="logo">Secret Songs</div>
+
+    <div class="col">
+      <button class="bevel go btn-lg"
+              onclick="pickTheme('helloNico')">
+        ✬✬✬｜Hello Nico 歌詞接唱 ➔
+      </button>
+
+      <button class="bevel" onclick="hide('m-secret'); show('m-start')">
+  返回
+</button>
+    </div>
+  </div>
+</div>
+
 <!-- 遊戲規則 -->
 <div class="ov" id="m-rules">
   <div class="mc rules-dialog">
@@ -168,7 +191,7 @@
       <p><b>🔥 Combo：</b>連續答對，額外加分</p>
       <p><b>🆘 選擇提示：</b>降低難度，分數也打折</p>
       <p><b>💡 首字提示：</b>每題可用 1 次</p>
-      <p><b>🎤 接歌詞：</b>閱讀上句歌詞，選出正確的下一句</p>
+      <p><b>🎤 歌詞挑戰：</b>選上一句、選下一句，或找出歌詞填空</p>
       <p><b>✂️ 刪去一項：</b>接歌詞每題可用 1 次，分數打折</p>
       <p><b>🔁 重播一次：</b>接歌詞每題可重聽 1 次（作答時間暫停）</p>
     </div>
@@ -187,7 +210,11 @@
       <button class="tb" data-k="she" onclick="pickTheme('she')">✬✬｜ S.H.E 鐵粉爭霸戰 ➔</button>
       <button class="tb" data-k="fish" onclick="pickTheme('fish')">✬✬｜ 梁靜茹精選情歌 ➔</button>
       <button class="tb" data-k="vagabond" onclick="pickTheme('vagabond')">✬✬✬｜走啊聽團！2026 浪人祭 ➔</button>
+      
+      <div class="theme-divider"></div>
+
       <button class="tb" data-k="lyrics" onclick="pickTheme('lyrics')">✬｜歌詞接唱王 ➔</button>
+      <!-- <button class="tb" data-k="helloNico" onclick="pickTheme('helloNico')">✬✬✬｜Hello Nico 歌詞接唱 ➔</button> -->
     </div>
   </div>
 </div>
@@ -300,7 +327,7 @@
 const CFG = {
   BASE: 60,
   SPEED: 50,
-  FULL_AT: 15,
+  FULL_AT: 20,
   COMBO_STEP: 11,
   COMBO_MAX: 99,
   CHOICE_SPEED_RATE: .5,
@@ -350,7 +377,8 @@ let active = false,
     choiceUsed = false,
     choiceMiss = false,
     usedChoice = false,
-    usedHint = false;
+    usedHint = false,
+    lyricsItemCount = 0;
 
 // 分數與連擊
 let score = 0,
@@ -438,6 +466,29 @@ const show = id => $(id).style.display = 'flex';
 
 const hide = id => $(id).style.display = 'none';
 
+// 隱藏歌單入口：主畫面 Logo 最後一個 s 連點 5 次
+(() => {
+  const trigger = $('secret-trigger');
+  let clicks = 0;
+  let timer = null;
+
+  trigger.addEventListener('click', () => {
+    clicks++;
+
+    clearTimeout(timer);
+    timer = setTimeout(() => {
+      clicks = 0;
+    }, 1500);
+
+    if (clicks >= 5) {
+      clearTimeout(timer);
+      clicks = 0;
+      hide('m-start');
+      show('m-secret');
+    }
+  });
+})();
+
 const uniq = a => [...new Set(a)];
 
 const shuffle = a => a.sort(() => Math.random() - .5);
@@ -475,20 +526,75 @@ function updateLyricStars(text) {
   );
 }
 
+// 歌詞題型共用：所有題型統一從 answer 取得正解
+function getLyricAnswer() {
+  return cur?.answer || '';
+}
+
+// 歌詞呈現：prompt 與 answer 統一欄位，依 type 決定遮蔽位置
+function renderLyricPrompt(item) {
+  const root = $('lyric-prev');
+  root.replaceChildren();
+
+  const addGap = text => {
+    const gap = document.createElement('span');
+    gap.className = 'gap';
+    gap.textContent = text || '';
+    return gap;
+  };
+
+  const prompt = item.prompt || '';
+  const answer = item.answer || '';
+
+  if (item.type === 'fill') {
+  const parts = prompt.split('{{blank}}');
+  root.classList.add('is-fill');
+
+  const fill = document.createElement('div');
+  fill.className = 'lc-fill';
+
+  fill.append(document.createTextNode(parts[0] || ''));
+  fill.append(addGap(answer));
+
+  if (parts.length > 1) {
+    fill.append(document.createTextNode(parts.slice(1).join('{{blank}}')));
+  }
+
+  root.append(fill);
+  return;
+}
+
+  root.classList.remove('is-fill');
+
+  const context = document.createElement('div');
+  context.className = 'lc-context';
+  context.textContent = prompt;
+
+  const answerLine = document.createElement('div');
+  answerLine.className = 'lc-answer';
+  answerLine.append(addGap(answer));
+
+  if (item.type === 'previous') {
+    root.append(answerLine, context);
+  } else {
+    root.append(context, answerLine);
+  }
+}
+
 // 秒數 → mm:ss
 function fmtTime(sec) {
   return String(Math.floor(sec / 60)).padStart(2, '0') + ':' + String(sec % 60).padStart(2, '0');
 }
 
 // 目前可用的歌曲清單（試玩模式混合三個歌單）
-function isLyricsMode() {
-  return !isDemo && theme === 'lyrics';
-}
-
 function songPool() {
   return isDemo
     ? [...playlists.drama, ...playlists.she, ...playlists.fish]
     : playlists[theme];
+}
+
+function isLyricsMode() {
+  return !isDemo && ['lyrics', 'helloNico'].includes(theme);
 }
 
 function unlockAudio() {
@@ -589,7 +695,7 @@ function calcScore(isChoice, tLeft, comboNow, lostCombo, attempts, usedHint = fa
   const rates = [1, 0.79, 0.57, 0.36, 0.14];
   const attemptRate = rates[Math.min(attempts, 5) - 1] || 0.14;
 
-  const base = Math.round(CFG.BASE * attemptRate * (isChoice ? 0.5 : 1));
+  const base = Math.round(CFG.BASE * attemptRate * (isChoice ? 0.4 : 1));
 
   // 速度分數
   let speed = Math.round(
@@ -615,7 +721,13 @@ function calcScore(isChoice, tLeft, comboNow, lostCombo, attempts, usedHint = fa
   );
 
   // 提示折扣：首字提示 + 選擇題，額外降至 20%
-  const hintRate = usedHint && isChoice ? 0.2 : usedHint ? 0.8 : 1;
+  const hintRate = isLyricsMode()
+  ? Math.pow(0.5, lyricsItemCount)
+  : usedHint && isChoice
+    ? 0.2
+    : usedHint
+      ? 0.8
+      : 1;
 
   const totalScore = base + speed + bonus;
 
@@ -674,7 +786,7 @@ function useEliminate() {
   const remaining = [...$('ogrid').querySelectorAll('.opt:not(:disabled)')];
 
 const wrongs = remaining
-  .filter(b => opts[+b.dataset.i] !== cur.correctNext);
+  .filter(b => opts[+b.dataset.i] !== getLyricAnswer());
 
     
     // 剩餘選項只剩 2 個，或錯誤選項不足 2 個時，停用道具
@@ -689,6 +801,7 @@ if (remaining.length <= 2 || wrongs.length < 2) {
   b.classList.add('removed');
 
   usedHint = true;                 // 沿用既有的提示折扣 0.8
+  lyricsItemCount++;
   $('choice-btn').disabled = true;
   $('choice-sub').textContent = '已使用';
 }
@@ -756,7 +869,7 @@ $('ogrid').onclick = e => {
 
   questionAttempts++;
 
-  if (opts[+b.dataset.i] === (isLyricsMode() ? cur.correctNext : cur.title)) {
+  if (opts[+b.dataset.i] === (isLyricsMode() ? getLyricAnswer() : cur.title)) {
     correct(isLyricsMode() ? false : true);
     return;
   }
@@ -851,7 +964,7 @@ function holdCorrectChoice() {
 
   if (isLyricsMode()) revealLyricCard();
 
-  const answer = isLyricsMode() ? cur.correctNext : cur.title;
+  const answer = isLyricsMode() ? getLyricAnswer() : cur.title;
 
   const right = [...$('ogrid').querySelectorAll('.opt')]
     .find(b => opts[+b.dataset.i] === answer);
@@ -916,7 +1029,11 @@ function begin(demo) {
   isDemo = demo;
   total = demo ? 3 : 10;
 
-  $('mode').textContent = demo ? '試玩模式' : (theme === 'lyrics' ? '歌詞接唱' : '歌名搶答');
+  $('mode').textContent = demo
+  ? '試玩模式'
+  : (isLyricsMode()
+      ? (theme === 'helloNico' ? '歌詞接唱' : '歌詞接唱')
+      : '歌名搶答');
   $('mode').style.display = 'block';
   $('quit-btn').style.display = 'block';
 
@@ -939,7 +1056,9 @@ function begin(demo) {
   halfPassed = false;
 
   queue = isLyricsMode()
-  ? shuffle([...SONG_DATABASE]).slice(0, 10)
+  ? shuffle([
+      ...(theme === 'helloNico' ? HELLO_NICO_DATABASE : SONG_DATABASE)
+    ]).slice(0, total)
   : shuffle(uniq(songPool())).slice(0, total);
 
   $('score').textContent = '0';
@@ -1152,6 +1271,23 @@ function playClip(my, done, leaveEarly = false) {
   go();
 }
 
+// 答案不換行：太寬就縮小字級，直到放得進卡片
+function fitLyricLine() {
+  const line = $('lyric-prompt').querySelector('.lc-answer')
+            || $('lyric-prompt').querySelector('.lc-prev');
+  const gap = line?.querySelector('.gap');
+  if (!gap) return;
+
+  line.style.fontSize = '';                       // 先還原成 CSS 設定的大小
+  const maxW = line.parentElement.clientWidth;    // 卡片內可用寬度
+  let size = parseFloat(getComputedStyle(line).fontSize);
+
+  while (gap.getBoundingClientRect().width > maxW && size > 12) {
+    size -= 1;
+    line.style.fontSize = size + 'px';
+  }
+}
+
 /* 接歌詞：轉場到出題（唱片縮小 → 面板滑上 → 題目與選項依序出現 → 才開始作答倒數） */
 function showLyricQuestion() {
   const my = reqId, st = $('stage');
@@ -1165,13 +1301,16 @@ function showLyricQuestion() {
     st.classList.remove('ly-leave', 'ly-listen');
     st.classList.add('ly-enter');
 
+    $('ls-wait').style.display = 'none';
+
     $('trow').style.display = '';
     $('trow').style.visibility = '';
     $('trow').classList.add('tin');
 
     $('choice-sec').style.display = 'block';
     $('items').style.display = '';
-    $('lyric-prompt').style.display = 'block';
+    $('lyric-prompt').style.display = 'flex';
+    fitLyricLine();
 
     clipTimer = setTimeout(() => {
       if (my !== reqId) return;
@@ -1185,7 +1324,11 @@ function showLyricQuestion() {
 
 /* 歌詞提示：顯示上一句歌詞 */
 function revealLyricHint() {
-  revealLyricCard();
+  const card = $('lyric-prev').closest('.lyric-card');
+  if (card) card.classList.add('lyric-cover-open');
+
+  usedHint = true;
+  lyricsItemCount++;
 
   $('pause-btn').disabled = true;
   $('pause-sub').textContent = '已使用';
@@ -1196,7 +1339,7 @@ function revealLyricCard() {
   const card = $('lyric-prev').closest('.lyric-card');
   if (!card) return;
 
-  card.classList.add('lyric-revealed');
+  card.classList.add('lyric-revealed', 'lyric-cover-open');
 }
 
 async function loadQuestion() {
@@ -1212,6 +1355,7 @@ async function loadQuestion() {
   isPaused = false;
   usedChoice = false;
   usedHint = false;
+  lyricsItemCount = 0;
   questionAttempts = 0;
 
   // 每首新歌重新開放一次提示
@@ -1314,6 +1458,13 @@ $('trow').style.visibility = isLyricsMode() ? 'hidden' : '';
   finish();
 }
 
+/*
+  歌詞題庫統一欄位：
+  - 歌曲資訊：id、title、artist、genre、itunesQuery、playUntil
+  - 題目資訊：type（previous / next / fill）、prompt、answer、distractors
+  - fill 題型的 prompt 使用 {{blank}} 標記挖空位置
+  舊題庫欄位暫時保留相容讀取，待 lyrics.js 更新後即可移除。
+*/
 async function loadLyricsQuestion(my) {
   const item = queue[qPtr++];
 
@@ -1348,13 +1499,23 @@ async function loadLyricsQuestion(my) {
 
   if (my !== reqId) return;
 
+  // 舊題庫未標記 type 時，暫時沿用原本的「選下一句」
+  const type = item.type || 'next';
+  const prompt = item.prompt || item.promptLyric || item.lyricText || item.prevLyric || '';
+  const answer = item.answer || (
+    type === 'fill'
+      ? (item.blankAnswer || '')
+      : (item.answerLyric || item.correctNext || '')
+  );
+
   cur = {
     id: item.id,
     title: item.title,
     artist: item.artist,
     genre: item.genre,
-    prevLyric: item.prevLyric,
-    correctNext: item.correctNext,
+    type,
+    prompt,
+    answer,
     art: track?.artworkUrl100
       ? track.artworkUrl100.replace('100x100', '600x600')
       : '',
@@ -1362,17 +1523,15 @@ async function loadLyricsQuestion(my) {
     year: (track?.releaseDate || '').slice(0, 4)
   };
 
+  renderLyricPrompt(cur);
+  updateLyricStars(getLyricAnswer());
 
-  $('lyric-prev').textContent = item.prevLyric;
+  $('lyric-prev').closest('.lyric-card').classList.remove(
+    'lyric-revealed',
+    'lyric-cover-open'
+  );
 
-// 依歌詞字數產生星星
-updateLyricStars(item.correctNext);
-
-  $('lyric-prev').closest('.lyric-card').classList.remove('lyric-revealed');
-
-
-
-  opts = shuffle([item.correctNext, ...item.distractors]);
+  opts = shuffle([getLyricAnswer(), ...item.distractors]);
   const LETTERS = ['A', 'B', 'C', 'D'];
 
   $('ogrid').style.gridTemplateColumns = '1fr';
@@ -1586,7 +1745,7 @@ function reveal() {
 $('choice-sec').style.display = 'none';
 
 if (isLyricsMode()) {
-  $('lyric-prompt').style.display = 'block';
+  $('lyric-prompt').style.display = 'flex';
   revealLyricCard();
 } else {
   $('lyric-prompt').style.display = 'none';
@@ -1642,7 +1801,8 @@ function loadHistory() {
     'S.H.E 特輯': 'S.H.E 精選',
     '梁靜茹特輯': '梁靜茹精選',
     '2026 浪人祭': '浪人祭合輯',
-    '歌詞接唱': '歌詞接唱'
+    '歌詞接唱': '歌詞接唱',
+    'Hello Nico': 'Hello Nico'
   };
 
   // 固定顯示三個名額
@@ -1778,7 +1938,7 @@ loadHistory();
 })();
 
 </script>
-<script src="./dev/dev.js"></script>
+
 
 <audio id="wrong-sound" src="audio/error-008.ogg" preload="auto"></audio>
 </body>
