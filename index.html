@@ -82,6 +82,11 @@
 
       <div id="lyric-prompt" class="lyric-card" style="display:none">
         <div class="lc-prev" id="lyric-prev"></div>
+        <div class="lyric-cover" aria-hidden="true">
+          <span class="lyric-cover-label">SUPER FANS</span>
+          <span class="lyric-cover-title">LYRICS</span>
+          <span class="lyric-cover-line"></span>
+        </div>
       </div>
 
       <div class="ls-listen">
@@ -1270,7 +1275,8 @@ function showLyricQuestion() {
 
 /* 歌詞提示：顯示上一句歌詞 */
 function revealLyricHint() {
-  revealLyricCard();
+  const card = $('lyric-prev').closest('.lyric-card');
+  if (card) card.classList.add('lyric-cover-open');
 
   $('pause-btn').disabled = true;
   $('pause-sub').textContent = '已使用';
@@ -1281,7 +1287,7 @@ function revealLyricCard() {
   const card = $('lyric-prev').closest('.lyric-card');
   if (!card) return;
 
-  card.classList.add('lyric-revealed');
+  card.classList.add('lyric-revealed', 'lyric-cover-open');
 }
 
 async function loadQuestion() {
@@ -1467,7 +1473,10 @@ async function loadLyricsQuestion(my) {
   renderLyricPrompt(cur);
   updateLyricStars(getLyricAnswer());
 
-  $('lyric-prev').closest('.lyric-card').classList.remove('lyric-revealed');
+  $('lyric-prev').closest('.lyric-card').classList.remove(
+    'lyric-revealed',
+    'lyric-cover-open'
+  );
 
   opts = shuffle([getLyricAnswer(), ...item.distractors]);
   const LETTERS = ['A', 'B', 'C', 'D'];

@@ -40,12 +40,13 @@
 
   border-radius: var(--r-sm);
   background:
-  radial-gradient(ellipse at 50% 0%, rgba(255,255,255,.07), transparent 70%),
-  linear-gradient(160deg, #3A393E 0%, #242327 60%, #17161A 100%);  box-shadow:
-    inset 0 1px 0 rgba(255,255,255,.12),
-    inset 0 -2px 6px rgba(0,0,0,.35),
-    0 2px 0 rgba(0,0,0,.45),
-    0 8px 20px rgba(0,0,0,.5);
+  radial-gradient(ellipse at 50% 30%, rgba(255,255,255,.07), transparent 70%),
+  linear-gradient(160deg, #3A393E 0%, #242327 60%, #17161A 100%);  
+  box-shadow:
+  inset 0 1px 0 rgba(255,255,255,.06),
+  inset 0 -2px 4px rgba(0,0,0,.20),
+  0 1px 0 rgba(0,0,0,.30),
+  0 5px 12px rgba(0,0,0,.30);
 
   overflow: hidden;
 
@@ -407,7 +408,100 @@
   overflow: hidden;
   margin-block: auto;   /* 卡片到上限後垂直置中，不會貼上緣 */
 
+  /* 提供封面真正的 3D 翻頁透視 */
+  perspective: 1000px;
+
   animation: lyricCardIn2 .4s ease-out backwards;
+}
+
+/* --- 歌詞封面：固定覆蓋，不參與卡片排版 --- */
+.lyric-card .lyric-cover {
+  position: absolute;
+  inset: 0;
+  z-index: 5;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  /border: 1px solid rgba(255,255,255,.16);
+  border-radius: inherit;
+  background:
+  radial-gradient(
+    ellipse at 50% 18%,
+    rgba(255,255,255,.07),
+    transparent 65%
+  ),
+  linear-gradient(
+    145deg,
+    #38363D 0%,
+    #252329 52%,
+    #19171D 100%
+  );
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.2);
+  transform-origin: left center;
+  transform: rotateY(0deg);
+  transform-style: preserve-3d;
+  will-change: transform;
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+  transition: transform 1.8s cubic-bezier(.4,0,.2,1);
+  pointer-events: none;
+}
+
+.lyric-card .lyric-cover::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 10px;
+  width: 1px;
+  background: rgba(255,255,255,.18);
+  box-shadow: 3px 0 8px rgba(0,0,0,.18);
+}
+
+/* 封面：不規則紙張紋理 */
+.lyric-card .lyric-cover::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+
+  background-image: url('../images/lyric-paper-texture.png');
+  background-size: cover;
+  background-position: center;
+
+  opacity: .28;
+  pointer-events: none;
+}
+
+
+.lyric-cover-label {
+  color: rgba(255,255,255,.68);
+  font-size: 9px;
+  font-weight: 800;
+  letter-spacing: .22em;
+}
+
+.lyric-cover-title {
+  color: #F5F0F6;
+  font-family: var(--sans);
+  font-size: clamp(19px, 5vw, 25px);
+  font-weight: 900;
+  letter-spacing: .2em;
+  padding-left: .2em;
+  text-shadow: 0 2px 8px rgba(0,0,0,.25);
+}
+
+.lyric-cover-line {
+  width: 34px;
+  height: 1px;
+  margin-top: 2px;
+  background: rgba(255,255,255,.55);
+}
+
+.lyric-card.lyric-cover-open .lyric-cover {
+  transform: rotateY(-165deg);
 }
 
 #stage.lyrics-q .cwrap {
