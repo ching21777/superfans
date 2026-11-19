@@ -271,6 +271,300 @@ const SONG_DATABASE = [
       "就尋一個出口",
       "就只想抓住你"
     ]
+  },
+  {
+    no: '030',
+    title: "後來",
+    genre: "療癒系天后",
+    playUntil: 11,
+    type: "fill",
+    prompt: "梔子花 {{blank}}\n落在我藍色百褶裙上",
+    answer: "白花瓣",
+    distractors: [
+      "紅花瓣",
+      "黃花瓣",
+      "橙花瓣"
+    ]
+  },
+  {
+    no: '031',
+    title: "Last Dance",
+    genre: "跨世代神曲",
+    playUntil: 20,
+    type: "next",
+    prompt: "所以暫時將妳眼睛閉了起來",
+    answer: "黑暗之中漂浮我的期待",
+    distractors: [
+      "平靜臉孔映著繽紛色彩",
+      "讓人不知不覺就愛起來",
+      "我們就這樣慢慢走開"
+    ]
+  },
+  {
+    no: '032',
+    title: "挪威的森林",
+    genre: "搖滾不敗經典",
+    playUntil: 20,
+    type: "fill",
+    prompt: "讓我將妳心兒摘下\n試著將它{{blank}}",
+    answer: "慢慢溶化",
+    distractors: [
+      "輕輕放下",
+      "好好收藏",
+      "全部帶走"
+    ]
+  },
+  {
+    no: '033',
+    title: "妳是我的花朵",
+    genre: "國民舞曲嗨歌",
+    playUntil: 18,
+    type: "next",
+    prompt: "就算妳身邊很多小石頭",
+    answer: "我也不會輕易就退縮",
+    distractors: [
+      "我也不會就此而放手",
+      "我的心裡只有妳一個",
+      "我要讓妳永遠跟著我"
+    ]
+  },
+  {
+    no: '034',
+    title: "浪人情歌",
+    genre: "KTV必點經典",
+    playUntil: 20,
+    type: "next",
+    prompt: "不要再想妳 不要再愛妳",
+    answer: "讓時間悄悄的飛逝",
+    distractors: [
+      "讓往事隨風而飄散",
+      "抹去我倆的過去",
+      "就當作是一場夢境"
+    ]
+  },
+  {
+    no: '035',
+    title: "突然的自我",
+    genre: "全場大合唱",
+    playUntil: 19,
+    type: "fill",
+    prompt: "聽見妳說 朝陽起又落\n晴雨難測 {{blank}}",
+    answer: "道路是腳步多",
+    distractors: [
+      "往事已隨風過",
+      "人生路不好走",
+      "心事誰人知曉"
+    ]
+  },
+  {
+    no: '036',
+    title: "愛情限時批",
+    genre: "台語對唱神曲",
+    playUntil: 18,
+    type: "next",
+    prompt: "要安怎對你說出心內話",
+    answer: "想了歸暝 恰想嘛歹勢",
+    distractors: [
+      "寫一張批 寄去給你知道",
+      "看到你的時陣 我就頭犁犁",
+      "不知影你甘有 相同的心意"
+    ]
+  },
+  {
+    no: '037',
+    title: "淚橋",
+    genre: "鐵漢柔情代表",
+    playUntil: 20,
+    type: "next",
+    prompt: "無心過問妳的心裡",
+    answer: "我的吻註定要留在",
+    distractors: [
+      "妳的愛已經不在這",
+      "我只能默默地離開",
+      "這段情早已經結束"
+    ]
+  },
+  {
+    no: '038',
+    title: "世界第一等",
+    genre: "江湖豪邁台語",
+    playUntil: 19,
+    type: "fill",
+    prompt: "人生的風景\n親像大海的{{blank}}",
+    answer: "風湧",
+    distractors: [
+      "波浪",
+      "雲煙",
+      "浮沉"
+    ]
+  },
+  {
+    no: '039',
+    title: "樹枝孤鳥",
+    genre: "金曲獎台語經典",
+    playUntil: 20,
+    type: "next",
+    prompt: "飛去叨位 飛去叨位",
+    answer: "阮不知影 阮不知影",
+    distractors: [
+      "找無巢穴 找無巢穴",
+      "天頂星光 閃閃爍爍",
+      "風吹微微 孤單一個"
+    ]
+  },
+  {
+    no: '040',
+    title: "痛哭的人",
+    genre: "硬派深情搖滾",
+    playUntil: 18,
+    type: "next",
+    prompt: "今夜的寒風將我心撕碎",
+    answer: "倉皇的腳步我不醉不歸",
+    distractors: [
+      "孤單的身影在街頭徘徊",
+      "無情的雨點打在我臉上",
+      "所有的回憶都化作眼淚"
+    ]
+  },
+  {
+    no: '041',
+    title: "衝衝衝",
+    genre: "熱血台語嗨歌",
+    playUntil: 17,
+    type: "fill",
+    prompt: "提出信心{{blank}}\n向前衝 衝 衝 衝",
+    answer: "頭前看",
+    distractors: [
+      "免驚惶",
+      "拚落去",
+      "大聲喝"
+    ]
+  },
+  {
+    no: '042',
+    title: "再度重相逢",
+    genre: "溫暖豁達金曲",
+    playUntil: 19,
+    type: "next",
+    prompt: "妳說人生如夢",
+    answer: "我說人生如秀",
+    distractors: [
+      "我說人生如酒",
+      "我說隨風而走",
+      "我說何必強求"
+    ]
+  },
+  {
+    no: '043',
+    title: "白鴿",
+    genre: "史詩級代表作",
+    playUntil: 21,
+    type: "next",
+    prompt: "縱然帶著永遠的傷口",
+    answer: "至少我還擁有自由",
+    distractors: [
+      "我也不會低頭認輸",
+      "也要飛向遙遠天空",
+      "依然相信明天會好"
+    ]
+  },
+  {
+    no: '044',
+    title: "牽掛",
+    genre: "早年溫柔抒情",
+    playUntil: 20,
+    type: "fill",
+    prompt: "牽掛著妳是那顆我的心\n飄呀飄地{{blank}}",
+    answer: "在妳面前捉摸不定",
+    distractors: [
+      "在風中靜靜等著妳",
+      "落在了妳的掌心裡",
+      "永遠都無法再平靜"
+    ]
+  },
+  {
+    no: '045',
+    title: "與妳到永久",
+    genre: "深情告白經典",
+    playUntil: 19,
+    type: "next",
+    prompt: "風兒輕輕的吹",
+    answer: "雨兒滴滴的下",
+    distractors: [
+      "雲兒慢慢的飄",
+      "花兒靜靜的開",
+      "鳥兒自由的飛"
+    ]
+  },
+  {
+    no: '046',
+    title: "心愛的再會啦",
+    genre: "藍調台語情歌",
+    playUntil: 20,
+    type: "next",
+    prompt: "海上的船螺聲已經響起",
+    answer: "對你猶原情綿綿",
+    distractors: [
+      "送你離開千里遠",
+      "目屎已經流袂離",
+      "心內只有你一人"
+    ]
+  },
+  {
+    no: '047',
+    title: "晚風",
+    genre: "KTV抒情搖滾",
+    playUntil: 20,
+    type: "fill",
+    prompt: "慢慢吹 輕輕送\n人生路 {{blank}}",
+    answer: "妳就走",
+    distractors: [
+      "莫回頭",
+      "慢慢走",
+      "一起走"
+    ]
+  },
+  {
+    no: '048',
+    title: "夏夜晚風",
+    genre: "經典抒情名曲",
+    playUntil: 21,
+    type: "next",
+    prompt: "夏夜裡的晚風",
+    answer: "吹拂著妳在我懷中",
+    distractors: [
+      "輕輕吹過妳的臉龐",
+      "帶來一陣溫柔的夢",
+      "陪著我們一起度過"
+    ]
+  },
+  {
+    no: '049',
+    title: "被動",
+    genre: "虐心搖滾神曲",
+    playUntil: 19,
+    type: "next",
+    prompt: "我可以很久不和你聯絡",
+    answer: "任憑日子一天天這麼過",
+    distractors: [
+      "假裝自己從來沒有愛過",
+      "把所有的思念都藏心頭",
+      "直到妳完全忘記了有我"
+    ]
+  },
+  {
+    no: '050',
+    title: "一生最愛的人",
+    genre: "深情痛徹代表",
+    playUntil: 21,
+    type: "fill",
+    prompt: "妳是我一生{{blank}}\n為妳我願放棄一切",
+    answer: "最愛的人",
+    distractors: [
+      "最深的痛",
+      "唯一的夢",
+      "難忘的人"
+    ]
   }
 ];
 

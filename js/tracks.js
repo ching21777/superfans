@@ -37,6 +37,26 @@ const TRACKS = [
   { no: '027', title: 'Just the Way You Are', artist: 'Bruno Mars', appleMusicId: null },
   { no: '028', title: 'おどるポンポコリン', artist: 'B.B.QUEENS', appleMusicId: null },
   { no: '029', title: '與浪之間', artist: 'VH Vast & Hazy', appleMusicId: null },
-  { no: '030', title: '後來', artist: '劉若英', appleMusicId: 162143617 }
+  { no: '030', title: '後來', artist: '劉若英', appleMusicId: 162143617 },
+  { no: '031', title: 'Last Dance', artist: '伍佰 & China Blue', appleMusicId: null },
+  { no: '032', title: '挪威的森林', artist: '伍佰 & China Blue', appleMusicId: null },
+  { no: '033', title: '妳是我的花朵', artist: '伍佰 & China Blue', appleMusicId: null },
+  { no: '034', title: '浪人情歌', artist: '伍佰 & China Blue', appleMusicId: null },
+  { no: '035', title: '突然的自我', artist: '伍佰 & China Blue', appleMusicId: null },
+  { no: '036', title: '愛情限時批', artist: '伍佰 & 萬芳', appleMusicId: null },
+  { no: '037', title: '淚橋', artist: '伍佰 & China Blue', appleMusicId: null },
+  { no: '038', title: '世界第一等', artist: '伍佰 & China Blue', appleMusicId: null },
+  { no: '039', title: '樹枝孤鳥', artist: '伍佰 & China Blue', appleMusicId: null },
+  { no: '040', title: '痛哭的人', artist: '伍佰 & China Blue', appleMusicId: null },
+  { no: '041', title: '衝衝衝', artist: '伍佰 & China Blue', appleMusicId: null },
+  { no: '042', title: '再度重相逢', artist: '伍佰 & China Blue', appleMusicId: null },
+  { no: '043', title: '白鴿', artist: '伍佰 & China Blue', appleMusicId: null },
+  { no: '044', title: '牽掛', artist: '伍佰 & China Blue', appleMusicId: null },
+  { no: '045', title: '與妳到永久', artist: '伍佰 & China Blue', appleMusicId: null },
+  { no: '046', title: '心愛的再會啦', artist: '伍佰 & China Blue', appleMusicId: null },
+  { no: '047', title: '晚風', artist: '伍佰 & China Blue', appleMusicId: null },
+  { no: '048', title: '夏夜晚風', artist: '伍佰 & China Blue', appleMusicId: null },
+  { no: '049', title: '被動', artist: '伍佰 & China Blue', appleMusicId: null },
+  { no: '050', title: '一生最愛的人', artist: '伍佰 & China Blue', appleMusicId: null }
 ];
 
