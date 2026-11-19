@@ -39,15 +39,38 @@ if (new URLSearchParams(location.search).has('dev')) {
   
   <div class="dev-section">歌曲 ID 綁定</div>
 
+  <div style="display:flex; gap:6px; align-items:center;">
   <input type="text" id="dev-track-search"
-    placeholder="搜尋歌手或歌名" autocomplete="off">
+      placeholder="搜尋歌手或歌名" autocomplete="off"
+      style="flex:1; min-width:0;">
 
-  <button class="bevel btn-sm" id="dev-track-search-btn">
-    搜尋 iTunes
+  <button class="bevel btn-sm" id="dev-track-search-btn"
+      style="width:auto; flex-shrink:0; white-space:nowrap;">
+    🔍
   </button>
+</div>
 
   <div id="dev-track-results"></div>
-  <div id="dev-track-songs"></div>
+
+<div class="dev-section">已綁定歌曲</div>
+<div id="dev-track-saved"></div>
+
+<div style="margin-top:10px;">
+  <button class="bevel btn-sm" id="dev-track-export-btn">
+    1.匯出
+  </button>
+
+  <button class="bevel btn-sm" id="dev-track-copy-btn">
+    2.複製
+  </button>
+
+  <textarea id="dev-track-export"
+    placeholder="匯出的 TRACK_MAP 會顯示在這裡"
+    style="width:100%; height:120px; margin-top:6px; display:none;">
+  </textarea>
+</div>
+
+<div id="dev-track-songs"></div>
 
   <audio id="dev-track-audio" controls
     style="width:100%;display:none;"></audio>
@@ -175,6 +198,7 @@ overflow-x: auto;
       width: 100%;
       font-size: 12px;
     }
+      
 
     /* 指定歌曲搜尋 */
 
@@ -533,6 +557,113 @@ const devTrackResults = $('dev-track-results');
 const devTrackAudio = $('dev-track-audio');
 const devTrackSearchBtn = $('dev-track-search-btn');
 
+const devTrackSaved = $('dev-track-saved');
+const devTrackExportBtn = $('dev-track-export-btn');
+const devTrackExport = $('dev-track-export');
+const devTrackCopyBtn = $('dev-track-copy-btn');
+
+// 已綁定歌曲暫存
+let savedTracks = JSON.parse(
+  localStorage.getItem('devTrackSaved') || '{}'
+);
+
+devTrackExportBtn.addEventListener('click', () => {
+  const lines = Object.entries(savedTracks).map(([key, data]) =>
+    `  ${JSON.stringify(key)}: ${data.trackId}`
+  );
+
+  devTrackExport.value = `const TRACK_MAP = {\n${lines.join(',\n')}\n};`;
+  devTrackExport.style.display = 'block';
+});
+
+devTrackCopyBtn.addEventListener('click', async () => {
+  await navigator.clipboard.writeText(devTrackExport.value);
+  devTrackExport.style.display = 'none';
+});
+
+// 顯示已綁定歌曲
+function renderDevTrackSaved() {
+  devTrackSaved.innerHTML = '';
+
+  const entries = Object.entries(savedTracks);
+
+  if (!entries.length) {
+    devTrackSaved.textContent = '尚無已綁定歌曲';
+    devTrackSaved.style.color = '#FFFFFF';
+    return;
+  }
+
+  entries.forEach(([key, data]) => {
+    const [title, artist] = key.split('|');
+
+    const row = document.createElement('div');
+    row.className = 'dev-track-saved-item';
+row.style.display = 'flex';
+row.style.alignItems = 'center';
+row.style.width = '100%';
+    
+
+    const info = document.createElement('div');
+info.style.display = 'flex';
+info.style.alignItems = 'center';
+info.style.gap = '8px';
+info.style.minWidth = '0';
+info.style.flex = '1 1 0';
+
+const name = document.createElement('div');
+name.style.color = '#ffffff';
+name.style.fontSize = '13px';
+name.style.whiteSpace = 'nowrap';
+name.style.flexShrink = '0';
+name.textContent = `${title}｜${artist}`;
+
+const album = document.createElement('div');
+album.style.color = '#cccccc';
+album.style.fontSize = '12px';
+album.style.whiteSpace = 'nowrap';
+album.style.overflow = 'hidden';
+album.style.textOverflow = 'ellipsis';
+album.style.minWidth = '0';
+album.style.flex = '1 1 0';
+album.textContent = data.album || '未知專輯';
+
+const id = document.createElement('div');
+id.style.color = '#ffffff';
+id.style.fontSize = '12px';
+id.style.whiteSpace = 'nowrap';
+id.style.flexShrink = '0';
+id.textContent = `ID: ${data.trackId}`;
+
+info.append(name, album, id);
+
+// 取消綁定按鈕
+const removeBtn = document.createElement('button');
+removeBtn.style.width = 'auto';
+removeBtn.textContent = '取消';
+removeBtn.style.fontSize = '11px';
+removeBtn.style.padding = '2px 6px';
+removeBtn.style.flexShrink = '0';
+removeBtn.style.marginLeft = '6px';
+
+removeBtn.addEventListener('click', () => {
+  delete savedTracks[key];
+
+  localStorage.setItem(
+    'devTrackSaved',
+    JSON.stringify(savedTracks)
+  );
+
+  renderDevTrackSaved();
+});
+
+row.append(info, removeBtn);
+    devTrackSaved.appendChild(row);
+  });
+}
+
+// 初始顯示
+renderDevTrackSaved();
+
 
 // 搜尋 iTunes 歌曲
 async function searchDevTracks() {
@@ -594,7 +725,7 @@ async function searchDevTracks() {
 
       const name = document.createElement('div');
       name.className = 'dev-track-name';
-      name.textContent = `${track.artistName}｜${track.trackName}`;
+      name.textContent = `${track.trackName}｜${track.artistName}`;
 
       const album = document.createElement('div');
       album.className = 'dev-track-album';
@@ -651,9 +782,34 @@ trackId.textContent = `Track ID：${track.trackId}`;
 
       });
 
+      // 選取並暫存歌曲
+const saveBtn = document.createElement('button');
+saveBtn.className = 'bevel btn-sm';
+saveBtn.textContent = '綁定';
+
+saveBtn.addEventListener('click', () => {
+  const key = `${track.trackName}|${track.artistName}`;
+
+  savedTracks[key] = {
+    trackId: track.trackId,
+    album: track.collectionName || '未知專輯'
+  };
+
+  localStorage.setItem(
+    'devTrackSaved',
+    JSON.stringify(savedTracks)
+  );
+
+  renderDevTrackSaved();
+  renderDevTrackSongs();
+
+  saveBtn.textContent = '已綁定';
+  devTrackResults.innerHTML = '';
+});
+
       info.append(name, album, trackId);
 
-row.append(no, info, playBtn);
+row.append(no, info, playBtn, saveBtn);
       devTrackResults.appendChild(row);
 
     });
@@ -700,7 +856,8 @@ const unboundSongs = allPlaylistSongs.filter(song => {
   const [artist, ...titleParts] = song.split(' ');
   const title = titleParts.join(' ');
 
-  return !TRACK_MAP[`${artist}|${title}`];
+  const key = `${title}|${artist}`;
+return !TRACK_MAP[key] && !savedTracks[key];
 });
 
 // 顯示尚未綁定的歌曲
