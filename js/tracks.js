@@ -19,10 +19,10 @@ const TRACKS = [
 
   // 其他歌曲
   { no: '011', title: '晴天', artist: '周杰倫', appleMusicId: 535824738 },
-  { no: '012', title: '小幸運', artist: '田馥甄', appleMusicId: null },
-  { no: '013', title: '心電心', artist: '王心凌', appleMusicId: null },
-  { no: '014', title: '稻香', artist: '周杰倫', appleMusicId: null },
-  { no: '015', title: '不是因為天氣晴朗才愛你', artist: '理想混蛋', appleMusicId: null },
+  { no: '012', title: '小幸運', artist: '田馥甄', appleMusicId: 1017697311 },
+  { no: '013', title: '心電心', artist: '王心凌', appleMusicId: 1705352272 },
+  { no: '014', title: '稻香', artist: '周杰倫', appleMusicId: 1624001324 },
+  { no: '015', title: '不是因為天氣晴朗才愛你', artist: '理想混蛋', appleMusicId: 1533697835 },
   { no: '016', title: '美麗新世界', artist: 'S.H.E', appleMusicId: null },
   { no: '017', title: '修煉愛情', artist: '林俊傑', appleMusicId: null },
   { no: '018', title: '突然好想你', artist: '五月天', appleMusicId: null },
