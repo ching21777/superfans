@@ -65,7 +65,7 @@ if (new URLSearchParams(location.search).has('dev')) {
   </button>
 
   <textarea id="dev-track-export"
-    placeholder="匯出的 TRACK_MAP 會顯示在這裡"
+    placeholder="匯出的 TRACKS 會顯示在這裡"
     style="width:100%; height:120px; margin-top:6px; display:none;">
   </textarea>
 </div>
@@ -572,7 +572,7 @@ devTrackExportBtn.addEventListener('click', () => {
     `  ${JSON.stringify(key)}: ${data.trackId}`
   );
 
-  devTrackExport.value = `const TRACK_MAP = {\n${lines.join(',\n')}\n};`;
+  devTrackExport.value = `const TRACKS = {\n${lines.join(',\n')}\n};`;
   devTrackExport.style.display = 'block';
 });
 
@@ -857,7 +857,7 @@ const unboundSongs = allPlaylistSongs.filter(song => {
   const title = titleParts.join(' ');
 
   const key = `${title}|${artist}`;
-return !TRACK_MAP[key] && !savedTracks[key];
+return !TRACKS[key] && !savedTracks[key];
 });
 
 // 顯示尚未綁定的歌曲
