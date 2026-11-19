@@ -568,11 +568,19 @@ let savedTracks = JSON.parse(
 );
 
 devTrackExportBtn.addEventListener('click', () => {
-  const lines = Object.entries(savedTracks).map(([key, data]) =>
-    `  ${JSON.stringify(key)}: ${data.trackId}`
-  );
 
-  devTrackExport.value = `const TRACKS = {\n${lines.join(',\n')}\n};`;
+  const newTracks = Object.entries(savedTracks).map(([no, data]) => ({
+    no,
+    title: data.title,
+    artist: data.artist,
+    appleMusicId: data.trackId
+  }));
+
+  devTrackExport.value =
+    `const TRACKS = [\n${newTracks.map(track =>
+      `  ${JSON.stringify(track)}`
+    ).join(',\n')}\n];`;
+
   devTrackExport.style.display = 'block';
 });
 
@@ -789,14 +797,40 @@ saveBtn.textContent = '綁定';
 
 saveBtn.addEventListener('click', () => {
 
-  if (!selectedTrack) {
-    alert('請先從待確認歌曲清單選擇歌曲');
+  // 檢查正式題庫是否已有相同 Apple Music ID
+  const existingTrack = TRACKS.find(
+    item => String(item.appleMusicId) === String(track.trackId)
+  );
+
+  if (existingTrack) {
+    alert(`這首歌曲已經綁定：${existingTrack.no}｜${existingTrack.title}`);
     return;
   }
 
-  savedTracks[selectedTrack.no] = {
-    title: selectedTrack.title,
-    artist: selectedTrack.artist,
+  // 檢查本次待匯出的歌曲是否已有相同 ID
+  const pendingTrack = Object.values(savedTracks).find(
+    item => String(item.trackId) === String(track.trackId)
+  );
+
+  if (pendingTrack) {
+    alert('這首歌曲已經加入待匯出清單');
+    return;
+  }
+
+  // 從正式題庫與待匯出清單一起計算最大編號
+  const allNos = [
+    ...TRACKS.map(item => Number(item.no)),
+    ...Object.keys(savedTracks).map(Number)
+  ];
+
+  const maxNo = Math.max(0, ...allNos);
+  const newNo = String(maxNo + 1).padStart(3, '0');
+
+  // 加入待匯出清單
+  savedTracks[newNo] = {
+    no: newNo,
+    title: track.trackName,
+    artist: track.artistName,
     trackId: track.trackId,
     album: track.collectionName || '未知專輯'
   };
@@ -807,10 +841,19 @@ saveBtn.addEventListener('click', () => {
   );
 
   renderDevTrackSaved();
-  renderDevTrackSongs();
 
-  selectedTrack = null;
-  devTrackResults.innerHTML = '';
+// 清空搜尋欄並停止試聽
+devTrackSearch.value = '';
+selectedTrack = null;
+devTrackAudio.pause();
+devTrackAudio.removeAttribute('src');
+devTrackAudio.style.display = 'none';
+
+// 清空 Apple Music 搜尋結果
+devTrackResults.innerHTML = '';
+
+// 恢復完整題庫歌曲清單
+renderDevTrackSongs();
 });
 
       info.append(name, album, trackId);
@@ -879,9 +922,16 @@ function renderDevTrackSongs(keyword = '') {
 
     const isBound = track.appleMusicId || savedTracks[track.no];
 
-    btn.textContent =
-      `${track.no}｜${track.title}｜${track.artist}` +
-      (isBound ? '｜已綁定' : '');
+let status = '';
+
+if (track.appleMusicId) {
+  status = '｜已綁定';
+} else if (track.appleMusicId === null) {
+  status = '｜尚未綁定（既有歌曲）';
+}
+
+btn.textContent =
+  `${track.no}｜${track.title}｜${track.artist}${status}`;
 
     btn.style.textAlign = 'left';
 
