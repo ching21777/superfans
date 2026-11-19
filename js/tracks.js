@@ -18,7 +18,7 @@ const TRACKS = [
   { no: '010', title: '我會想你', artist: 'Hello Nico', appleMusicId: null },
 
   // 其他歌曲
-  { no: '011', title: '晴天', artist: '周杰倫', appleMusicId: null },
+  { no: '011', title: '晴天', artist: '周杰倫', appleMusicId: 535824738 },
   { no: '012', title: '小幸運', artist: '田馥甄', appleMusicId: null },
   { no: '013', title: '心電心', artist: '王心凌', appleMusicId: null },
   { no: '014', title: '稻香', artist: '周杰倫', appleMusicId: null },

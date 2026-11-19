@@ -594,7 +594,7 @@ function renderDevTrackSaved() {
   }
 
   entries.forEach(([key, data]) => {
-    const [title, artist] = key.split('|');
+    const { title, artist } = data;
 
     const row = document.createElement('div');
     row.className = 'dev-track-saved-item';
@@ -782,15 +782,21 @@ trackId.textContent = `Track ID：${track.trackId}`;
 
       });
 
-      // 選取並暫存歌曲
+      // 綁定按鈕
 const saveBtn = document.createElement('button');
 saveBtn.className = 'bevel btn-sm';
 saveBtn.textContent = '綁定';
 
 saveBtn.addEventListener('click', () => {
-  const key = `${track.trackName}|${track.artistName}`;
 
-  savedTracks[key] = {
+  if (!selectedTrack) {
+    alert('請先從待確認歌曲清單選擇歌曲');
+    return;
+  }
+
+  savedTracks[selectedTrack.no] = {
+    title: selectedTrack.title,
+    artist: selectedTrack.artist,
     trackId: track.trackId,
     album: track.collectionName || '未知專輯'
   };
@@ -803,7 +809,7 @@ saveBtn.addEventListener('click', () => {
   renderDevTrackSaved();
   renderDevTrackSongs();
 
-  saveBtn.textContent = '已綁定';
+  selectedTrack = null;
   devTrackResults.innerHTML = '';
 });
 
@@ -842,32 +848,21 @@ devTrackSearch.addEventListener('keydown', event => {
   }
 });
 
-// 從所有一般猜歌歌單整理歌曲
-const allPlaylistSongs = [
-  ...new Set(
-    Object.values(playlists)
-      .flat()
-      .filter(song => typeof song === 'string')
-  )
-];
-
-// 只保留尚未綁定 ID 的歌曲
-const unboundSongs = allPlaylistSongs.filter(song => {
-  const [artist, ...titleParts] = song.split(' ');
-  const title = titleParts.join(' ');
-
-  const key = `${title}|${artist}`;
-return !TRACKS[key] && !savedTracks[key];
-});
+// 從 tracks.js 整理尚未綁定的歌曲
+let selectedTrack = null;
 
 // 顯示尚未綁定的歌曲
 function renderDevTrackSongs(keyword = '') {
 
   devTrackSongs.innerHTML = '';
 
-  const songs = unboundSongs.filter(song =>
-    song.toLowerCase().includes(keyword.trim().toLowerCase())
-  );
+  const songs = TRACKS.filter(track => {
+  const text = `${track.no} ${track.title} ${track.artist}`;
+
+  return !track.appleMusicId &&
+    !savedTracks[track.no] &&
+    text.toLowerCase().includes(keyword.trim().toLowerCase());
+});
 
   if (!songs.length) {
     devTrackSongs.textContent = '沒有待確認的歌曲';
@@ -875,19 +870,26 @@ function renderDevTrackSongs(keyword = '') {
     return;
   }
 
-  songs.forEach(song => {
+  songs.forEach(track => {
 
     const btn = document.createElement('button');
 
     btn.type = 'button';
     btn.className = 'dev-song-action';
-    btn.textContent = song;
+    btn.textContent = `${track.no}｜${track.title}｜${track.artist}`;
     btn.style.textAlign = 'left';
 
     btn.addEventListener('click', () => {
-      devTrackSearch.value = song;
-      devTrackResults.innerHTML = '';
-    });
+  selectedTrack = track;
+  devTrackSearch.value = `${track.artist} ${track.title}`;
+  devTrackResults.innerHTML = '';
+
+  devTrackSongs.innerHTML = '';
+  const selected = document.createElement('div');
+  selected.textContent = `已選取：${track.no}｜${track.title}｜${track.artist}`;
+  selected.style.color = '#BAE7D8';
+  devTrackSongs.appendChild(selected);
+});
 
     devTrackSongs.appendChild(btn);
   });
@@ -895,6 +897,8 @@ function renderDevTrackSongs(keyword = '') {
 
 // 輸入時篩選歌曲
 devTrackSearch.addEventListener('input', () => {
+  if (selectedTrack) return;
+
   renderDevTrackSongs(devTrackSearch.value);
 });
 

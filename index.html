@@ -1460,15 +1460,23 @@ $('trow').style.visibility = isLyricsMode() ? 'hidden' : '';
 }
 
 /*
-  歌詞題庫統一欄位：
-  - 歌曲資訊：id、title、artist、genre、itunesQuery、playUntil
-  - 題目資訊：type（previous / next / fill）、prompt、answer、distractors
+  歌詞接唱題庫：
+  - 歌曲基本資料：由 tracks.js 依 no 取得
+  - 題目設定：genre、playUntil
+  - 題目內容：type（previous / next / fill）、prompt、answer、distractors
   - fill 題型的 prompt 使用 {{blank}} 標記挖空位置
-  舊題庫欄位暫時保留相容讀取，待 lyrics.js 更新後即可移除。
 */
-async function loadLyricsQuestion(my) {
+  async function loadLyricsQuestion(my) {
   const item = queue[qPtr++];
+
   const song = TRACKS.find(track => track.no === item.no);
+
+  if (!song) {
+    console.error(`找不到歌曲資料：${item.no}`);
+    total = qDone;
+    finish();
+    return;
+  }
 
   if (!item) {
     total = qDone;
@@ -1501,19 +1509,14 @@ async function loadLyricsQuestion(my) {
 
   if (my !== reqId) return;
 
-  // 舊題庫未標記 type 時，暫時沿用原本的「選下一句」
-  const type = item.type || 'next';
-  const prompt = item.prompt || item.promptLyric || item.lyricText || item.prevLyric || '';
-  const answer = item.answer || (
-    type === 'fill'
-      ? (item.blankAnswer || '')
-      : (item.answerLyric || item.correctNext || '')
-  );
+  const type = item.type;
+  const prompt = item.prompt;
+  const answer = item.answer;
 
   cur = {
-    id: item.id,
-    title: item.title,
-    artist: item.artist,
+    id: song.no,
+    title: song.title,
+    artist: song.artist,
     genre: item.genre,
     type,
     prompt,
