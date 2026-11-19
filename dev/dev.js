@@ -20,30 +20,51 @@ if (new URLSearchParams(location.search).has('dev')) {
   🔊 音量：開啟
 </button>
 
-    <div class="dev-section">介面快速預覽</div>
-
 <div class="dev-preview-buttons">
   <button class="bevel btn-sm" id="dev-result-btn">
-    成績頁
+    👀成績頁
   </button>
-
   <button class="bevel btn-sm" id="dev-lyrics-btn">
-    歌詞接唱
+    👀選歌詞
   </button>
 </div>
 
+<div class="dev-tabs">
+  <button class="bevel btn-sm active" data-tab="guess">猜歌</button>
+  <button class="bevel btn-sm" data-tab="lyrics">歌詞接唱</button>
+</div>
+
+<div id="dev-tab-guess">
+
+  
+  <div class="dev-section">歌曲 ID 綁定</div>
+
+  <input type="text" id="dev-track-search"
+    placeholder="搜尋歌手或歌名" autocomplete="off">
+
+  <button class="bevel btn-sm" id="dev-track-search-btn">
+    搜尋 iTunes
+  </button>
+
+  <div id="dev-track-results"></div>
+  <div id="dev-track-songs"></div>
+
+  <audio id="dev-track-audio" controls
+    style="width:100%;display:none;"></audio>
+
+</div>
+
+<div id="dev-tab-lyrics" style="display:none;">
+
     <div class="dev-section">指定歌曲測試</div>
 
-    <input
-      type="text"
-      id="dev-song-search"
-      placeholder="輸入歌名或編號"
-      autocomplete="off"
-    >
+  <input type="text" id="dev-song-search"
+    placeholder="輸入歌名或編號" autocomplete="off">
 
-    <div id="dev-song-results"></div>
+  <div id="dev-song-results"></div>
 
-    <div class="dev-section">自動模擬答題</div>
+</div>
+<div class="dev-section">自動模擬答題</div>
 
     <label for="dev-mode">模擬答題情境</label>
     <select id="dev-mode">
@@ -72,6 +93,14 @@ if (new URLSearchParams(location.search).has('dev')) {
       z-index: 10000;
     }
 
+    .dev-track-id {
+  color: #F0D6A4;
+  font-size: 10px;
+  font-weight: 700;
+  margin-top: 3px;
+  overflow-wrap: anywhere;
+}
+
     #dev-toggle {
       display: flex;
       align-items: center;
@@ -96,8 +125,15 @@ if (new URLSearchParams(location.search).has('dev')) {
       position: absolute;
       right: 0;
       bottom: 46px;
-      width: 210px;
-      max-width: calc(100vw - 24px);
+      height: 800px;
+max-height: calc(100dvh - 90px);
+overflow: auto;
+overscroll-behavior: contain;
+      width: 300px;
+min-width: 210px;
+max-width: calc(100vw - 24px);
+resize: horizontal;
+overflow-x: auto;
       margin: 0;
       padding: 12px;
       border: 1px solid rgba(240,214,164,.4);
@@ -137,27 +173,27 @@ if (new URLSearchParams(location.search).has('dev')) {
 
     #dev-panel button {
       width: 100%;
-      padding-top: 7px;
-      padding-bottom: 7px;
       font-size: 12px;
     }
 
     /* 指定歌曲搜尋 */
 
-    #dev-song-search {
-      width: 100%;
-      box-sizing: border-box;
-      padding: 8px;
-      border: 1px solid rgba(240,214,164,.3);
-      border-radius: 6px;
-      background: #252525;
-      color: white;
-      font-size: 12px;
-    }
+    #dev-song-search,
+#dev-track-search {
+  width: 100%;
+  box-sizing: border-box;
+  padding: 8px;
+  border: 1px solid rgba(240,214,164,.3);
+  border-radius: 6px;
+  background: #252525;
+  color: white;
+  font-size: 12px;
+}
 
-    #dev-song-search::placeholder {
-      color: rgba(255,255,255,.4);
-    }
+#dev-song-search::placeholder,
+#dev-track-search::placeholder {
+  color: #999;
+}
 
     #dev-song-results {
       display: flex;
@@ -204,6 +240,106 @@ if (new URLSearchParams(location.search).has('dev')) {
       text-align: center;
       padding: 8px 0;
     }
+
+
+
+/* iTunes 歌曲搜尋結果 */
+
+#dev-track-results {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  max-height: 300px;
+  overflow-y: auto;
+}
+
+.dev-track-heading {
+  color: #F0D6A4;
+  font-size: 11px;
+  font-weight: 800;
+  padding: 5px 0;
+}
+
+.dev-track-result {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  padding: 5px;
+  border-radius: 6px;
+  background: #252525;
+}
+
+.dev-track-result.playing {
+  background: #343126;
+  outline: 1px solid rgba(240,214,164,.6);
+}
+
+.dev-track-no {
+  color: #F0D6A4;
+  font-size: 13px;
+  font-weight: 900;
+  min-width: 22px;
+  text-align: center;
+}
+
+.dev-track-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.dev-track-name {
+  color: white;
+  font-size: 11px;
+  font-weight: 700;
+  line-height: 1.5;
+  overflow-wrap: anywhere;
+}
+
+.dev-track-album {
+  color: rgba(255,255,255,.5);
+  font-size: 10px;
+  line-height: 1.5;
+  overflow-wrap: anywhere;
+}
+
+.dev-track-result button {
+  width: 58px !important;
+  min-width: 58px;
+  flex-shrink: 0;
+}
+
+    /* 介面切換按鈕 */
+.dev-tabs {
+  display: flex;
+  gap: 6px;
+}
+
+.dev-tabs button {
+  flex: 1;
+  opacity: 0.55;
+}
+
+.dev-tabs button.active {
+  opacity: 1;
+  background: #9C789D;
+  color: white;
+}
+
+
+    /* 「全」「快」按鈕 */
+.dev-song-action {
+  background: none;
+  border: none;
+  color: #F0D6A4;
+  padding: 2px 5px;
+  font-size: 12px;
+  cursor: pointer;
+}
+
+.dev-song-action:hover {
+  color: white;
+  text-decoration: underline;
+}
 
     /* 介面快速預覽按鈕 */
 
@@ -367,11 +503,247 @@ updateLyricStars(item.answer);
       previewLyricsItem(SONG_DATABASE[0]);
     });
 
+  // 切換分頁
+    document.querySelectorAll('.dev-tabs button').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.dev-tabs button').forEach(b => {
+      b.classList.toggle('active', b === btn);
+    });
+
+    document.getElementById('dev-tab-guess').style.display =
+      btn.dataset.tab === 'guess' ? '' : 'none';
+
+    document.getElementById('dev-tab-lyrics').style.display =
+      btn.dataset.tab === 'lyrics' ? '' : 'none';
+  });
+});
+
 
   // ========================================
   // 05. 指定歌曲搜尋測試
   // ========================================
 
+  // ========================================
+// 歌曲 ID 綁定｜整理待確認歌曲
+// ========================================
+
+const devTrackSearch = $('dev-track-search');
+const devTrackSongs = $('dev-track-songs');
+const devTrackResults = $('dev-track-results');
+const devTrackAudio = $('dev-track-audio');
+const devTrackSearchBtn = $('dev-track-search-btn');
+
+
+// 搜尋 iTunes 歌曲
+async function searchDevTracks() {
+
+  const keyword = devTrackSearch.value.trim();
+
+  if (!keyword) {
+  devTrackResults.textContent = '請先輸入或選擇歌曲';
+  devTrackResults.style.color = '#ffffff';
+  return;
+}
+
+  devTrackResults.textContent = '搜尋中…';
+
+  // 停止上一首試聽
+  devTrackAudio.pause();
+  devTrackAudio.removeAttribute('src');
+  devTrackAudio.style.display = 'none';
+
+  try {
+
+    const response = await fetch(
+      `https://itunes.apple.com/search?term=${encodeURIComponent(keyword)}&entity=song&limit=20&country=TW`
+    );
+
+    const data = await response.json();
+
+    devTrackResults.innerHTML = '';
+
+    const results = data.results || [];
+
+    if (!results.length) {
+      devTrackResults.textContent = '找不到搜尋結果';
+      return;
+    }
+
+    // 搜尋結果標題
+    const heading = document.createElement('div');
+    heading.className = 'dev-track-heading';
+    heading.textContent = `搜尋結果｜共 ${results.length} 首`;
+    devTrackResults.appendChild(heading);
+
+    // 目前播放中的歌曲編號
+    let playingIndex = null;
+
+    results.forEach((track, index) => {
+
+      const row = document.createElement('div');
+      row.className = 'dev-track-result';
+
+      // 編號
+      const no = document.createElement('div');
+      no.className = 'dev-track-no';
+      no.textContent = String(index + 1).padStart(2, '0');
+
+      // 歌曲資訊
+      const info = document.createElement('div');
+      info.className = 'dev-track-info';
+
+      const name = document.createElement('div');
+      name.className = 'dev-track-name';
+      name.textContent = `${track.artistName}｜${track.trackName}`;
+
+      const album = document.createElement('div');
+      album.className = 'dev-track-album';
+      album.textContent =
+        `${track.collectionName || '未知專輯'}${track.trackTimeMillis ? '｜' + Math.floor(track.trackTimeMillis / 1000 / 60) + ':' + String(Math.floor(track.trackTimeMillis / 1000) % 60).padStart(2, '0') : ''}`;
+
+      // iTunes Track ID
+const trackId = document.createElement('div');
+trackId.className = 'dev-track-id';
+trackId.textContent = `Track ID：${track.trackId}`;
+      
+        // 試聽按鈕
+      const playBtn = document.createElement('button');
+      playBtn.className = 'bevel btn-sm';
+      playBtn.textContent = '▶';
+
+      playBtn.addEventListener('click', async () => {
+
+        if (!track.previewUrl) {
+          alert('這首歌曲沒有提供試聽音檔');
+          return;
+        }
+
+        // 再點同一首：暫停
+        if (playingIndex === index && !devTrackAudio.paused) {
+          devTrackAudio.pause();
+          playBtn.textContent = '▶';
+          row.classList.remove('playing');
+          playingIndex = null;
+          return;
+        }
+
+        // 停止其他播放狀態
+        devTrackResults.querySelectorAll('.dev-track-result').forEach(item => {
+          item.classList.remove('playing');
+          item.querySelector('button').textContent = '▶';
+        });
+
+        playingIndex = index;
+
+        devTrackAudio.src = track.previewUrl;
+        devTrackAudio.style.display = 'block';
+
+        try {
+          await devTrackAudio.play();
+
+          row.classList.add('playing');
+          playBtn.textContent = '⏸';
+
+        } catch (error) {
+          playingIndex = null;
+          alert('音檔播放失敗，請再試一次');
+        }
+
+      });
+
+      info.append(name, album, trackId);
+
+row.append(no, info, playBtn);
+      devTrackResults.appendChild(row);
+
+    });
+
+    // 播放結束時，恢復按鈕狀態
+    devTrackAudio.onended = () => {
+      devTrackResults.querySelectorAll('.dev-track-result').forEach(item => {
+        item.classList.remove('playing');
+        item.querySelector('button').textContent = '▶';
+      });
+    };
+
+  } catch (error) {
+
+    devTrackResults.textContent = '搜尋失敗，請稍後再試';
+    console.error('iTunes 搜尋錯誤：', error);
+
+  }
+}
+
+
+// 點擊按鈕才開始搜尋
+devTrackSearchBtn.addEventListener('click', searchDevTracks);
+
+// 按 Enter 也能搜尋
+devTrackSearch.addEventListener('keydown', event => {
+  if (event.key === 'Enter') {
+    event.preventDefault();
+    searchDevTracks();
+  }
+});
+
+// 從所有一般猜歌歌單整理歌曲
+const allPlaylistSongs = [
+  ...new Set(
+    Object.values(playlists)
+      .flat()
+      .filter(song => typeof song === 'string')
+  )
+];
+
+// 只保留尚未綁定 ID 的歌曲
+const unboundSongs = allPlaylistSongs.filter(song => {
+  const [artist, ...titleParts] = song.split(' ');
+  const title = titleParts.join(' ');
+
+  return !TRACK_MAP[`${artist}|${title}`];
+});
+
+// 顯示尚未綁定的歌曲
+function renderDevTrackSongs(keyword = '') {
+
+  devTrackSongs.innerHTML = '';
+
+  const songs = unboundSongs.filter(song =>
+    song.toLowerCase().includes(keyword.trim().toLowerCase())
+  );
+
+  if (!songs.length) {
+    devTrackSongs.textContent = '沒有待確認的歌曲';
+    devTrackSongs.style.color = '#ffffff';
+    return;
+  }
+
+  songs.forEach(song => {
+
+    const btn = document.createElement('button');
+
+    btn.type = 'button';
+    btn.className = 'dev-song-action';
+    btn.textContent = song;
+    btn.style.textAlign = 'left';
+
+    btn.addEventListener('click', () => {
+      devTrackSearch.value = song;
+      devTrackResults.innerHTML = '';
+    });
+
+    devTrackSongs.appendChild(btn);
+  });
+}
+
+// 輸入時篩選歌曲
+devTrackSearch.addEventListener('input', () => {
+  renderDevTrackSongs(devTrackSearch.value);
+});
+
+// 初始顯示
+renderDevTrackSongs();
+  
   const devSongSearch = $('dev-song-search');
   const devSongResults = $('dev-song-results');
 
@@ -424,14 +796,14 @@ function renderDevSongList(keyword = '') {
 
     // 完整測試
     const fullBtn = document.createElement('button');
-    fullBtn.className = 'bevel btn-sm';
+    fullBtn.className = 'dev-song-action';
     fullBtn.textContent = '全';
     fullBtn.dataset.songId = item.id;
     fullBtn.dataset.testMode = 'full';
 
     // 快速測試
     const quickBtn = document.createElement('button');
-    quickBtn.className = 'bevel btn-sm';
+    quickBtn.className = 'dev-song-action';
     quickBtn.textContent = '快';
     quickBtn.dataset.songId = item.id;
     quickBtn.dataset.testMode = 'quick';
