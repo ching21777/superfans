@@ -307,6 +307,7 @@
 
 <div id="cdown">3</div>
 
+<script src="js/tracks.js"></script>
 <script src="js/playlists.js"></script>
 <script src="js/lyrics.js"></script>
 <script>
@@ -1467,6 +1468,7 @@ $('trow').style.visibility = isLyricsMode() ? 'hidden' : '';
 */
 async function loadLyricsQuestion(my) {
   const item = queue[qPtr++];
+  const song = TRACKS.find(track => track.no === item.no);
 
   if (!item) {
     total = qDone;
