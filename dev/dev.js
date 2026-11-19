@@ -851,21 +851,21 @@ devTrackSearch.addEventListener('keydown', event => {
 // 從 tracks.js 整理尚未綁定的歌曲
 let selectedTrack = null;
 
-// 顯示尚未綁定的歌曲
+
+// 顯示題庫搜尋結果
 function renderDevTrackSongs(keyword = '') {
 
   devTrackSongs.innerHTML = '';
 
-  const songs = TRACKS.filter(track => {
-  const text = `${track.no} ${track.title} ${track.artist}`;
+  const searchText = keyword.trim().toLowerCase();
 
-  return !track.appleMusicId &&
-    !savedTracks[track.no] &&
-    text.toLowerCase().includes(keyword.trim().toLowerCase());
-});
+  const songs = TRACKS.filter(track => {
+    const text = `${track.no} ${track.title} ${track.artist}`;
+    return text.toLowerCase().includes(searchText);
+  });
 
   if (!songs.length) {
-    devTrackSongs.textContent = '沒有待確認的歌曲';
+    devTrackSongs.textContent = '找不到題庫歌曲';
     devTrackSongs.style.color = '#ffffff';
     return;
   }
@@ -876,29 +876,42 @@ function renderDevTrackSongs(keyword = '') {
 
     btn.type = 'button';
     btn.className = 'dev-song-action';
-    btn.textContent = `${track.no}｜${track.title}｜${track.artist}`;
+
+    const isBound = track.appleMusicId || savedTracks[track.no];
+
+    btn.textContent =
+      `${track.no}｜${track.title}｜${track.artist}` +
+      (isBound ? '｜已綁定' : '');
+
     btn.style.textAlign = 'left';
 
     btn.addEventListener('click', () => {
-  selectedTrack = track;
-  devTrackSearch.value = `${track.artist} ${track.title}`;
-  devTrackResults.innerHTML = '';
 
-  devTrackSongs.innerHTML = '';
-  const selected = document.createElement('div');
-  selected.textContent = `已選取：${track.no}｜${track.title}｜${track.artist}`;
-  selected.style.color = '#BAE7D8';
-  devTrackSongs.appendChild(selected);
-});
+      selectedTrack = track;
+      devTrackSearch.value = `${track.artist} ${track.title}`;
+
+      devTrackResults.innerHTML = '';
+
+      // 已綁定：直接顯示狀態
+      if (isBound) {
+        devTrackResults.textContent = '這首歌曲已綁定';
+        devTrackResults.style.color = '#BAE7D8';
+        return;
+      }
+
+      // 尚未綁定：搜尋 Apple Music
+      searchDevTracks();
+    });
 
     devTrackSongs.appendChild(btn);
   });
 }
 
+
 // 輸入時篩選歌曲
 devTrackSearch.addEventListener('input', () => {
-  if (selectedTrack) return;
-
+  selectedTrack = null;
+  devTrackResults.innerHTML = '';
   renderDevTrackSongs(devTrackSearch.value);
 });
 
