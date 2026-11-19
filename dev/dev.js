@@ -524,7 +524,7 @@ updateLyricStars(item.answer);
 
   document.getElementById('dev-lyrics-btn')
     .addEventListener('click', () => {
-      previewLyricsItem(SONG_DATABASE[0]);
+      previewLyricsItem(allLyricsSongs[0]);
     });
 
   // 切換分頁
@@ -577,15 +577,28 @@ devTrackExportBtn.addEventListener('click', () => {
   }));
 
   devTrackExport.value =
-    `const TRACKS = [\n${newTracks.map(track =>
-      `  ${JSON.stringify(track)}`
-    ).join(',\n')}\n];`;
+  `const TRACKS = [\n${newTracks.map(track =>
+    `  { no: ${JSON.stringify(track.no)}, title: ${JSON.stringify(track.title)}, artist: ${JSON.stringify(track.artist)}, appleMusicId: ${track.appleMusicId ?? 'null'} }`
+  ).join(',\n')},\n];`;
 
   devTrackExport.style.display = 'block';
 });
 
 devTrackCopyBtn.addEventListener('click', async () => {
   await navigator.clipboard.writeText(devTrackExport.value);
+
+  // 複製成功後，清空已綁定歌曲
+  savedTracks = {};
+
+  localStorage.setItem(
+    'devTrackSaved',
+    JSON.stringify(savedTracks)
+  );
+
+  // 更新畫面
+  renderDevTrackSaved();
+
+  // 隱藏匯出內容
   devTrackExport.style.display = 'none';
 });
 
@@ -925,9 +938,9 @@ function renderDevTrackSongs(keyword = '') {
 let status = '';
 
 if (track.appleMusicId) {
-  status = '｜已綁定';
+  status = '';
 } else if (track.appleMusicId === null) {
-  status = '｜尚未綁定（既有歌曲）';
+  status = ' ⛓️‍💥';
 }
 
 btn.textContent =
@@ -971,26 +984,31 @@ renderDevTrackSongs();
   const devSongSearch = $('dev-song-search');
   const devSongResults = $('dev-song-results');
 
-  // 搜尋並顯示歌曲清單
+// 合併 lyrics.js 的所有歌曲題庫
+const allLyricsSongs = [
+  ...HELLO_NICO_DATABASE,
+  ...SONG_DATABASE
+];
 
+// 搜尋並顯示歌曲清單
 function renderDevSongList(keyword = '') {
 
   devSongResults.innerHTML = '';
 
   const searchText = keyword.trim().toLowerCase();
 
-  const songs = SONG_DATABASE.filter(item => {
+  const songs = allLyricsSongs.filter(item => {
 
     const titleMatch =
       item.title.toLowerCase().includes(searchText);
 
-    const idText = String(item.id).padStart(3, '0');
+    const idText = String(item.no).padStart(3, '0');
 
     const idMatch =
       idText.includes(searchText) ||
       (
         /^\d+$/.test(searchText) &&
-        Number(searchText) === item.id
+        Number(searchText) === item.no
       );
 
     return !searchText || titleMatch || idMatch;
@@ -1012,7 +1030,7 @@ function renderDevSongList(keyword = '') {
 
     const no = document.createElement('span');
     no.className = 'dev-song-no';
-    no.textContent = String(item.id).padStart(3, '0');
+    no.textContent = String(item.no).padStart(3, '0');
 
     const name = document.createElement('span');
     name.className = 'dev-song-name';
@@ -1022,14 +1040,14 @@ function renderDevSongList(keyword = '') {
     const fullBtn = document.createElement('button');
     fullBtn.className = 'dev-song-action';
     fullBtn.textContent = '全';
-    fullBtn.dataset.songId = item.id;
+    fullBtn.dataset.songId = item.no;
     fullBtn.dataset.testMode = 'full';
 
     // 快速測試
     const quickBtn = document.createElement('button');
     quickBtn.className = 'dev-song-action';
     quickBtn.textContent = '快';
-    quickBtn.dataset.songId = item.id;
+    quickBtn.dataset.songId = item.no;
     quickBtn.dataset.testMode = 'quick';
 
     row.append(no, name, fullBtn, quickBtn);
@@ -1134,7 +1152,7 @@ let devQuickSong = false;
 
   const songId = Number(btn.dataset.songId);
 
-  const item = SONG_DATABASE.find(song => song.id === songId);
+  const item = allLyricsSongs.find(song => Number(song.no) === songId);
 
   if (!item) return;
 
