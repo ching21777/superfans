@@ -12,8 +12,8 @@
 
 /* ---- 主選單面板：收緊、外框變淡 ---- */
 #m-start .mc {
-  gap: 10px;
-  padding: 14px 18px 12px;
+  gap: 20px;
+  padding: 20px 28px 20px;
   border-color: rgba(231,205,158,.25);
 }
 #m-start .logo {
@@ -106,13 +106,13 @@
 .lb-row + .lb-row { box-shadow: 0 -1px 0 rgba(255,255,255,.07); }
 .lb-row.is-best { background: linear-gradient(90deg, rgba(217,180,91,.18), rgba(217,180,91,.04)); }
 .lb-summary-list .lb-row {
-  min-height: 42px;
+  min-height: 46px;
   padding: 3px 8px;
   gap: 10px;
 }
 
 .lb-summary-list .lb-title-line {
-  font-size: var(--fs-xs);
+  font-size: var(--fs-sm);
 }
 .lb-summary-list .lb-sub {
   margin-top: 2px;
@@ -123,7 +123,7 @@
 }
 
 .lb-summary-list .lb-grade {
-  font-size: var(--fs-sm);
+  font-size: var(--fs-md);
 }
 
 .lb-summary-list .lb-row.is-best {
