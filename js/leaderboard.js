@@ -141,7 +141,7 @@ function loadHistory() {
       return r
         ? lbRow(r, {
             title: r.playlist,
-            sub: `<span>⏱ ${r.time}</span><span>🔥Combo ${r.combo}</span>`,
+            sub: `<span>${r.time} ． Combo ${r.combo}</span>`,
             best: i === 0
           })
         : lbEmptyRow('尚無紀錄', '', `0${i + 1}`);
