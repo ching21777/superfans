@@ -144,7 +144,7 @@
     <!-- 我的戰績：成就區 + 各模式最佳一筆（內容由 loadHistory() 產生）-->
     <section class="lb-summary">
       <div class="lb-head">
-        <div class="lb-heading">我的戰績</div>
+        <div class="lb-heading">我的最佳戰績</div>
         <button class="lb-link" onclick="openBoard()">查看完整榜單 ›</button>
       </div>
       <div class="lb-hero" id="lb-hero" hidden></div>
@@ -208,15 +208,15 @@
     <div class="theme-subtitle">選擇歌單，開始挑戰</div>
 
     <div class="col">
-      <button class="tb" data-k="drama"    onclick="pickTheme('drama')">✬｜ 那些年你看過的經典偶像劇 ➔</button>
-      <button class="tb" data-k="she"      onclick="pickTheme('she')">✬✬｜ S.H.E 鐵粉爭霸戰 ➔</button>
-      <button class="tb" data-k="fish"     onclick="pickTheme('fish')">✬✬｜ 梁靜茹精選情歌 ➔</button>
-      <button class="tb" data-k="vagabond" onclick="pickTheme('vagabond')">✬✬✬｜走啊聽團！2026 浪人祭 ➔</button>
+      <button class="tb" data-k="drama"    onclick="pickTheme('drama')"><span class="theme-name"></button>
+      <button class="tb" data-k="she"      onclick="pickTheme('she')"><span class="theme-name"></button>
+      <button class="tb" data-k="fish"     onclick="pickTheme('fish')"><span class="theme-name"></button>
+      <button class="tb" data-k="vagabond" onclick="pickTheme('vagabond')"><span class="theme-name"></button>
 
       <div class="theme-divider"></div>
 
-      <button class="tb" data-k="lyrics" onclick="pickTheme('lyrics')">✬｜歌詞接唱王 ➔</button>
-      <!-- <button class="tb" data-k="helloNico" onclick="pickTheme('helloNico')">✬✬✬｜Hello Nico 歌詞接唱 ➔</button> -->
+      <button class="tb" data-k="lyrics" onclick="pickTheme('lyrics')"><span class="theme-name"></button>
+      <!-- <button class="tb" data-k="helloNico" onclick="pickTheme('helloNico')">✬✬✬｜<span class="theme-name"> ➔</button> -->
     </div>
   </div>
 </div>

@@ -55,4 +55,17 @@ vagabond:[
     "A_Root 同根生 山鬼"
   ],
 lyrics:["王心凌 心電心","F4 流星雨","林俊傑 江南","張韶涵 遺失的美好","丁噹 我愛他","五月天 突然好想你","張棟樑 北極星的眼淚","孫燕姿 遇見","郭靜 心牆","光良 童話","李聖傑 手放開","S.H.E 美麗新世界","S.H.E 波斯貓","S.H.E 五月天","梁靜茹 燕尾蝶","梁靜茹 小手拉大手","梁靜茹 暖暖","盧廣仲 刻在我心底的名字","鄭宜農 千千萬萬","理想混蛋 不是因為天氣晴朗才愛你"],};
-const names={vagabond:'2026 浪人祭',drama:'經典偶像劇',she:'S.H.E 特輯',fish:'梁靜茹特輯',lyrics:'歌詞接唱',helloNico:'Hello Nico'};
+const names={
+  vagabond:'✬✬✬｜走啊聽團！2026 浪人祭',
+  drama:'✬｜那些年你看過的經典偶像劇',
+  she:'✬✬｜S.H.E 鐵粉爭霸戰',
+  fish:'✬✬｜梁靜茹精選情歌',
+  lyrics:'✬｜中英日台歡唱包廂',
+  helloNico:'✬✬✬｜Hello Nico 歌詞接唱'};
+
+document.querySelectorAll('.tb[data-k]').forEach(button => {
+  const name = names[button.dataset.k];
+  const target = button.querySelector('.theme-name');
+
+  if (name && target) target.textContent = name;
+});

@@ -17,7 +17,7 @@ const LB_KEEP = 3;                     // 每個模式保留幾筆
 // 歌單簡稱
 const LB_SHORT = {
   '經典偶像劇': '偶像劇金曲',
-  'S.H.E 特輯': 'S.H.E 精選',
+  'S.H.E 鐵粉爭霸戰': 'S.H.E 精選',
   '梁靜茹特輯': '梁靜茹精選',
   '2026 浪人祭': '浪人祭合輯'
 };
@@ -108,10 +108,10 @@ function loadHistory() {
 
   // 首頁顯示的四種遊戲模式
   const homeModes = [
-    {k: 'song', name: '鐵粉猜歌王'},
-    {k: 'lyrics', name: '歌詞接唱王'},
-    {k: 'singer', name: '歌手辨識王'},
-    // {k: 'composer', name: '猜猜作曲家'}
+    {k: 'lyrics', name: '歌詞接力'},
+    {k: 'song', name: '歌名快答'},
+    // {k: 'singer', name: '歌手辨識 Coming Soon'},
+    // {k: 'composer', name: '»» 猜猜作曲家'}
   ];
 
   // 計算總遊玩次數
