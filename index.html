@@ -13,6 +13,8 @@
   <link rel="stylesheet" href="css/solo.css">
   <link rel="stylesheet" href="css/lyrics.css">
   <link rel="stylesheet" href="css/leaderboard.css"><!-- 新增：排行榜（需放在 solo.css 之後） -->
+  <link rel="stylesheet" href="css/catalog.css"><!-- 新增：點歌目錄 -->
+
 </head>
 <body>
 
@@ -223,6 +225,56 @@
   </div>
 </div>
 
+<!-- ==================== 點歌目錄 ==================== -->
+<div class="ov" id="m-catalog" onclick="if(event.target===this)closeCatalog()">
+  <button class="x sb-close" onclick="closeCatalog()" aria-label="關閉">✖</button>
+
+  <div class="songbook" role="dialog" aria-modal="true" aria-label="點歌目錄">
+    <div class="sb-book">
+      <div class="sb-corner tl"></div>
+      <div class="sb-corner tr"></div>
+      <div class="sb-corner bl"></div>
+      <div class="sb-corner br"></div>
+
+      <div class="sb-pages">
+        <!-- 左頁 -->
+        <div class="sb-page left">
+          <header class="sb-topline">
+            <span class="sb-brand">SUPER FANS</span>
+            <span>MUSIC COLLECTION</span>
+          </header>
+          <h1 class="sb-title">點歌目錄</h1>
+          <p class="sb-subtitle">SONG SELECTION CATALOG</p>
+          <div class="sb-intro">
+            <span>歌單索引</span>
+            <span>請依編號選擇歌曲主題</span>
+          </div>
+          <div data-sb-page="0"></div>
+        </div>
+
+        <!-- 右頁 -->
+        <div class="sb-page right">
+          <div data-sb-page="1"></div>
+
+          <div class="sb-legend">
+            <span>難度</span>
+            <span class="sb-legend-stars">★☆☆</span><span>入門</span>
+            <span class="sb-legend-stars">★★☆</span><span>進階</span>
+            <span class="sb-legend-stars">★★★</span><span>挑戰</span>
+          </div>
+
+          <footer class="sb-foot">
+            <span>SUPER FANS · SONG BOOK</span>
+            <span>NO. 01</span>
+          </footer>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="sb-toast" id="sb-toast" role="status"></div>
+</div>
+
 <!-- ==================== 試玩結束 ==================== -->
 <div class="ov" id="m-demo">
   <div class="mc">
@@ -299,7 +351,8 @@
 <script src="js/playlists.js"></script>
 <script src="js/lyrics.js"></script>
 <script src="js/leaderboard.js"></script>
-<script src="js/game.js"></script><!-- 原本 index.html 裡的整段 <script>…</script> 內容，剪下貼到這個檔案 -->
+<script src="js/game.js"></script>
+<script src="js/catalog.js"></script>
 <script src="./dev/dev.js"></script>
 
 </body>

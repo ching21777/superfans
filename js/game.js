@@ -805,7 +805,7 @@ const startDemo = () => begin(true);
 
 function toTheme() {
   ['m-start', 'm-demo', 'm-result', 'm-confirm'].forEach(hide);
-  show('m-theme');
+  openCatalog();
   $('quit-btn').style.display = 'none';
 }
 
