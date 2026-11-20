@@ -105,7 +105,34 @@
 }
 .lb-row + .lb-row { box-shadow: 0 -1px 0 rgba(255,255,255,.07); }
 .lb-row.is-best { background: linear-gradient(90deg, rgba(217,180,91,.18), rgba(217,180,91,.04)); }
-.lb-summary-list .lb-row { min-height: 46px; padding: 4px 6px; }
+.lb-summary-list .lb-row {
+  min-height: 42px;
+  padding: 3px 8px;
+  gap: 10px;
+}
+
+.lb-summary-list .lb-title-line {
+  font-size: var(--fs-xs);
+}
+.lb-summary-list .lb-sub {
+  margin-top: 2px;
+  font-size: 10px;
+}
+.lb-summary-list .lb-score {
+  font-size: 20px;
+}
+
+.lb-summary-list .lb-grade {
+  font-size: var(--fs-sm);
+}
+
+.lb-summary-list .lb-row.is-best {
+  background: transparent;
+}
+
+.lb-home-mode + .lb-home-mode {
+  margin-top: 8px;
+}
 
 .lb-grade {
   min-width: 44px;
@@ -137,6 +164,8 @@
 .lb-row.is-empty .lb-grade { color: rgba(233,197,141,.6); background: transparent; font-style: normal; }
 .lb-row.is-empty .lb-title-line { font-weight: 600; color: rgba(232,220,224,.7); }
 .lb-row.is-empty .lb-sub { color: rgba(200,184,191,.65); }
+
+
 
 
 /* ---- 完整榜單彈窗（沿用 .ov / .mc / .x，這裡只改成深色）---- */

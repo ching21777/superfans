@@ -129,24 +129,15 @@ function loadHistory() {
     </div>`;
     */
 
-      // 顯示各模式最佳紀錄
+        // 顯示各模式最佳紀錄
   const expanded = lbEl('hist').classList.contains('is-expanded');
 
   lbEl('hist').innerHTML = homeModes.map(m => {
-    const list = (b.rec[m.k] || []).slice(0, expanded ? 3 : 1);
-
-    if (!expanded) {
-      return list.length
-        ? list.map((r, i) => lbRow(r, {
-            title: m.name,
-            sub: `<span>${r.playlist}</span>`,
-            best: i === 0
-          })).join('')
-        : lbEmptyRow(m.name, '尚無紀錄', '—');
-    }
+    const list = (b.rec[m.k] || []).slice(0, 3);
 
     const rows = Array.from({length: 3}, (_, i) => {
       const r = list[i];
+
       return r
         ? lbRow(r, {
             title: r.playlist,
@@ -158,23 +149,10 @@ function loadHistory() {
 
     return `
       <li class="lb-home-mode">
-        <div class="lb-home-mode-title">${m.name}</div>
+        <div class="lb-heading">${m.name}</div>
         <ul class="lb-list">${rows}</ul>
       </li>`;
-  }).join('');}
-
-  function toggleHistory() {
-  const hist = lbEl('hist');
-  hist.classList.toggle('is-expanded');
-
-  const btn = document.querySelector('.lb-head .lb-link');
-  if (btn) {
-    btn.textContent = hist.classList.contains('is-expanded')
-      ? '收合 ▴'
-      : '展開 ▾';
-  }
-
-  loadHistory();
+  }).join('');
 }
 
 
