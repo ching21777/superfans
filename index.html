@@ -144,9 +144,12 @@
     <!-- 我的戰績：成就區 + 各模式最佳一筆（內容由 loadHistory() 產生）-->
     <section class="lb-summary">
       <div class="lb-head">
-        <div class="lb-heading">我的最佳戰績</div>
-        <button class="lb-link" onclick="openBoard()">查看完整榜單 ›</button>
-      </div>
+  <div class="lb-heading">我的戰績</div>
+  <div>
+    <button class="lb-link" onclick="toggleHistory()">展開 ▾</button>
+    <button class="lb-link" onclick="openBoard()" style="display:none">完整榜單 ›</button>
+  </div>
+</div>
       <div class="lb-hero" id="lb-hero" hidden></div>
       <ul class="lb-list lb-summary-list" id="hist"></ul>
     </section>
