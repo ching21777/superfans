@@ -1,0 +1,192 @@
+/* ========================================
+   排行榜（成就區、榜單列、完整榜單）
+   所有 class 皆以 lb- 開頭，不會和 solo.css 的舊 .hi / .hist 衝突
+   需放在 solo.css 之後載入
+======================================== */
+
+:root {
+  --lb-gold: #F0D6A4;
+  --lb-gold-2: #E9C58D;
+  --lb-sub: #C8B8BF;
+}
+
+/* ---- 主選單面板：收緊、外框變淡 ---- */
+#m-start .mc {
+  gap: 10px;
+  padding: 14px 18px 12px;
+  border-color: rgba(231,205,158,.25);
+}
+#m-start .logo {
+  font-size: 40px;
+  line-height: 1.2;
+  margin-bottom: 0;
+}
+#m-start .copyright-notice {
+  margin: 2px auto 0;
+  padding: 0;
+}
+
+/* ---- 標題列 ---- */
+.lb-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+  text-align: left;
+}
+.lb-heading {
+  font-size: var(--fs-md);
+  font-weight: 900;
+  letter-spacing: 1px;
+  color: var(--lb-gold);
+  text-shadow: 0 1px 5px rgba(240,214,164,.25);
+}
+.lb-heading::before { content: "✦ "; color: #E9BFCB; }
+.lb-link {
+  padding: 4px 0 4px 10px;
+  font-size: var(--fs-xs);
+  font-weight: 800;
+  letter-spacing: .5px;
+  white-space: nowrap;
+  color: var(--lb-gold-2);
+  background: none;
+  border: 0;
+  cursor: pointer;
+}
+.lb-link:active { opacity: .7; }
+
+/* ---- 成就區：目前最高稱號 ---- */
+.lb-hero {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin: 4px 0 6px;
+  padding: 8px 12px;
+  text-align: left;
+  border-radius: var(--r-md);
+  background: radial-gradient(ellipse at 0% 50%, rgba(217,180,91,.22), transparent 70%), rgba(255,255,255,.05);
+}
+.lb-hero-grade {
+  --gg: linear-gradient(180deg, #F4F2F4 0%, #C9C5CC 45%, #8E8993 100%);
+  flex: none;
+  min-width: 68px;
+  padding-right: .1em;
+  text-align: center;
+  font-family: var(--serif);
+  font-style: italic;
+  font-weight: 900;
+  font-size: 36px;
+  line-height: 1;
+  letter-spacing: 1px;
+  color: transparent;
+  background-image: var(--gg);
+  background-clip: text;
+  -webkit-background-clip: text;
+  filter: drop-shadow(0 2px 0 rgba(0,0,0,.45));
+}
+.lb-hero-grade.lb-g-sss { --gg: linear-gradient(180deg,#FFF6D6 0%,#F0D68F 30%,#B38B3E 55%,#F7E2A6 75%,#987638 100%); filter: drop-shadow(0 2px 0 #5A3C12) drop-shadow(0 0 12px rgba(217,180,91,.45)); }
+.lb-hero-grade.lb-g-ss  { --gg: linear-gradient(180deg,#FFE3E9 0%,#E9A8B9 50%,#A84D68 100%); }
+.lb-hero-grade.lb-g-s   { --gg: linear-gradient(180deg,#EEEAFB 0%,#C9C1E6 50%,#7D72AE 100%); }
+.lb-hero-grade.is-dim   { opacity: .45; }
+.lb-hero-text { min-width: 0; }
+.lb-hero-cap { font-size: 11px; letter-spacing: 1px; color: var(--lb-sub); }
+.lb-hero-title { margin-top: 1px; font-family: var(--serif); font-size: var(--fs-md); font-weight: 900; line-height: 1.25; color: var(--lb-gold); }
+.lb-hero.is-new .lb-hero-title { color: rgba(240,214,164,.85); }
+.lb-hero-stats { display: flex; flex-wrap: wrap; column-gap: 10px; margin-top: 2px; font-size: var(--fs-xs); color: var(--lb-sub); }
+.lb-hero-stats span { white-space: nowrap; }
+
+/* ---- 榜單列（主選單與完整榜單共用）---- */
+.lb-list { list-style: none; display: flex; flex-direction: column; text-align: left; }
+.lb-row {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 12px;
+  min-height: 60px;
+  padding: 8px 10px;
+  color: #E8DCE0;
+  border-radius: var(--r-md);
+}
+.lb-row + .lb-row { box-shadow: 0 -1px 0 rgba(255,255,255,.07); }
+.lb-row.is-best { background: linear-gradient(90deg, rgba(217,180,91,.18), rgba(217,180,91,.04)); }
+.lb-summary-list .lb-row { min-height: 46px; padding: 4px 6px; }
+
+.lb-grade {
+  min-width: 44px;
+  padding: 5px 6px;
+  text-align: center;
+  font-family: var(--serif);
+  font-style: italic;
+  font-size: var(--fs-md);
+  font-weight: 900;
+  line-height: 1.2;
+  color: var(--lb-sub);
+  background: rgba(255,255,255,.08);
+  border-radius: var(--r-sm);
+}
+.lb-grade.lb-g-sss { color: var(--lb-gold); background: rgba(217,180,91,.22); }
+.lb-grade.lb-g-ss  { color: #E9A8B9; background: rgba(233,168,185,.16); }
+.lb-grade.lb-g-s   { color: #C9C1E6; background: rgba(164,154,209,.18); }
+
+.lb-body { min-width: 0; }
+.lb-title-line { display: block; font-size: var(--fs-sm); font-weight: 800; line-height: 1.35; color: #F3ECEE; overflow-wrap: anywhere; }
+.lb-sub { display: flex; flex-wrap: wrap; column-gap: 10px; margin-top: 3px; font-size: var(--fs-xs); line-height: 1.35; color: var(--lb-sub); }
+.lb-sub span { white-space: nowrap; }
+
+.lb-score { font-family: var(--serif); font-size: 22px; font-weight: 900; line-height: 1.1; white-space: nowrap; font-variant-numeric: tabular-nums; color: #E8DCE0; }
+.lb-score small { margin-left: 2px; font-size: .5em; font-weight: 800; }
+.lb-row.is-best .lb-score { color: var(--lb-gold); text-shadow: 0 1px 5px rgba(240,214,164,.3); }
+
+.lb-row.is-empty { grid-template-columns: auto minmax(0, 1fr); color: rgba(232,220,224,.5); }
+.lb-row.is-empty .lb-grade { color: rgba(233,197,141,.6); background: rgba(255,255,255,.05); font-style: normal; }
+.lb-row.is-empty .lb-title-line { font-weight: 600; color: rgba(232,220,224,.7); }
+.lb-row.is-empty .lb-sub { color: rgba(200,184,191,.65); }
+
+/* ---- 完整榜單彈窗（沿用 .ov / .mc / .x，這裡只改成深色）---- */
+#m-board .mc {
+  max-height: 96dvh;
+  gap: 10px;
+  padding: 20px 16px 14px;
+  color: #F3E9EC;
+  border: 1px solid rgba(231,205,158,.25);
+  background:
+    radial-gradient(ellipse at 50% 0%, rgba(213,31,59,.28), transparent 62%),
+    linear-gradient(160deg, #3A2B3A 0%, #241B28 60%, #1A151D 100%);
+  box-shadow: 0 12px 30px rgba(0,0,0,.45);
+}
+#m-board .x { color: #E8DCE0; background: rgba(255,255,255,.1); }
+
+.lb-title { font-family: var(--serif); font-size: var(--fs-lg); font-weight: 900; letter-spacing: 2px; color: var(--lb-gold); }
+
+/* 分頁：純文字 + 會跟著滑動的金色底線 */
+.lb-tabs { --n: 2; position: relative; display: grid; grid-template-columns: repeat(var(--n), 1fr); box-shadow: 0 1px 0 rgba(255,255,255,.1); }
+.lb-tab { padding: 10px 0 11px; font-size: 14px; font-weight: 800; white-space: nowrap; color: rgba(255,255,255,.5); background: none; border: 0; cursor: pointer; transition: color .2s; }
+.lb-tab[aria-selected="true"] { color: var(--lb-gold); }
+.lb-ind { position: absolute; left: 0; bottom: 0; width: calc(100% / var(--n)); height: 3px; display: flex; justify-content: center; pointer-events: none; }
+.lb-ind::after { content: ""; width: 60%; height: 100%; border-radius: 3px 3px 0 0; background: linear-gradient(90deg, #E7C56F, #F6E2A8); }
+
+/* 頁面：同一列並排，高度一律等於最高的那一頁 */
+.lb-pages { display: grid; grid-auto-flow: column; grid-auto-columns: 100%; overflow-x: auto; scroll-snap-type: x mandatory; overscroll-behavior-x: contain; scrollbar-width: none; }
+.lb-pages::-webkit-scrollbar { display: none; }
+.lb-page { display: flex; flex-direction: column; gap: 6px; min-width: 0; scroll-snap-align: start; scroll-snap-stop: always; }
+.lb-mode-info { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: baseline; gap: 2px 10px; padding: 4px 4px 0; text-align: left; }
+.lb-mode-desc { font-size: var(--fs-xs); color: var(--lb-sub); }
+.lb-mode-plays { font-size: var(--fs-xs); font-weight: 800; color: var(--lb-gold-2); }
+.lb-swipe-hint { display: none; text-align: center; font-size: 11px; letter-spacing: 1px; color: rgba(200,184,191,.6); }
+@media (hover: none) { .lb-swipe-hint { display: block; } }
+
+/* ---- 小手機 ---- */
+@media (max-width: 380px) {
+  #m-start .mc { padding: 12px 12px 10px; }
+  #m-start .logo { font-size: 36px; }
+  #m-board .mc { padding: 20px 10px 12px; }
+  .lb-hero { gap: 10px; padding: 8px 10px; }
+  .lb-hero-grade { min-width: 56px; font-size: 32px; }
+  .lb-hero-title { font-size: 15px; }
+  .lb-row { gap: 8px; padding: 8px 8px; }
+  .lb-summary-list .lb-row { padding: 4px 4px; }
+  .lb-grade { min-width: 38px; padding: 4px; font-size: var(--fs-sm); }
+  .lb-sub { column-gap: 8px; }
+  .lb-score { font-size: 20px; }
+  .lb-tab { font-size: 13px; }
+}
