@@ -102,32 +102,46 @@ const lbShort = p => LB_SHORT[p] || p;
 
 /* ---- 主選單：成就區 + 各模式最佳一筆（函式名稱沿用 loadHistory，原本的呼叫處都不用改）---- */
 
+
 function loadHistory() {
   const b = readBoard();
-  const bests = LB_MODES.map(m => (b.rec[m.k] || [])[0]).filter(Boolean);
-  const plays = LB_MODES.reduce((n, m) => n + (b.plays[m.k] || 0), 0);
 
-  // 最高等級：GRADES 由高到低排列，index 越小越好
-  const rank = g => GRADES.findIndex(x => x.k === g);
-  const top = bests.map(x => x.grade).sort((a, c) => rank(a) - rank(c))[0];
-  const topInfo = top && GRADES.find(x => x.k === top);
+  // 首頁顯示的四種遊戲模式
+  const homeModes = [
+    {k: 'song', name: '鐵粉猜歌王'},
+    {k: 'lyrics', name: '歌詞接唱王'},
+    {k: 'singer', name: '歌手辨識王'},
+    // {k: 'composer', name: '猜猜作曲家'}
+  ];
 
-  lbEl('lb-hero').classList.toggle('is-new', !top);
-  lbEl('lb-hero').innerHTML = `
-    <div class="lb-hero-grade ${top ? lbGradeCls(top) : 'is-dim'}">${top || '?'}</div>
+  // 計算總遊玩次數
+  const plays = homeModes.reduce(
+    (n, m) => n + (b.plays[m.k] || 0), 0
+  );
+
+  // 顯示累積遊玩次數
+  /*暫時隱藏累積遊玩區塊，保留相關資料
+  lbEl('lb-hero').classList.remove('is-new');
+  //lbEl('lb-hero').innerHTML = `
     <div class="lb-hero-text">
-      <div class="lb-hero-cap">目前最高稱號</div>
-      <div class="lb-hero-title">${topInfo ? topInfo.title : '完成第一場，拿下你的稱號'}</div>
-      <div class="lb-hero-stats"><span>累積挑戰 ${plays} 次</span></div>
+      <div class="lb-hero-cap">累積遊玩</div>
+      <div class="lb-hero-title">${plays} <small>次</small></div>
     </div>`;
+    */
 
-  lbEl('hist').innerHTML = LB_MODES.map(m => {
+  // 顯示各模式最佳紀錄
+  lbEl('hist').innerHTML = homeModes.map(m => {
     const r = (b.rec[m.k] || [])[0];
+
     return r
-      ? lbRow(r, {title: m.name, sub: `<span>${lbShort(r.playlist)}</span>`})
+      ? lbRow(r, {
+          title: m.name,
+          sub: `<span>${r.playlist}</span>`
+        })
       : lbEmptyRow(m.name, '尚無紀錄', '—');
   }).join('');
 }
+
 
 
 /* ---- 完整榜單：每個模式一頁，可左右滑動 ---- */
@@ -149,7 +163,7 @@ function renderBoard() {
       const r = list[i];
       return r
         ? lbRow(r, {
-            title: lbShort(r.playlist),
+            title: r.playlist,
             sub: `<span>⏱ ${r.time}</span><span>🔥 ${r.combo}</span>`,
             best: i === 0
           })

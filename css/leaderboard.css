@@ -56,47 +56,44 @@
 .lb-link:active { opacity: .7; }
 
 /* ---- 成就區：目前最高稱號 ---- */
+/* ---- 累積遊玩次數
 .lb-hero {
   display: flex;
   align-items: center;
-  gap: 12px;
   margin: 4px 0 6px;
-  padding: 8px 12px;
+  padding: 10px 12px;
   text-align: left;
   border-radius: var(--r-md);
   background: radial-gradient(ellipse at 0% 50%, rgba(217,180,91,.22), transparent 70%), rgba(255,255,255,.05);
+} ---- */
+
+
+.lb-hero-text {
+  min-width: 0;
 }
-.lb-hero-grade {
-  --gg: linear-gradient(180deg, #F4F2F4 0%, #C9C5CC 45%, #8E8993 100%);
-  flex: none;
-  min-width: 68px;
-  padding-right: .1em;
-  text-align: center;
-  font-family: var(--serif);
-  font-style: italic;
-  font-weight: 900;
-  font-size: 36px;
-  line-height: 1;
+
+.lb-hero-cap {
+  font-size: 11px;
   letter-spacing: 1px;
-  color: transparent;
-  background-image: var(--gg);
-  background-clip: text;
-  -webkit-background-clip: text;
-  filter: drop-shadow(0 2px 0 rgba(0,0,0,.45));
+  color: var(--lb-sub);
 }
-.lb-hero-grade.lb-g-sss { --gg: linear-gradient(180deg,#FFF6D6 0%,#F0D68F 30%,#B38B3E 55%,#F7E2A6 75%,#987638 100%); filter: drop-shadow(0 2px 0 #5A3C12) drop-shadow(0 0 12px rgba(217,180,91,.45)); }
-.lb-hero-grade.lb-g-ss  { --gg: linear-gradient(180deg,#FFE3E9 0%,#E9A8B9 50%,#A84D68 100%); }
-.lb-hero-grade.lb-g-s   { --gg: linear-gradient(180deg,#EEEAFB 0%,#C9C1E6 50%,#7D72AE 100%); }
-.lb-hero-grade.is-dim   { opacity: .45; }
-.lb-hero-text { min-width: 0; }
-.lb-hero-cap { font-size: 11px; letter-spacing: 1px; color: var(--lb-sub); }
-.lb-hero-title { margin-top: 1px; font-family: var(--serif); font-size: var(--fs-md); font-weight: 900; line-height: 1.25; color: var(--lb-gold); }
-.lb-hero.is-new .lb-hero-title { color: rgba(240,214,164,.85); }
-.lb-hero-stats { display: flex; flex-wrap: wrap; column-gap: 10px; margin-top: 2px; font-size: var(--fs-xs); color: var(--lb-sub); }
-.lb-hero-stats span { white-space: nowrap; }
+
+.lb-hero-title {
+  margin-top: 1px;
+  font-family: var(--serif);
+  font-size: 24px;
+  font-weight: 900;
+  line-height: 1.25;
+  color: var(--lb-gold);
+}
+
+.lb-hero-title small {
+  margin-left: 2px;
+  font-size: .55em;
+}
 
 /* ---- 榜單列（主選單與完整榜單共用）---- */
-.lb-list { list-style: none; display: flex; flex-direction: column; text-align: left; }
+.lb-list { list-style: none; display: flex; flex-direction: column; text-align: left; margin-top: 10px; }
 .lb-row {
   display: grid;
   grid-template-columns: auto minmax(0, 1fr) auto;
@@ -105,7 +102,6 @@
   min-height: 60px;
   padding: 8px 10px;
   color: #E8DCE0;
-  border-radius: var(--r-md);
 }
 .lb-row + .lb-row { box-shadow: 0 -1px 0 rgba(255,255,255,.07); }
 .lb-row.is-best { background: linear-gradient(90deg, rgba(217,180,91,.18), rgba(217,180,91,.04)); }
@@ -121,12 +117,12 @@
   font-weight: 900;
   line-height: 1.2;
   color: var(--lb-sub);
-  background: rgba(255,255,255,.08);
+  background: transparent;
   border-radius: var(--r-sm);
 }
-.lb-grade.lb-g-sss { color: var(--lb-gold); background: rgba(217,180,91,.22); }
-.lb-grade.lb-g-ss  { color: #E9A8B9; background: rgba(233,168,185,.16); }
-.lb-grade.lb-g-s   { color: #C9C1E6; background: rgba(164,154,209,.18); }
+.lb-grade.lb-g-sss { color: var(--lb-gold); background: transparent; }
+.lb-grade.lb-g-ss  { color: #E9A8B9; background: transparent; }
+.lb-grade.lb-g-s   { color: #C9C1E6; background: transparent; }
 
 .lb-body { min-width: 0; }
 .lb-title-line { display: block; font-size: var(--fs-sm); font-weight: 800; line-height: 1.35; color: #F3ECEE; overflow-wrap: anywhere; }
@@ -138,9 +134,10 @@
 .lb-row.is-best .lb-score { color: var(--lb-gold); text-shadow: 0 1px 5px rgba(240,214,164,.3); }
 
 .lb-row.is-empty { grid-template-columns: auto minmax(0, 1fr); color: rgba(232,220,224,.5); }
-.lb-row.is-empty .lb-grade { color: rgba(233,197,141,.6); background: rgba(255,255,255,.05); font-style: normal; }
+.lb-row.is-empty .lb-grade { color: rgba(233,197,141,.6); background: transparent; font-style: normal; }
 .lb-row.is-empty .lb-title-line { font-weight: 600; color: rgba(232,220,224,.7); }
 .lb-row.is-empty .lb-sub { color: rgba(200,184,191,.65); }
+
 
 /* ---- 完整榜單彈窗（沿用 .ov / .mc / .x，這裡只改成深色）---- */
 #m-board .mc {
@@ -180,8 +177,7 @@
   #m-start .mc { padding: 12px 12px 10px; }
   #m-start .logo { font-size: 36px; }
   #m-board .mc { padding: 20px 10px 12px; }
-  .lb-hero { gap: 10px; padding: 8px 10px; }
-  .lb-hero-grade { min-width: 56px; font-size: 32px; }
+  .lb-hero { padding: 8px 10px; }
   .lb-hero-title { font-size: 15px; }
   .lb-row { gap: 8px; padding: 8px 8px; }
   .lb-summary-list .lb-row { padding: 4px 4px; }
@@ -190,3 +186,4 @@
   .lb-score { font-size: 20px; }
   .lb-tab { font-size: 13px; }
 }
+
