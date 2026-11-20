@@ -147,9 +147,13 @@
   background: transparent;
   border-radius: var(--r-sm);
 }
-.lb-grade.lb-g-sss { color: var(--lb-gold); background: transparent; }
-.lb-grade.lb-g-ss  { color: #E9A8B9; background: transparent; }
-.lb-grade.lb-g-s   { color: #C9C1E6; background: transparent; }
+.lb-grade.lb-g-sss,
+.lb-grade.lb-g-ss,
+.lb-grade.lb-g-s {
+  color: var(--lb-gold);
+  background: transparent;
+}
+
 
 .lb-body { min-width: 0; }
 .lb-title-line { display: block; font-size: var(--fs-sm); font-weight: 800; line-height: 1.35; color: #F3ECEE; overflow-wrap: anywhere; }

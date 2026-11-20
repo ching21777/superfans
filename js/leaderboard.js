@@ -108,8 +108,8 @@ function loadHistory() {
 
   // 首頁顯示的四種遊戲模式
   const homeModes = [
-    {k: 'lyrics', name: '歌詞接力'},
     {k: 'song', name: '歌名快答'},
+    {k: 'lyrics', name: '歌詞接力'},
     // {k: 'singer', name: '歌手辨識 Coming Soon'},
     // {k: 'composer', name: '»» 猜猜作曲家'}
   ];
