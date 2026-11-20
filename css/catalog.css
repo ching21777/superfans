@@ -7,7 +7,7 @@
 
 #m-catalog {
   align-items: flex-start;   /* 內容比螢幕高時不會被切掉頂端 */
-  background: var(--overlay-dark);
+  background: var(--overlay);
 }
 
 #m-catalog .sb-close {
@@ -368,10 +368,19 @@
 }
 
 .songbook .sb-title { font-size: 25px; }
+
+.songbook .sb-no {
+  display: none;
+}
+
+.songbook .sb-song {
+  grid-template-columns: minmax(0, 1fr) auto;
+}
+
 } /* 結束手機版設定 */
 
 @media (max-width: 380px) {
   .songbook .sb-page { padding-left: 16px; padding-right: 16px; }
   .songbook .sb-song { grid-template-columns: 45px minmax(0, 1fr) auto; gap: 5px; }
-  .songbook .sb-name { font-size: 12px; }
+  .songbook .sb-name { font-size: 14px; font-weight: 700; }
 }
