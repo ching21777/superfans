@@ -19,12 +19,13 @@
         { k: 'she',      no: '00121', level: 2 },
         { k: 'fish',     no: '00122', level: 2 },
         { k: 'vagabond', no: '00211', level: 3 },
-        { k: '伍佰演唱會', no: '00211', level: 3 },
       ]},
     ],
     [
       { title: '歌詞接力', items: [
         { k: 'lyrics',   no: '30111', level: 1 },
+        { k: '伍佰演唱會', no: '50212', level: 3, status: 'soon' },
+        { k: 'Hello Nico回歸新作', no: '?????', level: 3, status: 'soon' },
       ]},
     ],
   ];
@@ -36,12 +37,10 @@
     return e;
   }
 
-  // 從原本的歌單按鈕讀出歌名（找不到回傳空字串）
+  // 直接從 playlists.js 讀取歌單名稱
   function readName(k) {
-    const src = [...document.querySelectorAll('#m-theme .tb')]
-      .find(b => b.dataset.k === k);
-    return (src?.querySelector('.theme-name')?.textContent || '').trim();
-  }
+  return names[k] || '';
+}
 
   function render() {
     PAGES.forEach((sections, pageIdx) => {
@@ -59,10 +58,18 @@
 
           const btn = el('button', 'sb-song');
           btn.type = 'button';
+          btn.disabled = it.status === 'soon';
+          if (it.status === 'soon') btn.classList.add('soon');
           btn.dataset.k = it.k;
           btn.appendChild(el('span', 'sb-no', it.no));
           btn.appendChild(el('span', 'sb-name', name));
-          btn.appendChild(el('span', 'sb-stars', '★'.repeat(level) + '☆'.repeat(3 - level)));
+          btn.appendChild(el(
+  'span',
+  'sb-stars',
+  it.status === 'soon'
+    ? '即將推出'
+    : '★'.repeat(level) + '☆'.repeat(3 - level)
+));
           wrap.appendChild(btn);
         });
 

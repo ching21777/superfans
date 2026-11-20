@@ -203,7 +203,26 @@
 }
 
 .songbook .sb-song:active { background: rgba(135,54,58,.14); }
-.songbook .sb-song.soon .sb-name { color: #8f8a84; }
+/* 未開放歌單：編號與名稱灰化 */
+.songbook .sb-song.soon .sb-no,
+.songbook .sb-song.soon .sb-name {
+  color: #8f8a84;
+}
+
+/* 即將推出調色
+.songbook .sb-song.soon .sb-stars {
+  color: #a85b5b;
+} */
+
+/* 未開放歌單：不顯示互動效果 */
+.songbook .sb-song.soon {
+  cursor: default;
+}
+
+.songbook .sb-song.soon:hover,
+.songbook .sb-song.soon:active {
+  background: none;
+}
 
 @media (hover: hover) {
   .songbook .sb-song:hover { background: rgba(135,54,58,.08); }
