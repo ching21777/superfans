@@ -227,7 +227,6 @@
 
 <!-- ==================== 點歌目錄 ==================== -->
 <div class="ov" id="m-catalog" onclick="if(event.target===this)closeCatalog()">
-  <button class="x sb-close" onclick="closeCatalog()" aria-label="關閉">✖</button>
 
   <div class="songbook" role="dialog" aria-modal="true" aria-label="點歌目錄">
     <div class="sb-book">
@@ -240,15 +239,11 @@
         <!-- 左頁 -->
         <div class="sb-page left">
           <header class="sb-topline">
-            <span class="sb-brand">SUPER FANS</span>
-            <span>MUSIC COLLECTION</span>
-          </header>
+  <button class="sb-back" type="button" onclick="closeCatalog()">← 返回主選單</button>
+  <span>MUSIC COLLECTION</span>
+</header>
           <h1 class="sb-title">點歌目錄</h1>
           <p class="sb-subtitle">SONG SELECTION CATALOG</p>
-          <div class="sb-intro">
-            <span>歌單索引</span>
-            <span>請依編號選擇歌曲主題</span>
-          </div>
           <div data-sb-page="0"></div>
         </div>
 
