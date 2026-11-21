@@ -290,14 +290,14 @@ const SONG_DATABASE = [
     no: '031',
     title: "Last Dance",
     genre: "跨世代神曲",
-    playUntil: 20,
-    type: "next",
-    prompt: "所以暫時將妳眼睛閉了起來",
-    answer: "黑暗之中漂浮我的期待",
+    playUntil: 19,
+    type: "fill",
+    prompt: "你給的{{blank}}",
+    answer: "愛ㄞ～～～",
     distractors: [
-      "平靜臉孔映著繽紛色彩",
-      "讓人不知不覺就愛起來",
-      "我們就這樣慢慢走開"
+      "愛ㄞ～～",
+      "愛ㄞ～",
+      "愛ㄞ～～～～"
     ]
   },
   {
@@ -305,27 +305,27 @@ const SONG_DATABASE = [
     title: "挪威的森林",
     genre: "搖滾不敗經典",
     playUntil: 20,
-    type: "fill",
-    prompt: "讓我將妳心兒摘下\n試著將它{{blank}}",
-    answer: "慢慢溶化",
+    type: "previous",
+    prompt: "依然愛我無法自拔",
+    answer: "是否依然為我絲絲牽掛",
     distractors: [
-      "輕輕放下",
-      "好好收藏",
-      "全部帶走"
+      "是否依然為你絲絲牽掛",
+      "是否依然為妳絲絲牽掛",
+      "是否依然為他絲絲牽掛"
     ]
   },
   {
     no: '033',
     title: "妳是我的花朵",
     genre: "國民舞曲嗨歌",
-    playUntil: 18,
+    playUntil: 19,
     type: "next",
-    prompt: "就算妳身邊很多小石頭",
-    answer: "我也不會輕易就退縮",
+    prompt: "拉著我 不要飄走",
+    answer: "我在妳背後擋風",
     distractors: [
-      "我也不會就此而放手",
-      "我的心裡只有妳一個",
-      "我要讓妳永遠跟著我"
+      "我保妳一路暢通",
+      "考驗我愛的程度",
+      "我愛妳不眠不休"
     ]
   },
   {

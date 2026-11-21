@@ -61,10 +61,8 @@ devPanel.innerHTML = `
         style="flex:1; min-width:0;">
 
       <button class="bevel btn-sm" id="dev-capture-time"
-        style="width:auto;">抓取秒數</button>
+        style="width:auto;">抓秒數</button>
 
-      <button class="bevel btn-sm" id="dev-save-time"
-        style="width:auto;">記錄</button>
     </div>
 
     <div id="dev-play-until-status"
@@ -717,13 +715,35 @@ renderDevTrackSaved();
 // 搜尋 iTunes 歌曲
 async function searchDevTracks() {
 
-  const keyword = devTrackSearch.value.trim();
+  const input = devTrackSearch.value.trim();
 
-  if (!keyword) {
-  devTrackResults.textContent = '請先輸入或選擇歌曲';
-  devTrackResults.style.color = '#ffffff';
-  return;
-}
+  if (!input) {
+    devTrackResults.textContent = '請先輸入或選擇歌曲';
+    devTrackResults.style.color = '#ffffff';
+    return;
+  }
+
+  // 純數字輸入：依 Super Fans 歌曲編號尋找題庫歌曲
+  const isTrackNo = /^\d+$/.test(input);
+
+  const numberedTrack = isTrackNo
+    ? TRACKS.find(track =>
+        String(track.no).padStart(3, '0') === input.padStart(3, '0')
+      )
+    : null;
+
+  if (isTrackNo && !numberedTrack) {
+    devTrackResults.textContent = '找不到這個歌曲編號';
+    devTrackResults.style.color = '#ffffff';
+    return;
+  }
+
+  if (numberedTrack) {
+    selectedTrack = numberedTrack;
+    devTrackSearch.value = `${numberedTrack.artist} ${numberedTrack.title}`;
+  }
+
+  const keyword = devTrackSearch.value.trim();
 
   devTrackResults.textContent = '搜尋中…';
 
@@ -859,14 +879,13 @@ saveBtn.addEventListener('click', () => {
     return;
   }
 
-  // 從正式題庫與待匯出清單一起計算最大編號
-  const allNos = [
-    ...TRACKS.map(item => Number(item.no)),
-    ...Object.keys(savedTracks).map(Number)
-  ];
+  // 沿用原本題庫歌曲編號
+if (!selectedTrack) {
+  alert('請先從題庫選擇要綁定的歌曲');
+  return;
+}
 
-  const maxNo = Math.max(0, ...allNos);
-  const newNo = String(maxNo + 1).padStart(3, '0');
+const newNo = String(selectedTrack.no);
 
   // 加入待匯出清單
   savedTracks[newNo] = {
