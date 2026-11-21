@@ -230,24 +230,25 @@
 
   <div class="songbook" role="dialog" aria-modal="true" aria-label="點歌目錄">
     <div class="sb-book">
-      <div class="sb-corner tl"></div>
-      <div class="sb-corner tr"></div>
-      <div class="sb-corner bl"></div>
-      <div class="sb-corner br"></div>
+  <button class="x sb-close" type="button" onclick="closeCatalog()" aria-label="關閉">✖</button>
 
-      <div class="sb-pages">
-        <!-- 左頁 -->
-        <div class="sb-page left">
-          <header class="sb-topline">
-  <button class="sb-back" type="button" onclick="closeCatalog()">← 返回主選單</button>
-  <span>MUSIC COLLECTION</span>
-</header>
+  <div class="sb-corner tl"></div>
+  <div class="sb-corner tr"></div>
+  <div class="sb-corner bl"></div>
+  <div class="sb-corner br"></div>
+
+  <div class="sb-pages">
+    <div class="sb-page left">
+      <header class="sb-topline">
+        <span class="logo">Super Fans</span>
+        <span> </span>
+      </header>
+
           <h1 class="sb-title">點歌目錄</h1>
-          <p class="sb-subtitle">SONG SELECTION CATALOG</p>
+          <p class="sb-subtitle">SONG BOOK</p>
           <div data-sb-page="0"></div>
         </div>
 
-        <!-- 右頁 -->
         <div class="sb-page right">
           <div data-sb-page="1"></div>
 

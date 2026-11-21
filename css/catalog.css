@@ -1,8 +1,12 @@
 /* ========================================
-   點歌目錄｜Song Catalog
-   所有 class 都加 sb- 前綴，避免和 solo.css 的
-   .stage / .logo / .section / .legend 等撞名。
-   需放在 solo.css 之後載入。
+   點歌目錄｜Song Catalog（v1 微調版）
+   保留 v1 的黑殼、米紙、明體標題、虛線。
+   改動：
+   1. 金屬護角 → 灰色平面色塊
+   2. 紅色統一用 --red / --red-dark
+   3. 字體：標題用 --serif，歌名與號碼用 --sans
+   4. 小字放大、觸控列加高、長歌名換行、補 dvh 備援
+   所有 class 都加 sb- 前綴。需放在 solo.css 之後載入。
 ======================================== */
 
 #m-catalog {
@@ -10,32 +14,33 @@
   background: var(--overlay);
 }
 
-#m-catalog .sb-close {
-  position: fixed;
-  top: calc(var(--sp-3) + env(safe-area-inset-top, 0px));
-  right: var(--sp-3);
-  z-index: 5;
-  color: #E8DCE0;
-  background: rgba(255,255,255,.12);
-}
-
-/* solo.css 的 `* { font-family }` 會蓋掉繼承，這裡明確指定 */
+/* solo.css 的 `* { font-family }` 會蓋掉繼承：預設黑體，標題另外指定宋體
 .songbook,
 .songbook * {
-  font-family: "PMingLiU", "MingLiU", "Songti TC", "Noto Serif TC", serif;
-}
+  font-family: var(--sans);
+} */
 
 .songbook {
-  --sb-red: #87363a;
-  --sb-red-2: #a33d43;
-  --sb-ink: #383532;
-  --sb-muted: #77716b;
+  --sb-paper-m: #FAF9F5;                 /* 手機單頁的紙色 */
+  --sb-rule: rgba(36,33,36,.22);
+  --sb-tabs-h: 34px;                     /* 標籤列高度 */
+  --sb-top-extra: 0px;                   /* 有標籤時，為凸出的標籤多留的上方空間 */
+  --sb-vh: 100vh;
   width: 100%;
   max-width: 820px;
   margin: auto;
-  color: #292929;
+  color: var(--ink);
   -webkit-user-select: none;
   user-select: none;
+}
+
+@supports (height: 100dvh) {
+  .songbook { --sb-vh: 100dvh; }
+}
+/* 有標籤列時（JS 會加上 has-tabs），上方多留空間給凸出的標籤 */
+.songbook.has-tabs {
+  --sb-top-extra: var(--sb-tabs-h);
+  padding-top: var(--sb-tabs-h);
 }
 
 /* ---- 書本外殼 ---- */
@@ -55,17 +60,16 @@
   animation: pop var(--t-base) cubic-bezier(.2,1.4,.4,1);
 }
 
-/* ---- 金屬護角（在紙張下方）---- */
+/* ---- 護角（在紙張下方）：平面灰色，不加漸層、反光、陰影 ---- */
 .songbook .sb-corner {
   position: absolute;
   z-index: 1;
-  width: 48px;
-  height: 48px;
-  background: linear-gradient(135deg, #fafafa 0%, #aeb4b6 18%, #eef0ef 34%, #858c8f 52%, #e0e3e2 72%, #737a7d 100%);
-  filter: drop-shadow(1px 2px 2px rgba(0,0,0,.5));
+  width: 44px;
+  height: 44px;
+  background: var(--disc-1);
 }
-.songbook .sb-corner::before { content: ""; position: absolute; inset: 6px;  border: 1px solid rgba(255,255,255,.55); }
-.songbook .sb-corner::after  { content: ""; position: absolute; inset: 10px; border: 1px solid rgba(50,55,57,.38); }
+.songbook .sb-corner::before,
+.songbook .sb-corner::after { content: none; }
 .songbook .sb-corner.tl { top: 0;    left: 0;  clip-path: polygon(0 0, 100% 0, 0 100%); }
 .songbook .sb-corner.tr { top: 0;    right: 0; clip-path: polygon(0 0, 100% 0, 100% 100%); }
 .songbook .sb-corner.bl { bottom: 0; left: 0;  clip-path: polygon(0 0, 0 100%, 100% 100%); }
@@ -83,7 +87,7 @@
   position: relative;
   min-width: 0;
   min-height: 560px;
-  padding: 34px 30px 26px;
+  padding: 8px 30px 26px;
   background:
     linear-gradient(135deg, rgba(255,255,255,.35), transparent 45%),
     repeating-linear-gradient(0deg, rgba(80,70,50,.012) 0 1px, transparent 1px 4px),
@@ -98,46 +102,64 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding-bottom: 10px;
-  border-bottom: 1px solid rgba(90,80,70,.25);
-  color: #77736d;
-  font-size: 9px;
+  box-sizing: border-box;
+  height: 58px;
+  border-bottom: 1px solid var(--sb-rule);
+  color: var(--text-sub);
+  font-size: 10px;
   letter-spacing: 2px;
 }
-.songbook .sb-topline,
-.songbook .sb-topline * { font-family: Arial, sans-serif; }
-.songbook .sb-brand { color: var(--sb-red); font-weight: bold; letter-spacing: 2.5px; }
-
-.songbook .sb-back {
-  padding: 2px 0;
-  border: 0;
-  background: none;
-  color: #a85b5b;
-  font: inherit;
-  font-size: 12px;
+.songbook .sb-brand {
+  color: var(--red);
+  font-family: var(--serif);
+  font-size: 11px;
   font-weight: 700;
-  letter-spacing: 1px;
+  letter-spacing: 2.5px;
+}
+
+/* 關閉鈕：規格同通用彈窗的 .x（30px 圓、灰字、淡底）。
+   HTML 要放在 .sb-book 裡面。距紙張邊緣的位置與 .x 相同，並與頁首同高。 */
+.songbook .sb-close {
+  position: absolute;
+  top: calc(12px + var(--sp-2));       /* 書殼 12px + 與 .x 相同的 8px */
+  right: calc(12px + var(--sp-3));      /* 書殼 12px + 與 .x 相同的 12px */
+  z-index: 5;
+  width: 30px;
+  height: 30px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  font-size: 16px;
+  font-weight: 600;
+  line-height: 1;
+  color: #777078;
+  background: rgba(0,0,0,.05);
+  border: 0;
+  border-radius: 50%;
   cursor: pointer;
-  transition: color .2s;
+  transition: background var(--t-fast);
 }
 
-.songbook .sb-back:hover {
-  color: #1f1c19;
+/* 右頁頁首右側讓出 ✖ 的位置 */
+@media (min-width: 547px) {
+  .songbook .sb-page.right .sb-topline { padding-right: 28px; }
 }
 
+/* ---- 標題：宋體 ---- */
 .songbook .sb-title {
   margin: 25px 0 3px;
-  color: #292725;
+  color: var(--ink);
+  font-family: var(--serif);
   font-size: 29px;
-  font-weight: normal;
+  font-weight: 600;
   letter-spacing: 5px;
   text-align: center;
 }
 
 .songbook .sb-subtitle {
-  color: #8b8179;
-  font-family: Arial, sans-serif;
-  font-size: 9px;
+  color: var(--text-faint);
+  font-size: 10px;
   letter-spacing: 3px;
   text-align: center;
 }
@@ -150,15 +172,14 @@
   padding: 9px 0;
   border-top: 1px solid rgba(90,80,70,.18);
   border-bottom: 1px solid rgba(90,80,70,.18);
-  color: var(--sb-muted);
-  font-size: 11px;
+  color: var(--text-sub);
+  font-size: 12px;
   letter-spacing: 1px;
 }
 
-.songbook [data-sb-page] {
-  margin-top: 28px;
-}
-/* ---- 分類 ---- */
+.songbook [data-sb-page] { margin-top: 28px; }
+
+/* ---- 分類：宋體 + 紅色 ---- */
 .songbook .sb-section { margin-bottom: 27px; }
 .songbook .sb-section:last-child { margin-bottom: 0; }
 
@@ -166,93 +187,80 @@
   display: flex;
   align-items: center;
   gap: 10px;
-  margin: 0 0 13px;
+  margin: 0 0 8px;
   padding-bottom: 7px;
-  border-bottom: 1px solid rgba(135,54,58,.45);
-  color: var(--sb-red);
-  font-size: 16px;
-  font-weight: normal;
+  border-bottom: 1px solid rgba(197,43,67,.5);
+  color: var(--red);
+  font-family: var(--serif);
+  font-size: var(--fs-md);
+  font-weight: 700;
   letter-spacing: 3px;
 }
 .songbook .sb-section-title::after {
   content: "";
   flex: 1;
   height: 1px;
-  background: rgba(135,54,58,.12);
+  background: rgba(197,43,67,.14);
 }
 
-/* ---- 歌單項目（可點擊）---- */
-
-.sb-name {
-    font-size: 14px; font-weight: 700;}
-
+/* ---- 歌單項目（可點擊）：黑體 ---- */
 .songbook .sb-song {
   display: grid;
   grid-template-columns: 48px minmax(0, 1fr) auto;
   align-items: center;
-  gap: 8px;
+  gap: var(--sp-2);
   width: 100%;
-  min-height: 38px;
-  padding: 5px 4px;
-  color: var(--sb-ink);
+  min-height: 44px;
+  padding: 6px 4px;
+  color: var(--ink);
   text-align: left;
   background: none;
   border: 0;
-  border-bottom: 1px dotted rgba(90,80,70,.22);
+  border-bottom: 1px dotted var(--sb-rule);
   border-radius: 0;
   cursor: pointer;
   transition: background var(--t-fast);
+  -webkit-tap-highlight-color: transparent;
 }
 .songbook .sb-section .sb-song:last-child { border-bottom: 0; }
 
 .songbook .sb-no {
-  color: var(--sb-red);
-  font-family: Georgia, serif;
+  color: var(--red);
   font-size: 12px;
+  font-weight: 500;
+  font-variant-numeric: tabular-nums;
   letter-spacing: .5px;
 }
 .songbook .sb-name {
   min-width: 0;
-  font-size: 13px;
+  font-size: 14px;
+  font-weight: 700;
   letter-spacing: .5px;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
+  line-height: 1.4;
+  overflow-wrap: anywhere;            /* 長歌名換行，不截斷 */
 }
 .songbook .sb-stars {
-  color: var(--sb-red-2);
-  font-family: Arial, sans-serif;
-  font-size: 11px;
+  color: var(--red);
+  font-size: 12px;
   letter-spacing: 2px;
   white-space: nowrap;
 }
 
-.songbook .sb-song:active { background: rgba(135,54,58,.14); }
-/* 未開放歌單：編號與名稱灰化 */
-.songbook .sb-song.soon .sb-no,
-.songbook .sb-song.soon .sb-name {
-  color: #8f8a84;
-}
-
-/* 即將推出調色
-.songbook .sb-song.soon .sb-stars {
-  color: #a85b5b;
-} */
-
-/* 未開放歌單：不顯示互動效果 */
-.songbook .sb-song.soon {
-  cursor: default;
-}
-
-.songbook .sb-song.soon:hover,
-.songbook .sb-song.soon:active {
-  background: none;
-}
+.songbook .sb-song:active { background: rgba(197,43,67,.14); }
 
 @media (hover: hover) {
-  .songbook .sb-song:hover { background: rgba(135,54,58,.08); }
+  .songbook .sb-song:hover { background: rgba(197,43,67,.07); }
 }
-.songbook .sb-song:focus-visible { outline-offset: -2px; outline-color: var(--sb-red); }
+.songbook .sb-song:focus-visible { outline-offset: -2px; outline-color: var(--red); }
+
+/* 未開放歌單：灰化、無互動效果 */
+.songbook .sb-song.soon { cursor: default; }
+.songbook .sb-song.soon .sb-no,
+.songbook .sb-song.soon .sb-name,
+.songbook .sb-song.soon .sb-stars { color: var(--text-faint); }
+.songbook .sb-song.soon .sb-stars { letter-spacing: 1px; }
+.songbook .sb-song.soon:hover,
+.songbook .sb-song.soon:active { background: none; }
 
 /* ---- 難度說明 / 頁尾 ---- */
 .songbook .sb-legend {
@@ -262,12 +270,12 @@
   gap: 10px;
   margin-top: 30px;
   padding-top: 12px;
-  border-top: 1px solid rgba(90,80,70,.22);
-  color: var(--sb-muted);
-  font-size: 10px;
+  border-top: 1px solid var(--sb-rule);
+  color: var(--text-sub);
+  font-size: 11px;
   letter-spacing: .5px;
 }
-.songbook .sb-legend-stars { color: var(--sb-red-2); font-family: Arial, sans-serif; letter-spacing: 2px; }
+.songbook .sb-legend-stars { color: var(--red); letter-spacing: 2px; }
 
 .songbook .sb-foot {
   display: flex;
@@ -275,9 +283,8 @@
   margin-top: 25px;
   padding-top: 9px;
   border-top: 1px solid rgba(90,80,70,.18);
-  color: #928b82;
-  font-family: Arial, sans-serif;
-  font-size: 8px;
+  color: var(--text-faint);
+  font-size: 9px;
   letter-spacing: 1.5px;
 }
 
@@ -302,95 +309,160 @@
 .sb-toast.show { opacity: 1; transform: translate(-50%, 0); }
 
 /* ---- 雙頁 → 單頁 ----
-   書本最大寬度 820px，寬度不足它的 2/3（820 × 2/3 ≈ 547px）就變單頁。
+   書本最大寬度 820px，寬度不足它的 2/3（≈547px）就變單頁。
    想改門檻，只要改下面兩個 546px（單頁）和 547px（窄雙頁）。 */
 
-/* 雙頁但偏窄：縮小內距，讓歌名放得下 */
 @media (min-width: 547px) and (max-width: 700px) {
-  .songbook .sb-page { padding: 28px 20px 22px; }
+  .songbook .sb-page { padding: 8px 20px 22px; }
   .songbook .sb-title { font-size: 26px; }
 }
 
-/* 單頁：兩頁合成一張連續的紙 */
+/* 手機：沒有書封，只有一張紙卡（樣式同通用彈窗 .mc） */
 @media (max-width: 546px) {
-  /* 四邊留白：上方讓出關閉鍵、左右留 20px、再加安全區 */
   #m-catalog {
     padding:
-      calc(60px + env(safe-area-inset-top, 0px))
-      calc(20px + env(safe-area-inset-right, 0px))
-      calc(28px + env(safe-area-inset-bottom, 0px))
-      calc(20px + env(safe-area-inset-left, 0px));
-      overflow: hidden;
-      align-items: center;
-}
-
-
-.songbook .sb-book { padding: 10px; }
-.songbook .sb-corner { width: 38px; height: 38px; }
-.songbook {
-  max-height: calc(100dvh - 88px);
-}
-
-.songbook .sb-book {
-  max-height: 100%;
-  overflow: hidden;
-}
-
-.songbook .sb-pages {
-  grid-template-columns: minmax(0, 1fr);
-  max-height: calc(100dvh - 108px);
-  overflow-y: auto;
-  background: #FAF9F5;
-  overscroll-behavior: contain;
-}
-
-.songbook .sb-topline {
-  position: sticky;
-  top: 0px;
-  z-index: 3;
-  padding-bottom: 10px;
-  background: #FAF9F5;
-}
-
-.songbook .sb-page {
-  min-height: 0;
-  padding: 27px 22px 40px;
-  background: transparent;
-  box-shadow: none;
-}
-
-.songbook .sb-page.left {
-  padding-bottom: 0px;
-  box-shadow: none !important;
-  border: 0 !important;
-}
-
-.songbook .sb-page.right {
-  padding-top: 27px;
-  box-shadow: none !important;
-  border: 0 !important;
-}
-
-.songbook .sb-title { font-size: 25px; }
-
-.songbook .sb-no {
-  display: none;
-}
-
-.songbook .sb-song {
-  grid-template-columns: minmax(0, 1fr) auto;
-}
-
-} /* 結束手機版設定 */
-
-@media (max-width: 380px) {
-  .songbook .sb-page {
-    padding-left: 16px;
-    padding-right: 16px;
+      calc(var(--sp-4) + env(safe-area-inset-top, 0px))
+      calc(var(--sp-4) + env(safe-area-inset-right, 0px))
+      calc(var(--sp-5) + env(safe-area-inset-bottom, 0px))
+      calc(var(--sp-4) + env(safe-area-inset-left, 0px));
+    overflow: hidden;
+    align-items: center;
   }
 
+  /* 紙卡可用高度＝螢幕高 − 上下留白 − 標籤列（有的話） */
+  .songbook {
+    --sb-avail: calc(var(--sb-vh) - var(--sp-4) - var(--sp-5)
+      - env(safe-area-inset-top, 0px) - env(safe-area-inset-bottom, 0px)
+      - var(--sb-top-extra));
+  }
+
+  .songbook .sb-book {
+    padding: 0;
+    background: var(--sb-paper-m);
+    border-radius: var(--r-md);
+    box-shadow:
+      inset 0 2px 1px rgba(255,255,255,.95),
+      inset 0 -2px 1px rgba(100,90,95,.2),
+      0 3px 0 rgba(70,65,70,.7),
+      0 8px 20px rgba(0,0,0,.45);
+  }
+  .songbook .sb-corner { display: none; }
+
+  .songbook .sb-pages {
+    grid-template-columns: minmax(0, 1fr);
+    max-height: var(--sb-avail);
+    overflow-y: auto;
+    border-radius: var(--r-md);
+    overscroll-behavior: contain;
+    /* 底部漸層：提示下面還有內容 */
+    -webkit-mask-image: linear-gradient(to bottom, #000 calc(100% - 28px), transparent);
+    mask-image: linear-gradient(to bottom, #000 calc(100% - 28px), transparent);
+  }
+
+  /* 頁首 46px 高，✖（30px，距上緣 8px）剛好置中 */
+  .songbook .sb-topline {
+    position: sticky;
+    top: 0;
+    z-index: 3;
+    height: 46px;
+    padding-right: 28px;       /* 讓出 ✖ */
+    background: var(--sb-paper-m);
+  }
+
+  /* ✖：位置與通用彈窗的 .x 完全相同（top 8px、right 12px） */
+  .songbook .sb-close {
+    top: var(--sp-2);
+    right: var(--sp-3);
+  }
+
+  .songbook .sb-page {
+    min-height: 0;
+    padding: 27px 22px 40px;
+    background: transparent;
+    box-shadow: none;
+  }
+  .songbook .sb-page.left  { padding-top: 0; padding-bottom: 0; box-shadow: none !important; border: 0 !important; }
+  .songbook .sb-page.right { padding-top: 27px; padding-bottom: 56px; box-shadow: none !important; border: 0 !important; }
+
+  .songbook .sb-title { font-size: 25px; }
+
+  .songbook .sb-no { display: none; }
   .songbook .sb-song {
     grid-template-columns: minmax(0, 1fr) auto;
-    gap: 8px;
+    min-height: 46px;
   }
+}
+
+@media (max-width: 380px) {
+  .songbook .sb-page { padding-left: 16px; padding-right: 16px; }
+  .songbook .sb-song { grid-template-columns: minmax(0, 1fr) auto; gap: 8px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .songbook .sb-book { animation: none; }
+}
+
+
+/* ========================================
+   索引標籤（模式）＋ 空狀態 ＋ 跨頁分區
+======================================== */
+
+/* 標籤列：凸出書封上緣，像歌本的分類頁籤 */
+.songbook .sb-tabs {
+  position: absolute;
+  left: 12px;
+  right: 12px;
+  bottom: calc(100% - 12px);          /* 下緣對齊紙張上緣，其餘凸出書封之外 */
+  z-index: 3;
+  display: flex;
+  align-items: flex-end;
+  gap: 3px;
+  pointer-events: none;               /* 只有標籤本身可點 */
+}
+
+.songbook .sb-tab {
+  flex: 0 1 112px;
+  min-width: 0;
+  pointer-events: auto;
+  height: 30px;                       /* 未選中：矮一點 */
+  padding: 0 4px;
+  border: 0;
+  border-radius: var(--r-md) var(--r-md) 0 0;
+  background: var(--disc-1);
+  color: var(--ink);
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 1px;
+  white-space: nowrap;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.songbook .sb-tab.on {
+  height: var(--sb-tabs-h);           /* 選中：升高，與紙張接在一起 */
+  background: #F7F6F1;
+  color: var(--red);
+}
+
+@media (hover: hover) {
+  .songbook .sb-tab:not(.on):hover { background: var(--disc-4); }
+}
+.songbook .sb-tab:focus-visible { outline: 2px solid var(--red); outline-offset: -2px; }
+
+.songbook .sb-empty {
+  padding: 40px 0;
+  color: var(--text-faint);
+  font-size: 13px;
+  letter-spacing: 2px;
+  text-align: center;
+}
+
+@media (max-width: 546px) {
+  .songbook .sb-tabs { left: var(--sp-3); right: var(--sp-3); bottom: 100%; gap: 2px; }
+  .songbook .sb-tab { flex: 1 1 0; font-size: 13px; letter-spacing: .5px; }
+  .songbook .sb-tab.on { background: var(--sb-paper-m); }
+
+  /* 單頁時左右頁合成一條，續接的分區不重複顯示標題 */
+  .songbook .sb-section.cont .sb-section-title { display: none; }
+  .songbook [data-sb-page].cont { margin-top: 0; }
 }
