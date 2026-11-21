@@ -304,7 +304,7 @@ const SONG_DATABASE = [
     no: '032',
     title: "挪威的森林",
     genre: "搖滾不敗經典",
-    playUntil: 20,
+    playUntil: 14,
     type: "previous",
     prompt: "依然愛我無法自拔",
     answer: "是否依然為我絲絲牽掛",

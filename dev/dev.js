@@ -91,11 +91,11 @@ devPanel.innerHTML = `
       </textarea>
     </div>
 
-  </div>
+
 
   <!-- 曲目列表 -->
   <div id="dev-track-songs"></div>
-
+  </div>
   <!-- 歌詞接唱 -->
   <div id="dev-tab-lyrics" style="display:none;">
 
@@ -579,7 +579,6 @@ const devTrackResults = $('dev-track-results');
 const devTrackAudio = $('dev-track-audio');
 const devPlayUntil = $('dev-play-until');
 const devCaptureTime = $('dev-capture-time');
-const devSaveTime = $('dev-save-time');
 const devPlayUntilStatus = $('dev-play-until-status');
 const devTrackSearchBtn = $('dev-track-search-btn');
 
@@ -1039,70 +1038,7 @@ devCaptureTime.addEventListener('click', () => {
   devPlayUntil.value = devTrackAudio.currentTime.toFixed(1);
 });
 
-// 記錄秒數
-devSaveTime.addEventListener('click', () => {
-  if (!selectedTrack) {
-    devPlayUntilStatus.textContent = '請先選擇歌曲';
-    return;
-  }
 
-  const no = String(selectedTrack.no);
-  const seconds = Number(devPlayUntil.value);
-
-  if (!no || !Number.isFinite(seconds) || seconds < 0) {
-    devPlayUntilStatus.textContent = '請輸入有效秒數';
-    return;
-  }
-
-  if (!previewTrackId) {
-    devPlayUntilStatus.textContent = '請先試聽歌曲';
-    return;
-  }
-
-  // 已綁定歌曲必須試聽正確版本
-  if (
-    selectedTrack.appleMusicId &&
-    Number(selectedTrack.appleMusicId) !== Number(previewTrackId)
-  ) {
-    devPlayUntilStatus.textContent = '試聽版本與綁定版本不同，不能記錄';
-    return;
-  }
-
-  const lyric = allLyricsSongs.find(
-    item => String(item.no) === no
-  );
-
-  if (!lyric) {
-    devPlayUntilStatus.textContent = '找不到對應的歌詞題目';
-    return;
-  }
-
-  const confirmed = JSON.parse(
-    localStorage.getItem('devPlayUntilConfirmed') || '[]'
-  );
-
-  // 只有第二次以後才詢問覆蓋
-  if (
-    confirmed.includes(no) &&
-    !confirm(`歌曲 ${no} 已記錄過，確定要覆蓋嗎？`)
-  ) {
-    return;
-  }
-
-  const values = JSON.parse(
-    localStorage.getItem('devPlayUntilValues') || '{}'
-  );
-
-  values[no] = seconds;
-  lyric.playUntil = seconds;
-
-  if (!confirmed.includes(no)) confirmed.push(no);
-
-  localStorage.setItem('devPlayUntilValues', JSON.stringify(values));
-  localStorage.setItem('devPlayUntilConfirmed', JSON.stringify(confirmed));
-
-  devPlayUntilStatus.textContent = `已記錄 ${seconds} 秒`;
-});
 // 搜尋並顯示歌曲清單
 function renderDevSongList(keyword = '') {
 
