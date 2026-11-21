@@ -13,93 +13,117 @@ if (new URLSearchParams(location.search).has('dev')) {
   const devPanel = document.createElement('section');
 
   devPanel.id = 'dev-panel';
-  devPanel.innerHTML = `
-    <div class="dev-heading">🛠 開發測試工具</div>
+  
+devPanel.innerHTML = `
+  <div class="dev-heading">🛠 開發測試工具</div>
 
   <button class="bevel btn-sm" id="dev-mute-btn">
-  🔊 音量：開啟
-</button>
-
-<div class="dev-preview-buttons">
-  <button class="bevel btn-sm" id="dev-result-btn">
-    👀成績頁
-  </button>
-  <button class="bevel btn-sm" id="dev-lyrics-btn">
-    👀選歌詞
-  </button>
-</div>
-
-<div class="dev-tabs">
-  <button class="bevel btn-sm active" data-tab="guess">猜歌</button>
-  <button class="bevel btn-sm" data-tab="lyrics">歌詞接唱</button>
-</div>
-
-<div id="dev-tab-guess">
-
-  
-  <div class="dev-section">歌曲 ID 綁定</div>
-
-  <div style="display:flex; gap:6px; align-items:center;">
-  <input type="text" id="dev-track-search"
-      placeholder="搜尋歌手或歌名" autocomplete="off"
-      style="flex:1; min-width:0;">
-
-  <button class="bevel btn-sm" id="dev-track-search-btn"
-      style="width:auto; flex-shrink:0; white-space:nowrap;">
-    🔍
-  </button>
-</div>
-
-  <div id="dev-track-results"></div>
-
-<div class="dev-section">已綁定歌曲</div>
-<div id="dev-track-saved"></div>
-
-<div style="margin-top:10px;">
-  <button class="bevel btn-sm" id="dev-track-export-btn">
-    1.匯出
+    🔊 音量：開啟
   </button>
 
-  <button class="bevel btn-sm" id="dev-track-copy-btn">
-    2.複製
-  </button>
+  <div class="dev-preview-buttons">
+    <button class="bevel btn-sm" id="dev-result-btn">
+      👀成績頁
+    </button>
+    <button class="bevel btn-sm" id="dev-lyrics-btn">
+      👀選歌詞
+    </button>
+  </div>
 
-  <textarea id="dev-track-export"
-    placeholder="匯出的 TRACKS 會顯示在這裡"
-    style="width:100%; height:120px; margin-top:6px; display:none;">
-  </textarea>
-</div>
+  <div class="dev-tabs">
+    <button class="bevel btn-sm active" data-tab="guess">猜歌</button>
+    <button class="bevel btn-sm" data-tab="lyrics">歌詞接唱</button>
+  </div>
 
-<div id="dev-track-songs"></div>
+  <div id="dev-tab-guess">
 
-  <audio id="dev-track-audio" controls
-    style="width:100%;display:none;"></audio>
+    <div class="dev-section">歌曲 ID 綁定</div>
 
-</div>
+    <!-- 搜尋歌曲 -->
+    <div style="display:flex; gap:6px; align-items:center;">
+      <input type="text" id="dev-track-search"
+        placeholder="搜尋歌手或歌名" autocomplete="off"
+        style="flex:1; min-width:0;">
 
-<div id="dev-tab-lyrics" style="display:none;">
+      <button class="bevel btn-sm" id="dev-track-search-btn"
+        style="width:auto; flex-shrink:0; white-space:nowrap;">
+        🔍
+      </button>
+    </div>
+
+    <!-- 播放器與秒數記錄工具 -->
+    <audio id="dev-track-audio" controls
+      style="width:100%;display:none;"></audio>
+
+    <div style="display:flex; gap:6px; margin-top:6px;">
+      <input id="dev-play-until" type="number" step="0.1"
+        placeholder="秒數"
+        style="flex:1; min-width:0;">
+
+      <button class="bevel btn-sm" id="dev-capture-time"
+        style="width:auto;">抓取秒數</button>
+
+      <button class="bevel btn-sm" id="dev-save-time"
+        style="width:auto;">記錄</button>
+    </div>
+
+    <div id="dev-play-until-status"
+      style="font-size:12px; margin-top:4px;"></div>
+
+    <!-- 搜尋結果 -->
+    <div id="dev-track-results"></div>
+
+    <!-- 已綁定歌曲 -->
+    <div class="dev-section">已綁定歌曲</div>
+    <div id="dev-track-saved"></div>
+
+    <!-- 匯出工具 -->
+    <div style="margin-top:10px;">
+      <button class="bevel btn-sm" id="dev-track-export-btn">
+        1.匯出
+      </button>
+
+      <button class="bevel btn-sm" id="dev-track-copy-btn">
+        2.複製
+      </button>
+
+      <textarea id="dev-track-export"
+        placeholder="匯出的 TRACKS 會顯示在這裡"
+        style="width:100%; height:120px; margin-top:6px; display:none;">
+      </textarea>
+    </div>
+
+  </div>
+
+  <!-- 曲目列表 -->
+  <div id="dev-track-songs"></div>
+
+  <!-- 歌詞接唱 -->
+  <div id="dev-tab-lyrics" style="display:none;">
 
     <div class="dev-section">指定歌曲測試</div>
 
-  <input type="text" id="dev-song-search"
-    placeholder="輸入歌名或編號" autocomplete="off">
+    <input type="text" id="dev-song-search"
+      placeholder="輸入歌名或編號" autocomplete="off">
 
-  <div id="dev-song-results"></div>
+    <div id="dev-song-results"></div>
 
-</div>
-<div class="dev-section">自動模擬答題</div>
+  </div>
 
-    <label for="dev-mode">模擬答題情境</label>
-    <select id="dev-mode">
-      <option value="correct">全部答對</option>
-      <option value="mixed">答對與答錯混合</option>
-      <option value="wrong">全部答錯</option>
-    </select>
+  <div class="dev-section">自動模擬答題</div>
 
-    <button class="bevel go" id="dev-auto-btn">
-      開始自動模擬答題
-    </button>
-  `;
+  <label for="dev-mode">模擬答題情境</label>
+  <select id="dev-mode">
+    <option value="correct">全部答對</option>
+    <option value="mixed">答對與答錯混合</option>
+    <option value="wrong">全部答錯</option>
+  </select>
+
+  <button class="bevel go" id="dev-auto-btn">
+    開始自動模擬答題
+  </button>
+`;
+
 
 
   // ========================================
@@ -555,6 +579,10 @@ const devTrackSearch = $('dev-track-search');
 const devTrackSongs = $('dev-track-songs');
 const devTrackResults = $('dev-track-results');
 const devTrackAudio = $('dev-track-audio');
+const devPlayUntil = $('dev-play-until');
+const devCaptureTime = $('dev-capture-time');
+const devSaveTime = $('dev-save-time');
+const devPlayUntilStatus = $('dev-play-until-status');
 const devTrackSearchBtn = $('dev-track-search-btn');
 
 const devTrackSaved = $('dev-track-saved');
@@ -788,6 +816,7 @@ trackId.textContent = `Track ID：${track.trackId}`;
         playingIndex = index;
 
         devTrackAudio.src = track.previewUrl;
+        previewTrackId = track.trackId;
         devTrackAudio.style.display = 'block';
 
         try {
@@ -906,6 +935,7 @@ devTrackSearch.addEventListener('keydown', event => {
 
 // 從 tracks.js 整理尚未綁定的歌曲
 let selectedTrack = null;
+let previewTrackId = null;
 
 
 // 顯示題庫搜尋結果
@@ -955,13 +985,6 @@ btn.textContent =
 
       devTrackResults.innerHTML = '';
 
-      // 已綁定：直接顯示狀態
-      if (isBound) {
-        devTrackResults.textContent = '這首歌曲已綁定';
-        devTrackResults.style.color = '#BAE7D8';
-        return;
-      }
-
       // 尚未綁定：搜尋 Apple Music
       searchDevTracks();
     });
@@ -990,6 +1013,77 @@ const allLyricsSongs = [
   ...SONG_DATABASE
 ];
 
+// 抓取播放器目前秒數
+devCaptureTime.addEventListener('click', () => {
+  if (!Number.isFinite(devTrackAudio.currentTime)) return;
+
+  devPlayUntil.value = devTrackAudio.currentTime.toFixed(1);
+});
+
+// 記錄秒數
+devSaveTime.addEventListener('click', () => {
+  if (!selectedTrack) {
+    devPlayUntilStatus.textContent = '請先選擇歌曲';
+    return;
+  }
+
+  const no = String(selectedTrack.no);
+  const seconds = Number(devPlayUntil.value);
+
+  if (!no || !Number.isFinite(seconds) || seconds < 0) {
+    devPlayUntilStatus.textContent = '請輸入有效秒數';
+    return;
+  }
+
+  if (!previewTrackId) {
+    devPlayUntilStatus.textContent = '請先試聽歌曲';
+    return;
+  }
+
+  // 已綁定歌曲必須試聽正確版本
+  if (
+    selectedTrack.appleMusicId &&
+    Number(selectedTrack.appleMusicId) !== Number(previewTrackId)
+  ) {
+    devPlayUntilStatus.textContent = '試聽版本與綁定版本不同，不能記錄';
+    return;
+  }
+
+  const lyric = allLyricsSongs.find(
+    item => String(item.no) === no
+  );
+
+  if (!lyric) {
+    devPlayUntilStatus.textContent = '找不到對應的歌詞題目';
+    return;
+  }
+
+  const confirmed = JSON.parse(
+    localStorage.getItem('devPlayUntilConfirmed') || '[]'
+  );
+
+  // 只有第二次以後才詢問覆蓋
+  if (
+    confirmed.includes(no) &&
+    !confirm(`歌曲 ${no} 已記錄過，確定要覆蓋嗎？`)
+  ) {
+    return;
+  }
+
+  const values = JSON.parse(
+    localStorage.getItem('devPlayUntilValues') || '{}'
+  );
+
+  values[no] = seconds;
+  lyric.playUntil = seconds;
+
+  if (!confirmed.includes(no)) confirmed.push(no);
+
+  localStorage.setItem('devPlayUntilValues', JSON.stringify(values));
+  localStorage.setItem('devPlayUntilConfirmed', JSON.stringify(confirmed));
+
+  devPlayUntilStatus.textContent = `已記錄 ${seconds} 秒`;
+});
 // 搜尋並顯示歌曲清單
 function renderDevSongList(keyword = '') {
 
