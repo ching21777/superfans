@@ -1654,9 +1654,7 @@ countdown = function (callback) {
       if (typeof playlists !== 'object' || !playlists) {
         add('歌單', 'error', '找不到 playlists 資料');
       } else {
-        const trackByIdentity = new Map(allTracks.map(song => [
-          devCheckNormalize(`${song?.artist} ${song?.title}`), song
-        ]));
+
         Object.entries(playlists).forEach(([key, list]) => {
           if (!Array.isArray(list)) {
             add('歌單', 'error', `${key} 不是陣列`);
@@ -1674,14 +1672,9 @@ countdown = function (callback) {
             if (seen.has(normalized)) add('歌單', 'error', `${key} 有重複歌曲`, term);
             seen.add(normalized);
 
-            const splitAt = term.indexOf(' ');
-            if (splitAt <= 0 || splitAt === term.length - 1) {
-              add('歌單', 'warning', `${key} 歌曲格式可能不完整`, term);
-              return;
-            }
-            const artist = term.slice(0, splitAt);
-            const title = term.slice(splitAt + 1);
-            const match = trackByIdentity.get(devCheckNormalize(`${artist} ${title}`));
+            const match = allTracks.find(song =>
+              devCheckNormalize(`${song?.artist} ${song?.title}`) === normalized
+            );
             if (!match) {
               add('歌單', 'warning', `${key} 歌曲尚未建立 TRACKS 資料`, term);
             } else if (testNoForCheck(match.no)) {
@@ -1741,8 +1734,16 @@ countdown = function (callback) {
           const blanks = (String(item.prompt ?? '').match(/\{\{blank\}\}/g) || []).length;
           if (blanks !== 1) add('歌詞題庫', 'error', 'fill 題型的 {{blank}} 必須剛好出現一次', `${label}；目前 ${blanks} 次`);
         }
-        if (item.playUntil != null && (!Number.isFinite(Number(item.playUntil)) || Number(item.playUntil) <= 0)) {
+        if (item.playUntil == null || item.playUntil === '') {
+          add('歌詞題庫', 'warning', '未設定播放秒數，遊戲會使用預設秒數', label);
+        } else if (!Number.isFinite(Number(item.playUntil)) || Number(item.playUntil) <= 0) {
           add('歌詞題庫', 'error', '播放秒數必須是大於 0 的數字', label);
+        } else if (Number(item.playUntil) > 30) {
+          add('歌詞題庫', 'warning', '播放秒數超過 30 秒，建議確認設定', `${label}；${item.playUntil} 秒`);
+        }
+        const linkedTrack = trackMap.get(no);
+        if (linkedTrack && devCheckNormalize(item.title) !== devCheckNormalize(linkedTrack.title)) {
+          add('歌詞題庫', 'warning', '題庫歌名與歌曲基本資料不一致', `${label}；TRACKS：${linkedTrack.title}`);
         }
       });
 
