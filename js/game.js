@@ -750,9 +750,25 @@ function pickTheme(k) {
 function begin(demo) {
   unlockAudio();
 
-  document.querySelectorAll('.ov').forEach(m => m.style.display = 'none');
   isDemo = demo;
   total = demo ? 3 : 10;
+
+  // 歌詞題目只使用目前仍在 TRACKS 的歌曲，TEST 中的歌曲不會進入遊戲
+  const availableTrackNos = new Set(TRACKS.map(song => song.no));
+
+  queue = isLyricsMode()
+    ? shuffle([
+        ...(theme === 'helloNico' ? HELLO_NICO_DATABASE : SONG_DATABASE)
+      ].filter(item => availableTrackNos.has(item.no))).slice(0, total)
+    : shuffle(uniq(songPool())).slice(0, total);
+
+  // 沒有可用題目時，留在原畫面，不進入遊戲或倒數
+  if (!queue.length) {
+    alert('目前沒有可遊玩的歌曲，請先確認歌單內容。');
+    return;
+  }
+
+  document.querySelectorAll('.ov').forEach(m => m.style.display = 'none');
 
   $('mode').textContent = demo
   ? '試玩模式'
@@ -780,12 +796,6 @@ function begin(demo) {
   cds = [];
   halfPassed = false;
 
-  queue = isLyricsMode()
-  ? shuffle([
-      ...(theme === 'helloNico' ? HELLO_NICO_DATABASE : SONG_DATABASE)
-    ]).slice(0, total)
-  : shuffle(uniq(songPool())).slice(0, total);
-
   $('score').textContent = '0';
   updCombo();
   renderProg();
@@ -798,7 +808,6 @@ function begin(demo) {
   if (demo) loadQuestion();
   else countdown(loadQuestion);
 }
-
 const startGame = () => begin(false);
 
 const startDemo = () => begin(true);
@@ -1177,7 +1186,13 @@ $('trow').style.visibility = isLyricsMode() ? 'hidden' : '';
     }
   } // 結束 while
 
-  // 歌單找不到足夠的歌，提早結束
+  // 歌單找不到足夠的歌：至少完成一題才結算
+  if (qDone === 0) {
+    alert('目前無法載入題目，請稍後再試。');
+    toTheme();
+    return;
+  }
+
   total = qDone;
   finish();
 } // 結束 loadQuestion
@@ -1193,6 +1208,12 @@ $('trow').style.visibility = isLyricsMode() ? 'hidden' : '';
   const item = queue[qPtr++];
 
 if (!item) {
+  if (qDone === 0) {
+    alert('目前沒有可載入的歌詞題目，請確認題庫設定。');
+    toTheme();
+    return;
+  }
+
   total = qDone;
   finish();
   return;
@@ -1202,6 +1223,13 @@ const song = TRACKS.find(track => track.no === item.no);
 
   if (!song) {
     console.error(`找不到歌曲資料：${item.no}`);
+
+    if (qDone === 0) {
+      alert('目前無法載入歌曲資料，請稍後再試。');
+      toTheme();
+      return;
+    }
+
     total = qDone;
     finish();
     return;
