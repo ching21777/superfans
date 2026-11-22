@@ -308,6 +308,7 @@
 <div id="cdown">3</div>
 
 <script src="js/playlists.js"></script>
+<script src="js/tracks.js"></script>
 <script src="js/lyrics.js"></script>
 <script>
 /* ========================================
@@ -512,6 +513,52 @@ function normalizeMatchText(s) {
   return (s || '').toLowerCase()
     .replace(/[()[\]{}（）【】]/g, '')
     .replace(/[\s\-_.,?!'"]/g, '');
+}
+
+// 依歌手與歌名對照歌曲資料，取得 Apple Music ID
+function findTrackMetadata(artist, title) {
+  return TRACKS.find(song =>
+    normalizeMatchText(song.artist) === normalizeMatchText(artist) &&
+    normalizeMatchText(song.title) === normalizeMatchText(title)
+  ) || null;
+}
+
+// 優先依 Apple Music ID 查詢；沒有可播放音檔時退回歌名搜尋
+async function getAppleMusicTrack(song) {
+  if (song?.appleMusicId) {
+    try {
+      const response = await fetch(
+        `https://itunes.apple.com/lookup?id=${encodeURIComponent(song.appleMusicId)}&country=TW`
+      );
+      const data = await response.json();
+      const track = (data.results || []).find(item => item.previewUrl);
+      if (track) return track;
+    } catch (error) {
+      console.warn('Apple Music ID 查詢失敗，改用歌名搜尋：', song.title);
+    }
+  }
+
+  try {
+    const query = song.itunesQuery || (song.artist + ' ' + song.title);
+    const response = await fetch(
+      `https://itunes.apple.com/search?term=${encodeURIComponent(query)}&entity=song&limit=10&country=TW`
+    );
+    const data = await response.json();
+    const results = (data.results || []).filter(item => item.previewUrl);
+
+    return results.find(item => {
+      const trackName = normalizeMatchText(item.trackName);
+      const title = normalizeMatchText(song.title);
+      const titleMatches = song.matchIncludes
+        ? trackName.includes(title)
+        : trackName === title;
+
+      return titleMatches &&
+        normalizeMatchText(item.artistName) === normalizeMatchText(song.artist);
+    }) || null;
+  } catch (error) {
+    return null;
+  }
 }
 
 // 歌詞字數轉換成星星（中文逐字、英文逐詞、數字逐字）
@@ -1416,25 +1463,20 @@ $('trow').style.visibility = isLyricsMode() ? 'hidden' : '';
           title = term.slice(sp + 1);
 
     try {
-      const r = await fetch(
-        `https://itunes.apple.com/search?term=${encodeURIComponent(artist + ' ' + title)}&entity=song&limit=10&country=TW`
-      );
-      const d = await r.json();
+      const metadata = findTrackMetadata(artist, title);
+      const t = await getAppleMusicTrack({
+        artist,
+        title,
+        appleMusicId: metadata?.appleMusicId
+      });
 
       if (my !== reqId) return;
-
-      const rs = (d.results || []).filter(x => x.previewUrl);
-
-      const t = rs.find(x =>
-  normalizeMatchText(x.artistName) === normalizeMatchText(artist) &&
-  normalizeMatchText(x.trackName) === normalizeMatchText(title)
-);
 
       if (t) {
         cur = {
           artist,
           title,
-          art: t.artworkUrl100.replace('100x100', '600x600'),
+          art: t.artworkUrl100?.replace('100x100', '600x600') || '',
           album: t.collectionName || '',
           year: (t.releaseDate || '').slice(0, 4)
         };
@@ -1477,25 +1519,14 @@ async function loadLyricsQuestion(my) {
   // 先切換成歌詞模式，避免等待 iTunes 時閃出猜歌畫面
   $('stage').classList.add('lyrics-q', 'ly-listen');
 
-  let track = null;
-
-  try {
-    const response = await fetch(
-      `https://itunes.apple.com/search?term=${encodeURIComponent(item.itunesQuery)}&entity=song&limit=10&country=TW`
-    );
-    const data = await response.json();
-
-    if (my !== reqId) return;
-
-    const results = (data.results || []).filter(x => x.previewUrl);
-    track = results.find(x =>
-  normalizeMatchText(x.trackName).includes(normalizeMatchText(item.title)) &&
-  normalizeMatchText(x.artistName) === normalizeMatchText(item.artist)
-) || null;
-
-  } catch (error) {
-    if (my !== reqId) return;
-  }
+  const metadata = findTrackMetadata(item.artist, item.title);
+  const track = await getAppleMusicTrack({
+    artist: item.artist,
+    title: item.title,
+    appleMusicId: metadata?.appleMusicId,
+    itunesQuery: item.itunesQuery,
+    matchIncludes: true
+  });
 
   if (my !== reqId) return;
 
