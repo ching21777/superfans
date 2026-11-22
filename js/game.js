@@ -313,9 +313,19 @@ function fmtTime(sec) {
 
 // 目前可用的歌曲清單（試玩模式混合三個歌單）
 function songPool() {
-  return isDemo
+  const pool = isDemo
     ? [...playlists.drama, ...playlists.she, ...playlists.fish]
     : playlists[theme];
+
+  // TEST 中的歌曲保留資料，但不參與任何一般歌名模式或試玩模式
+  const inactiveSongs = typeof TEST !== 'undefined' ? TEST : [];
+
+  return pool.filter(term =>
+    !inactiveSongs.some(song =>
+      normalizeMatchText(term) ===
+      normalizeMatchText(`${song.artist} ${song.title}`)
+    )
+  );
 }
 
 function isLyricsMode() {
