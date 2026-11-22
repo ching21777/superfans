@@ -1,4 +1,3 @@
-
 name: Deploy GitHub Pages
 
 on:
@@ -6,6 +5,7 @@ on:
     branches:
       - main
       - test
+      - feature/apple-music-id-loading
   workflow_dispatch:
 
 permissions:
@@ -38,15 +38,29 @@ jobs:
           ref: test
           path: test-source
 
+      - name: Checkout preview branch
+        uses: actions/checkout@v4
+        with:
+          ref: feature/apple-music-id-loading
+          path: preview-source
+
       - name: Build website
         run: |
-          mkdir -p _site/test
+          mkdir -p _site/test _site/preview
           rsync -a --exclude='.git' main-source/ _site/
           rsync -a --exclude='.git' test-source/ _site/test/
+          rsync -a --exclude='.git' preview-source/ _site/preview/
 
-          # 只在測試版注入開發工具
+          # 測試版注入開發工具
           if [ -f _site/test/dev/dev.js ]; then
             sed -i 's|</body>|<script src="./dev/dev.js"></script>\n</body>|' _site/test/index.html
+          fi
+
+          # 預覽版沿用測試分支的開發工具
+          if [ -f _site/test/dev/dev.js ]; then
+            mkdir -p _site/preview/dev
+            cp _site/test/dev/dev.js _site/preview/dev/dev.js
+            sed -i 's|</body>|<script src="./dev/dev.js"></script>\n</body>|' _site/preview/index.html
           fi
 
       - name: Configure Pages
