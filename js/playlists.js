@@ -61,7 +61,7 @@ const names={
   she:'S.H.E 鐵粉爭霸戰',
   fish:'梁靜茹精選情歌',
   jay:'周杰倫到底在唱什麼咧',
-  lyrics:'中英日台多聲道包廂',
+  lyrics:'多語K歌🎤中英日台通通有',
   helloNico:'Hello Nico 神秘歌單'};
 
 document.querySelectorAll('.tb[data-k]').forEach(button => {

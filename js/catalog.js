@@ -225,7 +225,7 @@
     const btn = e.target.closest('#m-catalog .sb-song');
     if (!btn) return;
     if (btn.getAttribute('aria-disabled') === 'true') {
-      showToast('本歌單即將上架');
+      showToast('敬請期待 (*´▽｀*)');
       return;
     }
     hide('m-catalog');
