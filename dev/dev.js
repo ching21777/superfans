@@ -33,6 +33,7 @@ devPanel.innerHTML = `
   <div class="dev-tabs">
     <button class="bevel btn-sm active" data-tab="guess">歌名</button>
     <button class="bevel btn-sm" data-tab="lyrics">歌詞</button>
+    <button class="bevel btn-sm" data-tab="check">健檢</button>
   </div>
 
   <div id="dev-tab-guess">
@@ -106,6 +107,27 @@ devPanel.innerHTML = `
 
     <div id="dev-song-results"></div>
 
+  </div>
+  <div id="dev-tab-check" style="display:none;">
+    <div class="dev-check-placeholder">歌曲資料健檢</div>
+  <div class="dev-check-tab-content">
+    <div class="dev-section">歌曲資料健檢</div>
+    <div class="dev-check-intro">更新歌曲後先跑完整健檢；只讀資料，不會修改歌單或題庫。</div>
+    <div class="dev-check-actions">
+      <button class="bevel go" id="dev-check-all">一鍵完整健檢</button>
+      <button class="bevel btn-sm" id="dev-check-apple-live">Apple Music 實際查詢</button>
+    </div>
+    <div class="dev-check-actions dev-check-categories">
+      <button class="bevel btn-sm" data-check="tracks">歌曲資料</button>
+      <button class="bevel btn-sm" data-check="playlists">歌單</button>
+      <button class="bevel btn-sm" data-check="lyrics">歌詞題庫</button>
+      <button class="bevel btn-sm" data-check="apple">ID 綁定</button>
+      <button class="bevel btn-sm" data-check="flow">遊戲流程</button>
+    </div>
+    <div id="dev-check-status" aria-live="polite">尚未執行健檢</div>
+    <div id="dev-check-summary"></div>
+    <div id="dev-check-results"></div>
+  </div>
   </div>
 
   <div class="dev-section">自動模擬答題</div>
@@ -354,7 +376,27 @@ overflow-x: auto;
   flex-shrink: 0;
 }
 
-    /* 介面切換按鈕 */
+    /* 歌曲資料健檢 */
+.dev-check-intro { color:rgba(255,255,255,.72); font-size:11px; line-height:1.6; margin:4px 0 8px; }
+.dev-check-actions { display:flex; gap:6px; margin:6px 0; }
+.dev-check-actions button { flex:1; min-width:0; width:0; font-size:11px; }
+.dev-check-categories { flex-wrap:wrap; }
+.dev-check-categories button { flex:1 1 28%; }
+#dev-check-status { color:#F0D6A4; font-size:11px; margin:8px 0 5px; line-height:1.5; }
+.dev-check-summary { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:5px; margin:6px 0 9px; }
+.dev-check-stat { background:rgba(255,255,255,.08); border-radius:6px; padding:6px 4px; text-align:center; font-size:10px; color:#fff; }
+.dev-check-stat strong { display:block; font-size:16px; margin-bottom:2px; }
+.dev-check-group { border-top:1px solid rgba(255,255,255,.14); padding:7px 0; }
+.dev-check-group-title { color:#F0D6A4; font-size:12px; font-weight:700; margin-bottom:5px; }
+.dev-check-item { display:flex; gap:6px; align-items:flex-start; color:rgba(255,255,255,.88); font-size:11px; line-height:1.5; padding:3px 0; overflow-wrap:anywhere; }
+.dev-check-mark { flex:0 0 15px; }
+.dev-check-item small { color:rgba(255,255,255,.52); display:block; font-size:10px; }
+.dev-check-empty { color:#B8E8D8; font-size:11px; padding:3px 0; }
+.dev-check-placeholder { display:none; }
+#dev-check-all { flex:1.4; }
+#dev-check-apple-live { flex:1; }
+    
+/* 介面切換按鈕 */
 .dev-tabs {
   display: flex;
   gap: 6px;
@@ -550,19 +592,22 @@ updateLyricStars(item.answer);
     });
 
   // 切換分頁
-    document.querySelectorAll('.dev-tabs button').forEach(btn => {
-  btn.addEventListener('click', () => {
-    document.querySelectorAll('.dev-tabs button').forEach(b => {
-      b.classList.toggle('active', b === btn);
+  document.querySelectorAll('.dev-tabs button').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('.dev-tabs button').forEach(b => {
+        b.classList.toggle('active', b === btn);
+      });
+      ['guess', 'lyrics', 'check'].forEach(tab => {
+        const panel = document.getElementById('dev-tab-' + tab);
+        if (panel) panel.style.display = btn.dataset.tab === tab ? '' : 'none';
+      });
+      // 健檢面板需要使用 flex 排版時，交由其內部內容自然排列
+      if (btn.dataset.tab === 'check') {
+        const panel = document.getElementById('dev-tab-check');
+        panel.style.display = 'block';
+      }
     });
-
-    document.getElementById('dev-tab-guess').style.display =
-      btn.dataset.tab === 'guess' ? '' : 'none';
-
-    document.getElementById('dev-tab-lyrics').style.display =
-      btn.dataset.tab === 'lyrics' ? '' : 'none';
   });
-});
 
 
   // ========================================
@@ -1515,5 +1560,358 @@ countdown = function (callback) {
       CFG.REVEAL_MS = 5000;
     }
   }
+
+
+  // ========================================
+  // 08. 歌曲資料健檢（只讀，不修改來源資料）
+  // ========================================
+
+  const devCheckStatus = $('dev-check-status');
+  const devCheckSummary = $('dev-check-summary');
+  const devCheckResults = $('dev-check-results');
+
+  const devCheckNames = {
+    tracks: '歌曲資料',
+    playlists: '歌單',
+    lyrics: '歌詞題庫',
+    apple: 'Apple Music ID',
+    flow: '遊戲流程',
+    appleLive: 'Apple Music 實際查詢'
+  };
+
+  const devCheckNormalize = value => String(value ?? '')
+    .normalize('NFKC')
+    .toLowerCase()
+    .replace(/[()[\]{}（）【】]/g, '')
+    .replace(/[\s\-_.,?!'"’「」『』]/g, '');
+
+  function runDevDataChecks(scope = 'all') {
+    const results = [];
+    const add = (group, level, message, detail = '') =>
+      results.push({ group, level, message, detail });
+
+    const tracks = Array.isArray(TRACKS) ? TRACKS : [];
+    const testTracks = typeof TEST !== 'undefined' && Array.isArray(TEST) ? TEST : [];
+    const allTracks = [...tracks, ...testTracks];
+    const allLyrics = [
+      ...(Array.isArray(HELLO_NICO_DATABASE) ? HELLO_NICO_DATABASE : []),
+      ...(Array.isArray(SONG_DATABASE) ? SONG_DATABASE : [])
+    ];
+
+    const checkTracks = scope === 'all' || scope === 'tracks';
+    const checkPlaylists = scope === 'all' || scope === 'playlists';
+    const checkLyrics = scope === 'all' || scope === 'lyrics';
+    const checkApple = scope === 'all' || scope === 'apple';
+    const checkFlow = scope === 'all' || scope === 'flow';
+
+    if (checkTracks) {
+      if (!tracks.length) add('歌曲資料', 'error', 'TRACKS 是空的');
+      if (!testTracks.length) add('歌曲資料', 'info', 'TEST 目前沒有暫存歌曲');
+
+      const seenNos = new Map();
+      const seenSongs = new Map();
+      allTracks.forEach((song, index) => {
+        const label = `${song?.no || '無編號'}｜${song?.artist || '未知歌手'} - ${song?.title || '未知歌名'}`;
+        if (!song || typeof song !== 'object') {
+          add('歌曲資料', 'error', `第 ${index + 1} 筆不是有效歌曲物件`);
+          return;
+        }
+        if (!String(song.no ?? '').trim()) add('歌曲資料', 'error', '歌曲缺少編號', label);
+        if (!String(song.title ?? '').trim()) add('歌曲資料', 'error', '歌曲缺少歌名', label);
+        if (!String(song.artist ?? '').trim()) add('歌曲資料', 'error', '歌曲缺少歌手', label);
+
+        const no = String(song.no ?? '').trim();
+        if (no && seenNos.has(no)) {
+          add('歌曲資料', 'error', '歌曲編號重複', `${label}；也出現在 ${seenNos.get(no)}`);
+        } else if (no) seenNos.set(no, label);
+
+        const identity = devCheckNormalize(`${song.artist} ${song.title}`);
+        if (identity && seenSongs.has(identity)) {
+          add('歌曲資料', 'error', '歌手與歌名重複', `${label}；也出現在 ${seenSongs.get(identity)}`);
+        } else if (identity) seenSongs.set(identity, label);
+      });
+
+      const activeNo = new Set(tracks.map(song => String(song?.no ?? '')));
+      const testNo = new Set(testTracks.map(song => String(song?.no ?? '')));
+      testNo.forEach(no => {
+        if (activeNo.has(no)) add('歌曲資料', 'error', 'TEST 與 TRACKS 使用相同編號', no);
+      });
+
+      const activeIdentity = new Set(tracks.map(song =>
+        devCheckNormalize(`${song?.artist} ${song?.title}`)
+      ));
+      testTracks.forEach(song => {
+        const key = devCheckNormalize(`${song?.artist} ${song?.title}`);
+        if (key && activeIdentity.has(key)) {
+          add('歌曲資料', 'error', 'TEST 與 TRACKS 有相同歌曲', `${song.no}｜${song.artist} - ${song.title}`);
+        }
+      });
+
+      add('歌曲資料', 'info', `已檢查 ${tracks.length} 首正式歌曲、${testTracks.length} 首 TEST 歌曲`);
+    }
+
+    if (checkPlaylists) {
+      if (typeof playlists !== 'object' || !playlists) {
+        add('歌單', 'error', '找不到 playlists 資料');
+      } else {
+        const trackByIdentity = new Map(allTracks.map(song => [
+          devCheckNormalize(`${song?.artist} ${song?.title}`), song
+        ]));
+        Object.entries(playlists).forEach(([key, list]) => {
+          if (!Array.isArray(list)) {
+            add('歌單', 'error', `${key} 不是陣列`);
+            return;
+          }
+          if (!list.length) add('歌單', 'error', `${key} 歌單是空的`);
+
+          const seen = new Set();
+          list.forEach((term, index) => {
+            if (typeof term !== 'string' || !term.trim()) {
+              add('歌單', 'error', `${key} 第 ${index + 1} 筆不是有效歌曲文字`);
+              return;
+            }
+            const normalized = devCheckNormalize(term);
+            if (seen.has(normalized)) add('歌單', 'error', `${key} 有重複歌曲`, term);
+            seen.add(normalized);
+
+            const splitAt = term.indexOf(' ');
+            if (splitAt <= 0 || splitAt === term.length - 1) {
+              add('歌單', 'warning', `${key} 歌曲格式可能不完整`, term);
+              return;
+            }
+            const artist = term.slice(0, splitAt);
+            const title = term.slice(splitAt + 1);
+            const match = trackByIdentity.get(devCheckNormalize(`${artist} ${title}`));
+            if (!match) {
+              add('歌單', 'warning', `${key} 歌曲尚未建立 TRACKS 資料`, term);
+            } else if (testNoForCheck(match.no)) {
+              add('歌單', 'warning', `${key} 使用 TEST 歌曲，遊戲會排除`, term);
+            }
+          });
+          add('歌單', 'info', `${key}：${list.length} 首`);
+        });
+
+        const demoCount = ['drama', 'she', 'fish']
+          .reduce((sum, key) => sum + (Array.isArray(playlists[key]) ? playlists[key].length : 0), 0);
+        if (!demoCount) add('歌單', 'error', '試玩模式合併歌單沒有可用歌曲');
+        else add('歌單', 'info', `試玩模式合併歌單共 ${demoCount} 首（尚未扣除 TEST）`);
+      }
+    }
+
+    function testNoForCheck(no) {
+      return testTracks.some(song => String(song?.no) === String(no));
+    }
+
+    if (checkLyrics) {
+      if (!allLyrics.length) add('歌詞題庫', 'error', '歌詞題庫是空的');
+      const trackMap = new Map(allTracks.map(song => [String(song?.no), song]));
+      const seenQuestion = new Set();
+      const validTypes = ['previous', 'next', 'fill'];
+
+      allLyrics.forEach((item, index) => {
+        const label = `${item?.no || '無編號'}｜${item?.title || '未命名題目'}`;
+        if (!item || typeof item !== 'object') {
+          add('歌詞題庫', 'error', `第 ${index + 1} 題不是有效物件`);
+          return;
+        }
+        const no = String(item.no ?? '');
+        if (!no) add('歌詞題庫', 'error', '題目缺少歌曲編號', label);
+        if (!String(item.title ?? '').trim()) add('歌詞題庫', 'error', '題目缺少歌名', label);
+        if (!trackMap.has(no)) {
+          add('歌詞題庫', 'error', '題目編號找不到 TRACKS／TEST 歌曲', label);
+        } else if (testNoForCheck(no)) {
+          add('歌詞題庫', 'warning', '題目對應 TEST 歌曲，目前不會進入正式遊戲', label);
+        }
+        if (!validTypes.includes(item.type)) add('歌詞題庫', 'error', '題型不正確', `${label}；type=${item.type}`);
+        if (!String(item.prompt ?? '').trim()) add('歌詞題庫', 'error', '題目提示是空的', label);
+        if (!String(item.answer ?? '').trim()) add('歌詞題庫', 'error', '正確答案是空的', label);
+
+        const key = `${no}:${item.type}`;
+        if (seenQuestion.has(key)) add('歌詞題庫', 'warning', '同一首歌有重複題型', label);
+        seenQuestion.add(key);
+
+        if (!Array.isArray(item.distractors) || item.distractors.length !== 3) {
+          add('歌詞題庫', 'error', '干擾選項應該剛好有 3 個', label);
+        } else {
+          const options = [item.answer, ...item.distractors].map(devCheckNormalize);
+          if (new Set(options).size !== options.length) add('歌詞題庫', 'error', '正確答案與干擾選項不可重複', label);
+          if (item.distractors.some(value => !String(value ?? '').trim())) add('歌詞題庫', 'error', '干擾選項有空白', label);
+        }
+        if (item.type === 'fill') {
+          const blanks = (String(item.prompt ?? '').match(/\{\{blank\}\}/g) || []).length;
+          if (blanks !== 1) add('歌詞題庫', 'error', 'fill 題型的 {{blank}} 必須剛好出現一次', `${label}；目前 ${blanks} 次`);
+        }
+        if (item.playUntil != null && (!Number.isFinite(Number(item.playUntil)) || Number(item.playUntil) <= 0)) {
+          add('歌詞題庫', 'error', '播放秒數必須是大於 0 的數字', label);
+        }
+      });
+
+      const activeLyricCount = allLyrics.filter(item =>
+        tracks.some(song => String(song?.no) === String(item?.no))
+      ).length;
+      if (!activeLyricCount) add('歌詞題庫', 'error', '目前沒有任何題目能對應正式 TRACKS');
+      add('歌詞題庫', 'info', `共檢查 ${allLyrics.length} 題，其中 ${activeLyricCount} 題對應正式歌曲`);
+    }
+
+    if (checkApple) {
+      const idOwners = new Map();
+      let bound = 0;
+      allTracks.forEach(song => {
+        const id = song?.appleMusicId;
+        if (id == null || id === '') return;
+        bound++;
+        const idText = String(id).trim();
+        const label = `${song.no}｜${song.artist} - ${song.title}`;
+        if (!/^\d+$/.test(idText)) add('Apple Music ID', 'error', 'Apple Music ID 格式錯誤', `${label}；ID=${idText}`);
+        if (idOwners.has(idText)) add('Apple Music ID', 'error', 'Apple Music ID 重複使用', `${label}；也用於 ${idOwners.get(idText)}`);
+        else idOwners.set(idText, label);
+      });
+      const missing = allTracks.length - bound;
+      if (missing) add('Apple Music ID', 'warning', `${missing} 首歌曲尚未綁定 Apple Music ID`);
+      add('Apple Music ID', 'info', `${bound} 首已綁定／共 ${allTracks.length} 首歌曲`);
+      add('Apple Music ID', 'info', '本項只檢查格式與重複；實際可查詢、可播放請使用上方「Apple Music 實際查詢」');
+    }
+
+    if (checkFlow) {
+      const requiredGlobals = [
+        ['begin', typeof begin === 'function'],
+        ['songPool', typeof songPool === 'function'],
+        ['loadQuestion', typeof loadQuestion === 'function'],
+        ['loadLyricsQuestion', typeof loadLyricsQuestion === 'function'],
+        ['finish', typeof finish === 'function']
+      ];
+      requiredGlobals.forEach(([name, exists]) => {
+        if (!exists) add('遊戲流程', 'error', `找不到遊戲流程函式：${name}`);
+      });
+      const activeLyrics = allLyrics.filter(item =>
+        tracks.some(song => String(song?.no) === String(item?.no))
+      );
+      if (!tracks.length) add('遊戲流程', 'error', '一般歌曲模式沒有正式歌曲資料');
+      if (!activeLyrics.length) add('遊戲流程', 'error', '歌詞接力沒有可用題目');
+      if (typeof playlists === 'object' && playlists) {
+        ['drama', 'she', 'fish'].forEach(key => {
+          if (!Array.isArray(playlists[key]) || !playlists[key].length) {
+            add('遊戲流程', 'error', `試玩模式缺少 ${key} 歌單`);
+          }
+        });
+      }
+      if (requiredGlobals.every(([, exists]) => exists)) {
+        add('遊戲流程', 'info', '主要遊戲流程函式皆已載入');
+      }
+      add('遊戲流程', 'info', '此項為資料與函式入口檢查；實際答題、播放與結算仍需搭配自動模擬及人工驗收');
+    }
+
+    return results;
+  }
+
+  function renderDevCheckResults(results, title = '完整健檢') {
+    const counts = results.reduce((acc, item) => {
+      acc[item.level] = (acc[item.level] || 0) + 1;
+      return acc;
+    }, {});
+    const errors = counts.error || 0;
+    const warnings = counts.warning || 0;
+    const passed = results.filter(item => item.level === 'info').length;
+    devCheckStatus.textContent = `${title}完成｜${errors ? '有錯誤需要修正' : warnings ? '有提醒需要確認' : '沒有發現問題'}`;
+
+    devCheckSummary.className = 'dev-check-summary';
+    devCheckSummary.innerHTML = '';
+    [
+      ['錯誤', errors],
+      ['提醒', warnings],
+      ['通過／資訊', passed]
+    ].forEach(([label, count]) => {
+      const card = document.createElement('div');
+      card.className = 'dev-check-stat';
+      const number = document.createElement('strong');
+      number.textContent = count;
+      const caption = document.createElement('span');
+      caption.textContent = label;
+      card.append(number, caption);
+      devCheckSummary.appendChild(card);
+    });
+
+    devCheckResults.innerHTML = '';
+    const groups = [...new Set(results.map(item => item.group))];
+    if (!groups.length) {
+      devCheckResults.textContent = '沒有檢查結果';
+      return;
+    }
+    groups.forEach(group => {
+      const section = document.createElement('div');
+      section.className = 'dev-check-group';
+      const heading = document.createElement('div');
+      heading.className = 'dev-check-group-title';
+      heading.textContent = group;
+      section.appendChild(heading);
+      results.filter(item => item.group === group).forEach(item => {
+        const row = document.createElement('div');
+        row.className = 'dev-check-item';
+        const mark = document.createElement('span');
+        mark.className = 'dev-check-mark';
+        mark.textContent = item.level === 'error' ? '❌' : item.level === 'warning' ? '⚠️' : '✓';
+        const text = document.createElement('span');
+        text.textContent = item.message;
+        if (item.detail) {
+          const detail = document.createElement('small');
+          detail.textContent = item.detail;
+          text.appendChild(detail);
+        }
+        row.append(mark, text);
+        section.appendChild(row);
+      });
+      devCheckResults.appendChild(section);
+    });
+  }
+
+  async function runDevAppleLiveCheck() {
+    const candidates = [...TRACKS, ...(typeof TEST !== 'undefined' ? TEST : [])]
+      .filter(song => song?.appleMusicId != null && song.appleMusicId !== '');
+    const results = [];
+    let checked = 0;
+    devCheckStatus.textContent = `Apple Music 查詢中（0／${candidates.length}）…`;
+    for (const song of candidates) {
+      const label = `${song.no}｜${song.artist} - ${song.title}`;
+      try {
+        const response = await fetch(
+          `https://itunes.apple.com/lookup?id=${encodeURIComponent(song.appleMusicId)}&country=TW`
+        );
+        if (!response.ok) throw new Error(`HTTP ${response.status}`);
+        const data = await response.json();
+        const track = (data.results || []).find(item => item.previewUrl);
+        if (!track) {
+          results.push({ group: 'Apple Music 實際查詢', level: 'error', message: '查不到可播放的試聽音檔', detail: label });
+        } else {
+          const sameTitle = devCheckNormalize(track.trackName) === devCheckNormalize(song.title);
+          const sameArtist = devCheckNormalize(track.artistName) === devCheckNormalize(song.artist);
+          if (!sameTitle || !sameArtist) {
+            results.push({ group: 'Apple Music 實際查詢', level: 'warning', message: '查詢結果與歌曲資料不完全相符', detail: `${label}；查到：${track.artistName} - ${track.trackName}` });
+          } else {
+            results.push({ group: 'Apple Music 實際查詢', level: 'info', message: 'ID 可查詢且有試聽音檔', detail: label });
+          }
+        }
+      } catch (error) {
+        results.push({ group: 'Apple Music 實際查詢', level: 'warning', message: '查詢失敗，可能是網路或服務暫時無回應', detail: `${label}；${error.message}` });
+      }
+      checked++;
+      devCheckStatus.textContent = `Apple Music 查詢中（${checked}／${candidates.length}）…`;
+    }
+    if (!candidates.length) {
+      results.push({ group: 'Apple Music 實際查詢', level: 'warning', message: '目前沒有已綁定 ID 的歌曲可供查詢' });
+    }
+    renderDevCheckResults(results, 'Apple Music 實際查詢');
+  }
+
+  $('dev-check-all').addEventListener('click', () => {
+    renderDevCheckResults(runDevDataChecks('all'));
+  });
+
+  document.querySelectorAll('[data-check]').forEach(button => {
+    button.addEventListener('click', () => {
+      renderDevCheckResults(runDevDataChecks(button.dataset.check), devCheckNames[button.dataset.check]);
+    });
+  });
+
+  $('dev-check-apple-live').addEventListener('click', runDevAppleLiveCheck);
 
 }
