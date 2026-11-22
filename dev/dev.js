@@ -1663,6 +1663,8 @@ countdown = function (callback) {
           if (!list.length) add('歌單', 'error', `${key} 歌單是空的`);
 
           const seen = new Set();
+          const missingTracks = [];
+          const inactiveTracks = [];
           list.forEach((term, index) => {
             if (typeof term !== 'string' || !term.trim()) {
               add('歌單', 'error', `${key} 第 ${index + 1} 筆不是有效歌曲文字`);
@@ -1676,11 +1678,19 @@ countdown = function (callback) {
               devCheckNormalize(`${song?.artist} ${song?.title}`) === normalized
             );
             if (!match) {
-              add('歌單', 'warning', `${key} 歌曲尚未建立 TRACKS 資料`, term);
+              missingTracks.push(term);
             } else if (testNoForCheck(match.no)) {
-              add('歌單', 'warning', `${key} 使用 TEST 歌曲，遊戲會排除`, term);
+              inactiveTracks.push(term);
             }
           });
+          if (missingTracks.length) {
+            const examples = missingTracks.slice(0, 5).join('、');
+            add('歌單', 'warning', `${key} 有 ${missingTracks.length} 首歌曲尚未建立 TRACKS 資料`, examples + (missingTracks.length > 5 ? '…' : ''));
+          }
+          if (inactiveTracks.length) {
+            const examples = inactiveTracks.slice(0, 5).join('、');
+            add('歌單', 'warning', `${key} 有 ${inactiveTracks.length} 首 TEST 歌曲，遊戲會排除`, examples + (inactiveTracks.length > 5 ? '…' : ''));
+          }
           add('歌單', 'info', `${key}：${list.length} 首`);
         });
 
