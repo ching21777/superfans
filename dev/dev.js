@@ -388,9 +388,15 @@ overflow-x: auto;
 .dev-check-stat strong { display:block; font-size:16px; margin-bottom:2px; }
 .dev-check-group { border-top:1px solid rgba(255,255,255,.14); padding:7px 0; }
 .dev-check-group-title { color:#F0D6A4; font-size:12px; font-weight:700; margin-bottom:5px; }
-.dev-check-item { display:flex; gap:6px; align-items:flex-start; color:rgba(255,255,255,.88); font-size:11px; line-height:1.5; padding:3px 0; overflow-wrap:anywhere; }
+.dev-check-item { display:flex; gap:6px; align-items:flex-start; color:rgba(255,255,255,.88); font-size:11px; line-height:1.5; padding:6px 7px; margin:4px 0; border-radius:6px; overflow-wrap:anywhere; }
+.dev-check-item.level-error { background:rgba(239,83,80,.13); border-left:3px solid #EF5350; }
+.dev-check-item.level-warning { background:rgba(255,193,7,.12); border-left:3px solid #FFC107; }
 .dev-check-mark { flex:0 0 15px; }
-.dev-check-item small { color:rgba(255,255,255,.52); display:block; font-size:10px; }
+.dev-check-item.level-error .dev-check-mark { color:#FF7773; }
+.dev-check-item.level-warning .dev-check-mark { color:#FFD45C; }
+.dev-check-item small { color:rgba(255,255,255,.58); display:block; font-size:10px; margin-top:2px; }
+.dev-check-suggestion { display:block; margin-top:4px; color:#B8E8D8; font-size:10px; }
+.dev-check-suggestion strong { color:#D3D1DA; font-weight:700; }
 .dev-check-empty { color:#B8E8D8; font-size:11px; padding:3px 0; }
 .dev-check-placeholder { display:none; }
 #dev-check-all { flex:1.4; }
@@ -1815,6 +1821,44 @@ countdown = function (callback) {
     return results;
   }
 
+  function getDevCheckSuggestion(item) {
+    const message = item.message || '';
+    const group = item.group || '';
+
+    if (item.level === 'error') {
+      if (/缺少編號|缺少歌名|缺少歌手|缺少歌曲編號|缺少歌名/.test(message)) return '補上缺少的歌曲／題目基本資料，再重新健檢。';
+      if (/不是有效/.test(message)) return '檢查這筆資料格式，確認它是正確的歌曲或題目物件。';
+      if (/重複/.test(message)) return '比對列出的資料，保留正確的一筆，修正或移除重複項目。';
+      if (/空的|空白/.test(message)) return '補上必要內容；若是正式遊戲資料，不能留空。';
+      if (/編號找不到|找不到 TRACKS/.test(message)) return '確認歌曲編號是否正確，並確認歌曲已加入 TRACKS 或 TEST。';
+      if (/題型不正確/.test(message)) return '將題型改為支援的 previous、next 或 fill。';
+      if (/干擾選項/.test(message)) return '確認每題有 3 個不重複且非空白的干擾選項。';
+      if (/\{\{blank\}\}/.test(message)) return '調整 fill 題目的提示文字，讓 {{blank}} 剛好出現一次。';
+      if (/播放秒數/.test(message)) return '將播放秒數改成大於 0 的有效數字。';
+      if (/Apple Music ID 格式/.test(message)) return '重新確認 Apple Music ID，只填入純數字 ID。';
+      if (/找不到遊戲流程函式/.test(message)) return '確認對應遊戲函式是否被刪除、改名，或未成功載入。';
+      if (/歌單/.test(message) || /playlists/.test(message)) return '檢查歌單資料是否存在、格式正確，且至少包含一首有效歌曲。';
+      return '依錯誤內容修正資料或程式，再重新執行這項健檢。';
+    }
+
+    if (item.level === 'warning') {
+      if (/尚未建立 TRACKS 資料/.test(message)) return '若這些歌要加入遊戲，請先新增到 TRACKS；只是預先規劃的歌單可暫時保留。';
+      if (/TEST 歌曲/.test(message) || /對應 TEST 歌曲/.test(message)) return '確認是否刻意放在 TEST；正式啟用前需移入 TRACKS。';
+      if (/尚未綁定 Apple Music ID/.test(message)) return '需要播放這首歌時再補綁 ID；暫時不使用可先保留。';
+      if (/未設定播放秒數/.test(message)) return '可先使用預設秒數；若想控制播放片段，再補上 playUntil。';
+      if (/超過 30 秒/.test(message)) return '確認是否刻意播放較長片段；不是預期值再調整 playUntil。';
+      if (/歌名與歌曲基本資料不一致/.test(message)) return '比對題庫與 TRACKS 的歌名，確認只是版本／別名差異，或修正成一致。';
+      if (/重複題型/.test(message)) return '確認是否刻意為同一首歌建立相同題型；若不是，請調整或移除重複題目。';
+      if (/查詢結果與歌曲資料不完全相符/.test(message)) return '確認 Apple Music 查到的是正確版本；若選錯，重新綁定正確歌曲。';
+      if (/查詢失敗/.test(message)) return '先確認網路或稍後重試；不要只因暫時查詢失敗就急著更換 ID。';
+      if (/沒有已綁定 ID/.test(message)) return '先替需要測試播放的歌曲綁定 ID，再執行實際查詢。';
+      return '確認這是否符合目前的歌曲規劃；若是預期狀況，可以暫時不處理。';
+    }
+
+    if (group === 'Apple Music 實際查詢') return '目前檢查通過，無須處理。';
+    return '目前檢查通過，無須處理。';
+  }
+
   function renderDevCheckResults(results, title = '完整健檢') {
     const counts = results.reduce((acc, item) => {
       acc[item.level] = (acc[item.level] || 0) + 1;
@@ -1857,7 +1901,7 @@ countdown = function (callback) {
       section.appendChild(heading);
       results.filter(item => item.group === group).forEach(item => {
         const row = document.createElement('div');
-        row.className = 'dev-check-item';
+        row.className = `dev-check-item level-${item.level}`;
         const mark = document.createElement('span');
         mark.className = 'dev-check-mark';
         mark.textContent = item.level === 'error' ? '❌' : item.level === 'warning' ? '⚠️' : '✓';
@@ -1868,6 +1912,12 @@ countdown = function (callback) {
           detail.textContent = item.detail;
           text.appendChild(detail);
         }
+        const suggestion = document.createElement('small');
+        suggestion.className = 'dev-check-suggestion';
+        const suggestionLabel = document.createElement('strong');
+        suggestionLabel.textContent = '建議處理方式：';
+        suggestion.append(suggestionLabel, document.createTextNode(getDevCheckSuggestion(item)));
+        text.appendChild(suggestion);
         row.append(mark, text);
         section.appendChild(row);
       });
