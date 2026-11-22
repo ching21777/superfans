@@ -1454,6 +1454,17 @@ body {
   height: 19px;
 }
 
+.rules-open svg path,
+.rules-open svg circle,
+.rules-open svg rect,
+.rules-open svg line,
+.rules-open svg polyline,
+.rules-open svg polygon {
+  stroke-width: 2.5; /* 可依需求調整為 2.5、3 等 */
+  stroke-linecap: round; /* 可選：讓線條端點變圓滑 */
+  stroke-linejoin: round; /* 可選：讓轉角變圓滑 */
+}
+
 .rules-dialog {
   max-width: 400px;
   max-height: none;
@@ -1463,11 +1474,12 @@ body {
 }
 
 .rules-title {
-  font-size: 23px;
-  font-weight: 900;
   letter-spacing: 2px;
   text-align: center;
-  color: #713B50;
+  color: var(--red);
+  font-family: var(--serif);
+  font-size: var(--fs-lg);
+  font-weight: 900;
 }
 
 

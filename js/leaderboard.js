@@ -7,8 +7,8 @@
 
 /* 模式設定：之後新增模式，只要在這裡加一筆（並在 saveHistory 決定 mode）*/
 const LB_MODES = [
-  {k: 'song',   name: '猜歌名',   desc: '比高分 · 分數越高越好'},
-  {k: 'lyrics', name: '歌詞接唱', desc: '接唱歌詞 · 分數越高越好'}
+  {k: 'song',   name: '歌名快答',   desc: '比高分 · 分數越高越好'},
+  {k: 'lyrics', name: '歌詞接力', desc: '接唱歌詞 · 分數越高越好'}
 ];
 
 const LB_KEY = 'song_king_board_v2';   // { rec:{song:[],lyrics:[]}, plays:{song:0,lyrics:0} }
@@ -38,7 +38,7 @@ function readBoard() {
   let old = [];
   try { old = JSON.parse(localStorage.getItem(HISTORY_KEY) || '[]'); } catch (e) {}
 
-  const isLy = x => /歌詞接唱|Hello Nico/.test(x.playlist || '');
+  const isLy = x => /歌詞接力|Hello Nico/.test(x.playlist || '');
   const song = old.filter(x => !isLy(x)), lyrics = old.filter(isLy);
   return {
     rec:   {song, lyrics},
@@ -59,7 +59,7 @@ function saveHistory() {
       score,
       combo: maxCombo,
       time: fmtTime(Math.floor(totalAnswerTime)),
-      playlist: (typeof names !== 'undefined' && names[theme]) || (mode === 'lyrics' ? '歌詞接唱' : theme)
+      playlist: (typeof names !== 'undefined' && names[theme]) || (mode === 'lyrics' ? '歌詞接力' : theme)
     });
     list.sort((a, c) => c.score - a.score);
     b.rec[mode] = list.slice(0, LB_KEEP);

@@ -31,8 +31,8 @@ devPanel.innerHTML = `
   </div>
 
   <div class="dev-tabs">
-    <button class="bevel btn-sm active" data-tab="guess">猜歌</button>
-    <button class="bevel btn-sm" data-tab="lyrics">歌詞接唱</button>
+    <button class="bevel btn-sm active" data-tab="guess">歌名</button>
+    <button class="bevel btn-sm" data-tab="lyrics">歌詞</button>
   </div>
 
   <div id="dev-tab-guess">
@@ -96,7 +96,7 @@ devPanel.innerHTML = `
   <!-- 曲目列表 -->
   <div id="dev-track-songs"></div>
   </div>
-  <!-- 歌詞接唱 -->
+  <!-- 歌詞接力 -->
   <div id="dev-tab-lyrics" style="display:none;">
 
     <div class="dev-section">指定歌曲測試</div>
@@ -457,7 +457,7 @@ updateDevMuteButton();
 
 
   // ========================================
-  // 04. 歌詞接唱題目預覽
+  // 04. 歌詞接力題目預覽
   // ========================================
 
   function previewLyricsItem(item) {
@@ -480,7 +480,7 @@ updateDevMuteButton();
 
     // 更新遊戲資訊
 
-    $('mode').textContent = '歌詞接唱';
+    $('mode').textContent = '歌詞接力';
     $('mode').style.display = 'block';
     $('quit-btn').style.display = 'block';
 
@@ -1183,7 +1183,7 @@ let devQuickSong = false;
   devSession = true;
   devRunning = false;
 
-  // 指定使用歌詞接唱模式
+  // 指定使用歌詞接力模式
 
   theme = 'lyrics';
 
