@@ -10,7 +10,7 @@
    - 有歌的模式只有 1~2 個：不出現標籤，左頁一個模式、右頁一個模式
    - 有歌的模式達 3 個以上：出現索引標籤，標籤內的歌單從左頁流到右頁
    - 某個模式的歌單超過 10 份：才依難度分區（★ / ★★ / ★★★）
-   - 沒有歌的模式不顯示；「即將推出」排在最後，點了會顯示提示
+   - 沒有歌的模式不顯示；「即將上架」排在最後，點了會顯示提示
    整支包在 IIFE 裡，不會和其他檔案的全域變數撞名。
 ======================================== */
 (function () {
@@ -36,17 +36,17 @@
   //   k      ＝ pickTheme 用的歌單 key
   //   no     ＝ 5 碼編號；還沒編號就寫 '?????'，並補 mode、level
   //   name   ＝（選填）歌名。不填就讀 names[k]，再找不到就顯示 k
-  //   status ＝（選填）'soon' 表示即將推出
+  //   status ＝（選填）'soon' 表示即將上架
   //   mode / level ＝（選填）覆寫由編號推出的值，給還沒編號的項目用
   // 下面的編號是依規則排的「範例」，請換成你的真實編號。
   const SONGS = [
     { k: 'drama',    no: '00111' },
-    { k: 'she',      no: '00212' },
-    { k: 'fish',     no: '00312' },
-    { k: 'vagabond', no: '00413' },
-    { k: 'lyrics',   no: '00121' },
-    { k: '伍佰演唱會',          no: '?????', mode: 2, level: 3, status: 'soon' },
-    { k: 'Hello Nico回歸新作', no: '?????', mode: 2, level: 3, status: 'soon' },
+    { k: 'she',      no: '20112' },
+    { k: 'fish',     no: '20212' },
+    { k: 'vagabond', no: '00213', mode: 1, level: 3, status: 'soon' },
+    { k: 'lyrics',   no: '00321' },
+    { k: 'jay',          no: '＊＊＊', mode: 2, level: 3, status: 'soon' },
+    { k: 'LIVE 演唱會預習歌單', no: '＊＊＊', mode: 2, level: 3, status: 'soon' },
   ];
 
   // ---- 以下是程式 ----
@@ -110,7 +110,7 @@
     if (soon) btn.setAttribute('aria-disabled', 'true');
     btn.appendChild(el('span', 'sb-no', it.no));
     btn.appendChild(el('span', 'sb-name', it.name || readName(it.k) || it.k));
-    btn.appendChild(el('span', 'sb-stars', soon ? '即將推出' : stars(it.level)));
+    btn.appendChild(el('span', 'sb-stars', soon ? '即將上架' : stars(it.level)));
     return btn;
   }
 
@@ -225,7 +225,7 @@
     const btn = e.target.closest('#m-catalog .sb-song');
     if (!btn) return;
     if (btn.getAttribute('aria-disabled') === 'true') {
-      showToast('這份歌單即將推出');
+      showToast('本歌單即將上架');
       return;
     }
     hide('m-catalog');

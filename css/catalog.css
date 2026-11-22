@@ -1,11 +1,13 @@
 /* ========================================
    點歌目錄｜Song Catalog（v1 微調版）
-   保留 v1 的黑殼、米紙、明體標題、虛線。
+   保留 v1 的黑殼、明體標題、虛線。
    改動：
    1. 金屬護角 → 灰色平面色塊
    2. 紅色統一用 --red / --red-dark
    3. 字體：標題用 --serif，歌名與號碼用 --sans
    4. 小字放大、觸控列加高、長歌名換行、補 dvh 備援
+   5. 紙色：暖米 → 冷灰，與共用面板 .mc 同一種材質
+   6. 整理 .sb-page 的重複與無效規則
    所有 class 都加 sb- 前綴。需放在 solo.css 之後載入。
 ======================================== */
 
@@ -21,7 +23,7 @@
 } */
 
 .songbook {
-  --sb-paper-m: #FAF9F5;                 /* 手機單頁的紙色 */
+  --sb-paper-m: #EFEDEC;                 /* 手機單頁的紙色（冷灰） */
   --sb-rule: rgba(36,33,36,.22);
   --sb-tabs-h: 34px;                     /* 標籤列高度 */
   --sb-top-extra: 0px;                   /* 有標籤時，為凸出的標籤多留的上方空間 */
@@ -88,10 +90,7 @@
   min-width: 0;
   min-height: 560px;
   padding: 8px 30px 26px;
-  background:
-    linear-gradient(135deg, rgba(255,255,255,.35), transparent 45%),
-    repeating-linear-gradient(0deg, rgba(80,70,50,.012) 0 1px, transparent 1px 4px),
-    linear-gradient(145deg, #F7F6F1, #F0EFE9 55%, #ECEBE5);
+  background: linear-gradient(145deg, #F4F2F0, #E2DFDE 55%, #D3D0D0);
   text-align: left;
 }
 .songbook .sb-page.left  { box-shadow: inset -5px 0 9px -8px rgba(0,0,0,.32); }
@@ -110,11 +109,19 @@
   letter-spacing: 2px;
 }
 .songbook .sb-brand {
-  color: var(--red);
-  font-family: var(--serif);
-  font-size: 11px;
-  font-weight: 700;
-  letter-spacing: 2.5px;
+  margin: 0;
+  padding: 0;
+  background: none;
+  text-shadow: none;
+  -webkit-text-fill-color: currentColor;
+  transform: none;
+
+  color: var(--text-faint);
+  font-family: var(--sans);
+  font-size: 10px;
+  font-weight: 400;
+  line-height: 1;
+  letter-spacing: 3px;
 }
 
 /* 關閉鈕：規格同通用彈窗的 .x（30px 圓、灰字、淡底）。
@@ -159,8 +166,8 @@
 
 .songbook .sb-subtitle {
   color: var(--text-faint);
-  font-size: 10px;
-  letter-spacing: 3px;
+  font-size: 12px;
+  letter-spacing: 2px;
   text-align: center;
 }
 
@@ -375,14 +382,14 @@
     right: var(--sp-3);
   }
 
+  /* 手機的紙色由 .sb-book 提供，頁面透明；左頁只放頁首，不留上下空白 */
   .songbook .sb-page {
     min-height: 0;
     padding: 27px 22px 40px;
     background: transparent;
-    box-shadow: none;
   }
-  .songbook .sb-page.left  { padding-top: 0; padding-bottom: 0; box-shadow: none !important; border: 0 !important; }
-  .songbook .sb-page.right { padding-top: 27px; padding-bottom: 56px; box-shadow: none !important; border: 0 !important; }
+  .songbook .sb-page.left  { padding-top: 0; padding-bottom: 0; box-shadow: none; }
+  .songbook .sb-page.right { padding-bottom: 56px; box-shadow: none; }
 
   .songbook .sb-title { font-size: 25px; }
 
@@ -440,7 +447,7 @@
 
 .songbook .sb-tab.on {
   height: var(--sb-tabs-h);           /* 選中：升高，與紙張接在一起 */
-  background: #F7F6F1;
+  background: #F4F2F0;                /* 新紙色漸層的頂端色 */
   color: var(--red);
 }
 

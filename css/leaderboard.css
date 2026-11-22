@@ -7,23 +7,7 @@
 :root {
   --lb-gold: #F0D6A4;
   --lb-gold-2: #E9C58D;
-  --lb-sub: #C8B8BF;
-}
-
-/* ---- 主選單面板：收緊、外框變淡 ---- */
-#m-start .mc {
-  gap: 20px;
-  padding: 20px 28px 20px;
-  border-color: rgba(231,205,158,.25);
-}
-#m-start .logo {
-  font-size: 40px;
-  line-height: 1.2;
-  margin-bottom: 0;
-}
-#m-start .copyright-notice {
-  margin: 2px auto 0;
-  padding: 0;
+  --lb-sub: #B5B0B0;
 }
 
 /* ---- 標題列 ---- */
@@ -35,13 +19,11 @@
   text-align: left;
 }
 .lb-heading {
-  font-size: var(--fs-md);
-  font-weight: 900;
+  font-size: var(--fs-xs);
+  font-weight: 800;
   letter-spacing: 1px;
-  color: var(--lb-gold);
-  text-shadow: 0 1px 5px rgba(240,214,164,.25);
+  color: var(--lb-gold-2);
 }
-.lb-heading::before { content: "✦ "; color: #E9BFCB; }
 .lb-link {
   padding: 4px 0 4px 10px;
   font-size: var(--fs-xs);
@@ -130,8 +112,22 @@
   background: transparent;
 }
 
+/* 一般列：等級、歌單名、分數都是白灰 */
+.lb-summary-list .lb-row:not(.is-empty) .lb-grade,
+.lb-summary-list .lb-row:not(.is-empty) .lb-title-line,
+.lb-summary-list .lb-row:not(.is-empty) .lb-score {
+  color: #ECE8E6;
+}
+
+/* 第一名：三者都是金色 */
+.lb-summary-list .lb-row.is-best .lb-grade,
+.lb-summary-list .lb-row.is-best .lb-title-line,
+.lb-summary-list .lb-row.is-best .lb-score {
+  color: var(--lb-gold);
+}
+
 .lb-home-mode + .lb-home-mode {
-  margin-top: 8px;
+  margin-top: 18px;
 }
 
 .lb-grade {

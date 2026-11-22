@@ -19,7 +19,7 @@ const LB_SHORT = {
   '經典偶像劇': '偶像劇金曲',
   'S.H.E 鐵粉爭霸戰': 'S.H.E 精選',
   '梁靜茹特輯': '梁靜茹精選',
-  '2026 浪人祭': '浪人祭合輯'
+  '2026 浪人祭': '浪人祭'
 };
 
 const lbEl = id => document.getElementById(id);
