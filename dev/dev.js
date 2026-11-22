@@ -15,7 +15,7 @@ if (new URLSearchParams(location.search).has('dev')) {
   devPanel.id = 'dev-panel';
   
 devPanel.innerHTML = `
-  <div class="dev-heading">🛠 開發測試工具</div>
+  <div class="dev-heading"><span>🛠 開發測試工具</span><button class="dev-check-mode-btn" id="dev-check-mode-btn" type="button" title="切換歌曲資料健檢" aria-label="切換歌曲資料健檢">⌕</button></div>
 
   <button class="bevel btn-sm" id="dev-mute-btn">
     🔊 音量：開啟
@@ -33,7 +33,6 @@ devPanel.innerHTML = `
   <div class="dev-tabs">
     <button class="bevel btn-sm active" data-tab="guess">歌名</button>
     <button class="bevel btn-sm" data-tab="lyrics">歌詞</button>
-    <button class="bevel btn-sm" data-tab="check">健檢</button>
   </div>
 
   <div id="dev-tab-guess">
@@ -209,12 +208,10 @@ overflow-x: auto;
       box-shadow: 0 4px 20px rgba(0,0,0,.45);
     }
 
-    .dev-heading {
-      color: #F0D6A4;
-      font-size: 13px;
-      font-weight: 900;
-      text-align: left;
-    }
+    .dev-heading { display:flex; align-items:center; justify-content:space-between; color:#F0D6A4; font-size:13px; font-weight:900; text-align:left; }
+    .dev-check-mode-btn { width:26px !important; height:24px; min-width:26px; padding:0 !important; border:1px solid rgba(240,214,164,.35); border-radius:6px; background:rgba(240,214,164,.08); color:#F0D6A4; font-size:17px !important; line-height:1; cursor:pointer; }
+    #dev-panel.dev-check-mode > :not(.dev-heading):not(#dev-tab-check) { display:none !important; }
+    #dev-panel.dev-check-mode #dev-tab-check { display:block !important; }
 
     #dev-panel label {
       color: rgba(255,255,255,.7);
@@ -384,7 +381,9 @@ overflow-x: auto;
 .dev-check-categories button { flex:1 1 28%; }
 #dev-check-status { color:#F0D6A4; font-size:11px; margin:8px 0 5px; line-height:1.5; }
 .dev-check-summary { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:5px; margin:6px 0 9px; }
-.dev-check-stat { background:rgba(255,255,255,.08); border-radius:6px; padding:6px 4px; text-align:center; font-size:10px; color:#fff; }
+.dev-check-stat { background:rgba(255,255,255,.08); border:1px solid transparent; border-radius:6px; padding:6px 4px; text-align:center; font-size:10px; color:#fff; }
+.dev-check-stat.has-error { background:rgba(239,83,80,.2); border-color:#EF5350; }
+.dev-check-stat.has-warning { background:rgba(255,193,7,.18); border-color:#FFC107; }
 .dev-check-stat strong { display:block; font-size:16px; margin-bottom:2px; }
 .dev-check-group { border-top:1px solid rgba(255,255,255,.14); padding:7px 0; }
 .dev-check-group-title { color:#F0D6A4; font-size:12px; font-weight:700; margin-bottom:5px; }
@@ -495,9 +494,16 @@ updateDevMuteButton();
   // 手機：點擊展開 / 收合
 
   devToggle.addEventListener('click', () => {
-  devPanel.style.display =
-    devPanel.style.display === 'flex' ? 'none' : 'flex';
+  devPanel.style.display = devPanel.style.display === 'flex' ? 'none' : 'flex';
 });
+  const devCheckModeBtn = $('dev-check-mode-btn');
+  devCheckModeBtn.addEventListener('click', () => {
+    const active = devPanel.classList.toggle('dev-check-mode');
+    devCheckModeBtn.textContent = active ? '↩' : '⌕';
+    devCheckModeBtn.title = active ? '返回開發測試工具' : '切換歌曲資料健檢';
+    devCheckModeBtn.setAttribute('aria-label', devCheckModeBtn.title);
+    $('dev-tab-check').style.display = active ? 'block' : 'none';
+  });
 
   // 移除舊的測試按鈕
 
@@ -603,15 +609,10 @@ updateLyricStars(item.answer);
       document.querySelectorAll('.dev-tabs button').forEach(b => {
         b.classList.toggle('active', b === btn);
       });
-      ['guess', 'lyrics', 'check'].forEach(tab => {
+      ['guess', 'lyrics'].forEach(tab => {
         const panel = document.getElementById('dev-tab-' + tab);
         if (panel) panel.style.display = btn.dataset.tab === tab ? '' : 'none';
       });
-      // 健檢面板需要使用 flex 排版時，交由其內部內容自然排列
-      if (btn.dataset.tab === 'check') {
-        const panel = document.getElementById('dev-tab-check');
-        panel.style.display = 'block';
-      }
     });
   });
 
@@ -1689,15 +1690,16 @@ countdown = function (callback) {
               inactiveTracks.push(term);
             }
           });
-          if (missingTracks.length) {
-            const examples = missingTracks.slice(0, 5).join('、');
-            add('歌單', 'warning', `${key} 有 ${missingTracks.length} 首歌曲尚未建立 TRACKS 資料`, examples + (missingTracks.length > 5 ? '…' : ''));
+          if (missingTracks.length || inactiveTracks.length) {
+            const matchedCount = list.length - missingTracks.length - inactiveTracks.length;
+            const summary = `${key}：${list.length} 首（${matchedCount} 首已建立、${missingTracks.length} 首尚未建立、${inactiveTracks.length} 首屬於 TEST）`;
+            const details = [];
+            if (missingTracks.length) details.push('尚未建立：' + missingTracks.slice(0, 5).join('、') + (missingTracks.length > 5 ? '…' : ''));
+            if (inactiveTracks.length) details.push('TEST 歌曲：' + inactiveTracks.slice(0, 5).join('、') + (inactiveTracks.length > 5 ? '…' : ''));
+            add('歌單', 'warning', summary, details.join('；'));
+          } else {
+            add('歌單', 'info', `${key}：${list.length} 首，全部已建立`);
           }
-          if (inactiveTracks.length) {
-            const examples = inactiveTracks.slice(0, 5).join('、');
-            add('歌單', 'warning', `${key} 有 ${inactiveTracks.length} 首 TEST 歌曲，遊戲會排除`, examples + (inactiveTracks.length > 5 ? '…' : ''));
-          }
-          add('歌單', 'info', `${key}：${list.length} 首`);
         });
 
         const demoCount = ['drama', 'she', 'fish']
@@ -1859,6 +1861,12 @@ countdown = function (callback) {
     return '目前檢查通過，無須處理。';
   }
 
+  function decodeDevCheckEntities(value) {
+    const decoder = document.createElement('textarea');
+    decoder.innerHTML = String(value ?? '');
+    return decoder.value;
+  }
+
   function renderDevCheckResults(results, title = '完整健檢') {
     const counts = results.reduce((acc, item) => {
       acc[item.level] = (acc[item.level] || 0) + 1;
@@ -1878,6 +1886,8 @@ countdown = function (callback) {
     ].forEach(([label, count]) => {
       const card = document.createElement('div');
       card.className = 'dev-check-stat';
+      if (label === '錯誤' && count > 0) card.classList.add('has-error');
+      if (label === '提醒' && count > 0) card.classList.add('has-warning');
       const number = document.createElement('strong');
       number.textContent = count;
       const caption = document.createElement('span');
@@ -1906,17 +1916,17 @@ countdown = function (callback) {
         mark.className = 'dev-check-mark';
         mark.textContent = item.level === 'error' ? '❌' : item.level === 'warning' ? '⚠️' : '✓';
         const text = document.createElement('span');
-        text.textContent = item.message;
+        text.textContent = decodeDevCheckEntities(item.message);
         if (item.detail) {
           const detail = document.createElement('small');
-          detail.textContent = item.detail;
+          detail.textContent = decodeDevCheckEntities(item.detail);
           text.appendChild(detail);
         }
         const suggestion = document.createElement('small');
         suggestion.className = 'dev-check-suggestion';
         const suggestionLabel = document.createElement('strong');
         suggestionLabel.textContent = '建議處理方式：';
-        suggestion.append(suggestionLabel, document.createTextNode(getDevCheckSuggestion(item)));
+        suggestion.append(suggestionLabel, document.createTextNode(decodeDevCheckEntities(getDevCheckSuggestion(item))));
         text.appendChild(suggestion);
         row.append(mark, text);
         section.appendChild(row);
