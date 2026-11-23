@@ -61,12 +61,16 @@
   margin-bottom: 4px;
 }
 
+/* 提示歌詞（含句中填空的整句）：像歌詞本內文 */
 .lyric-card .lc-prev {
-  font-size: clamp(16px,4.6vw,20px);
-  line-height: 1.45;
-  font-weight: 700;
-  color: var(--paper);
+  font-family: var(--sans);
+  font-size: clamp(16px, 4.4vw, 19px);
+  font-weight: 500;
+  line-height: 1.6;
+  letter-spacing: .06em;
+  color: #C9C9D1;
   text-wrap: balance;
+  white-space: pre-line;/* 提示：尊重手動換行，太寬時仍可自動換 */
 
   width: 100%;
   overflow-wrap: break-word;
@@ -103,9 +107,8 @@
 
 /* --- 歌詞呈現 --- */
 
-/* 提示歌詞（含句中填空的整句）：像歌詞本內文 */
-.lyric-card .lc-context,
-.lyric-card .lc-prev {
+/* 前後文歌詞：像歌詞本內文（.lc-prev 的樣式在上方） */
+.lyric-card .lc-context {
   font-family: var(--sans);
   font-size: clamp(13px, 3.6vw, 15px);
   font-weight: 500;
@@ -127,22 +130,8 @@
   text-wrap: balance;
 }
 
-/* 句中填空的提示字 */
-.lyric-card .lc-prev {
-  font-family: var(--sans);
-  font-size: clamp(16px, 4.4vw, 19px);
-  font-weight: 500;
-}
-
-/* 句中填空的答案字 */
-.lyric-card .gap {
-  font-family: var(--sans);
-  font-weight: 800;
-}
-
 /* 答案：只依手動換行，不自動換 */
-.lyric-card .lc-answer,
-.lyric-card .gap {
+.lyric-card .lc-answer {
   white-space: pre;
 }
 
@@ -165,8 +154,11 @@
 
 
 
-/* 不規則撕裂遮蔽：金屬質感 */
+/* 句中填空的答案字：不規則撕裂遮蔽、金屬質感 */
 .lyric-card .gap {
+  font-family: var(--sans);
+  font-weight: 800;
+
   position: relative;
   display: inline-block;
   max-width: none;
@@ -466,7 +458,7 @@
   inset: 0;
   border-radius: inherit;
 
-  background-image: url('../images/lyric-paper-texture.png');
+  background-image: url('../images/lyric-paper-texture.webp');
   background-size: cover;
   background-position: center;
 

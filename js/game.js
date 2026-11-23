@@ -28,16 +28,6 @@ const CFG = {
   LYRIC_PLAY_SEC: 8   // 接歌詞：題庫沒填 playUntil 時的預設秒數
 };
 
-/* ---- PR 表現指數設定 ---- */
-const PR_CFG = {
-  TOTAL: 100,
-  WEIGHT: {
-    CORRECT: 70,
-    SPEED: 15,
-    COMBO: 15
-  }
-};
-
 const GRADES = [
   {k:'SSS', min:.90, title:'傳奇鐵粉猜歌王', desc:'前奏一下就秒殺全場，猜歌王非你莫屬！'},
   {k:'SS',  min:.80, title:'骨灰級粉絲',     desc:'你是電你是光你是唯一的神話。'},
@@ -61,7 +51,6 @@ let theme = 'drama',
 // 模式與答題狀態
 let active = false,
     isDemo = false,
-    halfPassed = false,
     choiceUsed = false,
     choiceMiss = false,
     usedChoice = false,
@@ -76,10 +65,8 @@ let score = 0,
     cds = [],
     scoreRAF = null;
 
-// PR 專用數據
-let questionAttempts = 0,
-    prCorrect = 0,
-    prSpeed = 0;
+// 本題答題次數（計分用）
+let questionAttempts = 0;
 
 // 計時與暫停
 let reqId = 0,
@@ -487,33 +474,6 @@ function grade(s) {
   return GRADES.find(g => r >= g.min);
 }
 
-// 每題答對分數：依答題次數遞減
-function calcCorrectPR(attempts) {
-  const base = PR_CFG.WEIGHT.CORRECT / total;
-  const rates = [1, 5.5 / 7, 4 / 7, 2.5 / 7, 1 / 7];
-  return base * (rates[Math.min(attempts, 5) - 1] || 0);
-}
-
-// 每題速度分數
-function calcSpeedPR(tLeft, attempts) {
-  const base = PR_CFG.WEIGHT.SPEED / total;
-  const elapsed = CFG.MAX_TIME - tLeft;
-
-  let points = base * Math.max(0, 1 - elapsed / CFG.MAX_TIME);
-
-  // 答錯後才答對，速度分數最多一半
-  if (attempts > 1) {
-    points = Math.min(points, base * 0.5);
-  }
-  return points;
-}
-
-// 計算目前 PR
-function calcPR() {
-  const comboPR = PR_CFG.WEIGHT.COMBO * maxCombo / total;
-  return Math.min(PR_CFG.TOTAL, prCorrect + prSpeed + comboPR);
-}
-
 /* 接歌詞道具：隨機刪掉一個錯誤選項（分數 ×0.8，不影響連擊） */
 function useEliminate() {
   if (!active || isPaused || !isLyricsMode()) return;
@@ -672,10 +632,6 @@ function correct(isChoice) {
     updCombo();
   }
 
-  // 累積 PR 的答對與速度分數
-  prCorrect += calcCorrectPR(questionAttempts);
-  prSpeed += calcSpeedPR(timeLeft, questionAttempts);
-
   // 專輯品質：剩餘時間越多越好
   let cond = 'near-mint';
   if (timeLeft >= 10) cond = 'gem-mint';
@@ -797,14 +753,11 @@ function begin(demo) {
   combo = 0;
   maxCombo = 0;
 
-  // 重置 PR 數據
+  // 重置答題次數
   questionAttempts = 0;
-  prCorrect = 0;
-  prSpeed = 0;
   qDone = 0;
   qPtr = 0;
   cds = [];
-  halfPassed = false;
 
   $('score').textContent = '0';
   updCombo();
@@ -842,11 +795,6 @@ function doQuit() {
   $('quit-btn').style.display = 'none';
   show('m-start');
   loadHistory();
-}
-
-function resumeHalf() {
-  hide('m-half');
-  loadQuestion();
 }
 
 function next() {
@@ -1409,17 +1357,6 @@ function updCombo(pop) {
     void c.offsetWidth;
     c.classList.add('pop');
   }
-}
-
-// 提示訊息
-function say(t, c) {
-  const e = $('msg');
-
-  e.textContent = t;
-  e.style.setProperty('--c', c);
-  e.classList.remove('show');
-  void e.offsetWidth;
-  e.classList.add('show');
 }
 
 // 加分標籤
