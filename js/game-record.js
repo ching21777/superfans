@@ -12,6 +12,7 @@
   let sequenceNo = 0;
   let queueChain = Promise.resolve();
   let flushing = false;
+  let flushRequested = false;
 
   const uuid = () => {
     if (crypto.randomUUID) return crypto.randomUUID();
@@ -122,28 +123,46 @@
   }
 
   async function flushPending() {
-    if (flushing || !navigator.onLine) return;
+    if (flushing) {
+      flushRequested = true;
+      return;
+    }
+    if (!navigator.onLine) return;
     flushing = true;
+    flushRequested = false;
     try {
       await ensureAnonymousSession();
       const supabase = getClient();
-      const operations = await getOperations();
+      let keepGoing = true;
 
-      for (const operation of operations) {
-        if (!navigator.onLine) break;
-        const { error } = await supabase.functions.invoke('game-record', {
-          body: operation.body
-        });
-        if (error) {
-          console.warn('[GameRecord] 上傳暫時失敗，保留待補傳資料：', error);
-          break;
+      while (keepGoing && navigator.onLine) {
+        const operations = await getOperations();
+        if (!operations.length) break;
+
+        for (const operation of operations) {
+          if (!navigator.onLine) {
+            keepGoing = false;
+            break;
+          }
+          const { error } = await supabase.functions.invoke('game-record', {
+            body: operation.body
+          });
+          if (error) {
+            console.warn('[GameRecord] 上傳暫時失敗，保留待補傳資料：', error);
+            keepGoing = false;
+            break;
+          }
+          await deleteOperation(operation.id);
         }
-        await deleteOperation(operation.id);
       }
     } catch (error) {
       console.warn('[GameRecord] 尚未能連線，資料會保留待補傳：', error);
     } finally {
       flushing = false;
+      if (flushRequested && navigator.onLine) {
+        flushRequested = false;
+        flushPending();
+      }
     }
   }
 
