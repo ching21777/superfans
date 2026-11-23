@@ -96,7 +96,7 @@ devPanel.innerHTML = `
   <!-- 曲目列表 -->
   <div id="dev-track-songs"></div>
   </div>
-  <!-- 歌詞接力 -->
+  <!-- 歌詞接唱 -->
   <div id="dev-tab-lyrics" style="display:none;">
 
     <div class="dev-section">指定歌曲測試</div>
@@ -511,7 +511,7 @@ updateDevMuteButton();
 
 
   // ========================================
-  // 04. 歌詞接力題目預覽
+  // 04. 歌詞接唱題目預覽
   // ========================================
 
   function previewLyricsItem(item) {
@@ -534,7 +534,7 @@ updateDevMuteButton();
 
     // 更新遊戲資訊
 
-    $('mode').textContent = '歌詞接力';
+    $('mode').textContent = '歌詞接唱';
     $('mode').style.display = 'block';
     $('quit-btn').style.display = 'block';
 
@@ -1235,7 +1235,7 @@ let devQuickSong = false;
   devSession = true;
   devRunning = false;
 
-  // 指定使用歌詞接力模式
+  // 指定使用歌詞接唱模式
 
   theme = 'lyrics';
 
@@ -1806,7 +1806,7 @@ countdown = function (callback) {
         tracks.some(song => String(song?.no) === String(item?.no))
       );
       if (!tracks.length) add('遊戲流程', 'error', '一般歌曲模式沒有正式歌曲資料');
-      if (!activeLyrics.length) add('遊戲流程', 'error', '歌詞接力沒有可用題目');
+      if (!activeLyrics.length) add('遊戲流程', 'error', '歌詞接唱沒有可用題目');
       if (typeof playlists === 'object' && playlists) {
         ['drama', 'she', 'fish'].forEach(key => {
           if (!Array.isArray(playlists[key]) || !playlists[key].length) {

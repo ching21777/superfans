@@ -3,7 +3,7 @@
    01. 設定與狀態 (遊戲參數、評級、遊戲狀態與共用常數)
    02. 共用功能 (DOM 工具、文字處理、音訊與計時功能)
    03. 答題與計分 (分數計算、選項作答、答對與逾時處理)
-   04. 遊戲流程 (開始遊戲、切換題目、歌詞接力與題目載入)
+   04. 遊戲流程 (開始遊戲、切換題目、歌詞接唱與題目載入)
    05. 畫面呈現與初始化 (進度、動畫、答案揭曉、結算、測試與裝置初始化)
 ======================================== */
 
@@ -593,7 +593,7 @@ if (remaining.length <= 1) {
   b.classList.remove('wrong-flash');
   b.classList.add('final-wrong');
 
-  // 歌詞接力才播放錯誤音效
+  // 歌詞接唱才播放錯誤音效
   if (isLyricsMode()) {
     const wrongSound = $('wrong-sound');
     wrongSound.currentTime = 0;
@@ -705,7 +705,7 @@ function timeout() {
 
 /* ==========================================
    04. 遊戲流程
-   開始遊戲、切換題目、歌詞接力與題目載入
+   開始遊戲、切換題目、歌詞接唱與題目載入
 ========================================== */
 
 function pickTheme(k) {
@@ -739,7 +739,7 @@ function begin(demo) {
   $('mode').textContent = demo
   ? '試玩模式'
   : (isLyricsMode()
-      ? (theme === 'helloNico' ? '歌詞接力' : '歌詞接力')
+      ? (theme === 'helloNico' ? '歌詞接唱' : '歌詞接唱')
       : '歌名搶答');
   $('mode').style.display = 'block';
   $('quit-btn').style.display = 'block';
@@ -1156,7 +1156,7 @@ $('trow').style.visibility = isLyricsMode() ? 'hidden' : '';
 } // 結束 loadQuestion
 
 /*
-  歌詞接力題庫：
+  歌詞接唱題庫：
   - 歌曲基本資料：由 tracks.js 依 no 取得
   - 題目設定：genre、playUntil
   - 題目內容：type（previous / next / fill）、prompt、answer、distractors
