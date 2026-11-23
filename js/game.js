@@ -69,6 +69,7 @@ let score = 0,
 let questionAttempts = 0;
 let recordQuestionStartedAt = 0;
 let recordCorrectCount = 0;
+let recordQuestionsCompleted = 0;
 
 // 計時與暫停
 let reqId = 0,
@@ -285,6 +286,7 @@ function completeRecordQuestion(isCorrect, reason, points = 0) {
     time: elapsed,
     score: Math.max(0, points)
   });
+  recordQuestionsCompleted++;
   if (isCorrect) recordCorrectCount++;
   recordQuestionStartedAt = 0;
 }
@@ -823,6 +825,7 @@ function begin(demo) {
 
   startAt = Date.now();
   recordCorrectCount = 0;
+  recordQuestionsCompleted = 0;
   if (window.GameRecord) {
     window.GameRecord.startGame({
       game_mode: isLyricsMode() ? 'lyrics' : 'song',
@@ -863,7 +866,7 @@ function doQuit() {
     completeRecordQuestion(null, 'abandoned', 0);
   }
   if (window.GameRecord) window.GameRecord.finishGame({
-    status: 'abandoned', total_questions: qDone + (recordQuestionStartedAt ? 1 : 0),
+    status: 'abandoned', total_questions: recordQuestionsCompleted,
     correct_count: recordCorrectCount, total_score: score, max_combo: maxCombo
   });
   stopAll();
@@ -890,7 +893,7 @@ function next() {
 function finish() {
   $('inp').blur();
   if (window.GameRecord) window.GameRecord.finishGame({
-    status: 'completed', total_questions: qDone,
+    status: 'completed', total_questions: recordQuestionsCompleted,
     correct_count: recordCorrectCount, total_score: score, max_combo: maxCombo
   });
 
