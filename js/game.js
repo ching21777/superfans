@@ -67,6 +67,8 @@ let score = 0,
 
 // 本題答題次數（計分用）
 let questionAttempts = 0;
+let recordQuestionStartedAt = 0;
+let recordCorrectCount = 0;
 
 // 計時與暫停
 let reqId = 0,
@@ -243,6 +245,50 @@ function getLyricAnswer() {
   return cur?.answer || '';
 }
 
+function startRecordQuestion() {
+  if (!window.GameRecord || !cur || recordQuestionStartedAt) return;
+  recordQuestionStartedAt = Date.now();
+  let songNo = cur.id || null;
+  if (!songNo && cur.artist && cur.title) {
+    const track = TRACKS.find(item =>
+      normalizeMatchText(item.artist) === normalizeMatchText(cur.artist) &&
+      normalizeMatchText(item.title) === normalizeMatchText(cur.title)
+    );
+    songNo = track?.no || null;
+  }
+  window.GameRecord.startQuestion({
+    question_no: qDone + 1,
+    song_no: songNo,
+    question_type: isLyricsMode() ? cur.type : (usedChoice ? 'choice' : 'text')
+  });
+}
+
+function recordAnswerEvent(answer, isCorrect, inputType) {
+  if (!window.GameRecord || !recordQuestionStartedAt) return;
+  window.GameRecord.recordEvent('answer_submitted', {
+    answer,
+    is_correct: !!isCorrect,
+    input_type: inputType,
+    attempt_no: questionAttempts
+  });
+}
+
+function completeRecordQuestion(isCorrect, reason, points = 0) {
+  if (!window.GameRecord || !recordQuestionStartedAt) return;
+  const elapsed = Math.max(0, Date.now() - recordQuestionStartedAt);
+  window.GameRecord.completeQuestion({
+    is_correct: isCorrect,
+    reason,
+    attempt_count: questionAttempts,
+    used_hint: usedHint,
+    is_skipped: false,
+    time: elapsed,
+    score: Math.max(0, points)
+  });
+  if (isCorrect) recordCorrectCount++;
+  recordQuestionStartedAt = 0;
+}
+
 // 歌詞呈現：prompt 與 answer 統一欄位，依 type 決定遮蔽位置
 function renderLyricPrompt(item) {
   const root = $('lyric-prev');
@@ -379,6 +425,7 @@ function playNow() {
       $('cd').classList.add('on');
 
       questionStartAt = Date.now();
+      startRecordQuestion();
 
       runTimer();
     })
@@ -395,6 +442,7 @@ function doHint() {
 
   hintLeft--;
   usedHint = true;
+  if (window.GameRecord) window.GameRecord.recordEvent('hint_used', { type: 'first_letter' });
   updHintBtn();
 
   $('inp').value = cur.title.trim().charAt(0);
@@ -496,6 +544,7 @@ if (remaining.length <= 2 || wrongs.length < 2) {
   b.classList.add('removed');
 
   usedHint = true;                 // 沿用既有的提示折扣 0.8
+  if (window.GameRecord) window.GameRecord.recordEvent('hint_used', { type: 'eliminate' });
   lyricsItemCount++;
   $('choice-btn').disabled = true;
   $('choice-sub').textContent = '已使用';
@@ -508,8 +557,10 @@ function submitAnswer() {
   if (!v) return;
 
   questionAttempts++;
+  const isCorrect = sanitize(v) === sanitize(cur.title);
+  recordAnswerEvent(v, isCorrect, 'text');
 
-  if (sanitize(v) === sanitize(cur.title)) {
+  if (isCorrect) {
     correct(false);
     return;
   }
@@ -538,6 +589,7 @@ function toChoice() {
 
   choiceUsed = true;
   usedChoice = true;
+  if (window.GameRecord) window.GameRecord.recordEvent('choice_mode_selected');
   $('choice-btn').disabled = true;
   $('pause-btn').disabled = true; /*首字提示(前生是暫停)*/
 
@@ -563,8 +615,11 @@ $('ogrid').onclick = e => {
   if (!b || !active || isPaused || b.disabled) return;
 
   questionAttempts++;
+  const selectedAnswer = opts[+b.dataset.i];
+  const isCorrect = selectedAnswer === (isLyricsMode() ? getLyricAnswer() : cur.title);
+  recordAnswerEvent(selectedAnswer, isCorrect, 'choice');
 
-  if (opts[+b.dataset.i] === (isLyricsMode() ? getLyricAnswer() : cur.title)) {
+  if (isCorrect) {
     correct(isLyricsMode() ? false : true);
     return;
   }
@@ -602,6 +657,7 @@ if (remaining.length <= 1) {
 
   active = false;
   finishQuestionTime();
+  completeRecordQuestion(false, 'wrong', 0);
 
   cds.push({ art: cur.art, cond: 'poor' });
 
@@ -639,6 +695,7 @@ function correct(isChoice) {
 
   cds.push({art: cur.art, cond});
 
+  completeRecordQuestion(true, 'correct', s.total);
   setScore(score + s.total);
   updCombo(true);
 
@@ -679,6 +736,7 @@ function holdCorrectChoice() {
 
 function timeout() {
   finishQuestionTime();
+  completeRecordQuestion(false, 'timeout', 0);
   combo = 0;
   updCombo();
 
@@ -764,6 +822,16 @@ function begin(demo) {
   renderProg();
 
   startAt = Date.now();
+  recordCorrectCount = 0;
+  if (window.GameRecord) {
+    window.GameRecord.startGame({
+      game_mode: isLyricsMode() ? 'lyrics' : 'song',
+      playlist_key: demo ? null : theme,
+      is_demo: demo,
+      scoring_version: 'v1',
+      scoring_snapshot: { CFG: { ...CFG }, GRADES: GRADES.map(g => ({ ...g })) }
+    });
+  }
   totalAnswerTime = 0;
   questionElapsed = 0;
   questionStartAt = 0;
@@ -790,6 +858,14 @@ function cancelQuit() {
 }
 
 function doQuit() {
+  if (recordQuestionStartedAt) {
+    finishQuestionTime();
+    completeRecordQuestion(null, 'abandoned', 0);
+  }
+  if (window.GameRecord) window.GameRecord.finishGame({
+    status: 'abandoned', total_questions: qDone + (recordQuestionStartedAt ? 1 : 0),
+    correct_count: recordCorrectCount, total_score: score, max_combo: maxCombo
+  });
   stopAll();
   hide('m-confirm');
   $('quit-btn').style.display = 'none';
@@ -813,6 +889,10 @@ function next() {
 
 function finish() {
   $('inp').blur();
+  if (window.GameRecord) window.GameRecord.finishGame({
+    status: 'completed', total_questions: qDone,
+    correct_count: recordCorrectCount, total_score: score, max_combo: maxCombo
+  });
 
   stopAll();
   renderProg();
@@ -1009,6 +1089,7 @@ function showLyricQuestion() {
 
       active = true;
       questionStartAt = Date.now();
+      startRecordQuestion();
       runTimer();
     }, LY_ENTER_MS);
   }, wait);
@@ -1020,6 +1101,7 @@ function revealLyricHint() {
   if (card) card.classList.add('lyric-cover-open');
 
   usedHint = true;
+  if (window.GameRecord) window.GameRecord.recordEvent('hint_used', { type: 'lyric_hint' });
   lyricsItemCount++;
 
   $('pause-btn').disabled = true;
