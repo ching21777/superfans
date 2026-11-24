@@ -4,6 +4,12 @@
   const PLAYER_KEY = 'sf_player_id';
   const DB_NAME = 'super-fans-records';
   const STORE_NAME = 'operations';
+  const DRAFT_KEY = 'sf_game_draft';
+  const MAX_SERVER_RETRIES = 10;          // 伺服器連續 5xx 超過這個次數，就把該筆搬到失敗區
+  const RETRY_DELAY_MS = 30000;           // 暫時失敗後，隔多久自動再試一次
+  const FAILED_KEEP_MS = 14 * 24 * 3600 * 1000;  // 失敗區保留 14 天
+  const STALE_DRAFT_MS = 30000;           // 草稿閒置超過這個時間，才視為「上一局已中斷」
+  const STALE_DRAFT_VISIBLE_MS = 10 * 60 * 1000; // 沒有隱藏紀錄的草稿，要閒置更久才補記
 
   let client = null;
   let dbPromise = null;
@@ -13,6 +19,10 @@
   let queueChain = Promise.resolve();
   let flushing = false;
   let flushRequested = false;
+  let retryTimer = null;
+  let opCounter = 0;
+  let progress = { questions: 0, correct: 0, score: 0, streak: 0, maxStreak: 0 };
+  let startBody = null;
 
   const uuid = () => {
     if (crypto.randomUUID) return crypto.randomUUID();
@@ -90,14 +100,39 @@
     });
   }
 
-  async function getOperations() {
+  async function getAllOperations() {
     const db = await openDB();
     return new Promise((resolve, reject) => {
       const tx = db.transaction(STORE_NAME, 'readonly');
       const request = tx.objectStore(STORE_NAME).getAll();
-      request.onsuccess = () => resolve(request.result.sort((a, b) => a.createdAt - b.createdAt));
+      request.onsuccess = () => resolve(request.result.sort((a, b) => orderOf(a) - orderOf(b)));
       request.onerror = () => reject(request.error);
     });
+  }
+
+  // 同一毫秒內入列的資料，靠 order 的遞增計數維持先後順序（避免 finish 比 event 先送出）
+  const orderOf = op => op.order ?? (op.createdAt || 0) * 1000;
+
+  // 只回傳「還要送」的資料；已放棄的（failed）留在失敗區，不會擋住後面的資料
+  async function getOperations() {
+    return (await getAllOperations()).filter(op => !op.failed);
+  }
+
+  async function markFailed(operation, failure) {
+    await putOperation({
+      ...operation,
+      failed: true,
+      failedAt: Date.now(),
+      failReason: `${failure.status || 'network'}: ${failure.message || ''}`.slice(0, 300)
+    });
+  }
+
+  async function pruneFailed() {
+    const all = await getAllOperations();
+    const cutoff = Date.now() - FAILED_KEEP_MS;
+    for (const op of all) {
+      if (op.failed && (op.failedAt || 0) < cutoff) await deleteOperation(op.id);
+    }
   }
 
   async function deleteOperation(id) {
@@ -112,7 +147,11 @@
   }
 
   function enqueue(action, body) {
-    const operation = { id: uuid(), action, body, createdAt: Date.now() };
+    const operation = {
+      id: uuid(), action, body,
+      createdAt: Date.now(),
+      order: Date.now() * 1000 + (opCounter++ % 1000)
+    };
     queueChain = queueChain.then(async () => {
       await putOperation(operation);
       flushPending();
@@ -120,6 +159,44 @@
       console.warn('[GameRecord] 暫存失敗：', error);
     });
     return queueChain;
+  }
+
+  // 解析失敗原因：permanent = 伺服器明確表示「這筆永遠不會成功」
+  async function readFailure(error) {
+    const res = error && error.context;
+    if (res && typeof res.status === 'number') {
+      let body = null;
+      try { body = await res.clone().json(); } catch (_) {}
+      return {
+        status: res.status,
+        permanent: body && body.permanent === true,
+        message: (body && body.error) || error.message || ''
+      };
+    }
+    // 沒有 HTTP 狀態：網路中斷或連不上，一律視為暫時
+    return { status: 0, permanent: false, message: (error && error.message) || '' };
+  }
+
+  async function sendOnce(supabase, operation) {
+    const { error } = await supabase.functions.invoke('game-record', { body: operation.body });
+    return error ? readFailure(error) : null;
+  }
+
+  // 憑證失效（例如匿名帳號被清掉）：重新取得匿名身分
+  async function recoverSession(supabase) {
+    const refreshed = await supabase.auth.refreshSession();
+    if (!refreshed.error && refreshed.data && refreshed.data.session) return;
+    await supabase.auth.signOut({ scope: 'local' });
+    const result = await supabase.auth.signInAnonymously();
+    if (result.error) throw result.error;
+  }
+
+  function scheduleRetry() {
+    if (retryTimer) return;
+    retryTimer = setTimeout(() => {
+      retryTimer = null;
+      flushPending();
+    }, RETRY_DELAY_MS);
   }
 
   async function flushPending() {
@@ -133,6 +210,7 @@
     try {
       await ensureAnonymousSession();
       const supabase = getClient();
+      await pruneFailed();
       let keepGoing = true;
 
       while (keepGoing && navigator.onLine) {
@@ -144,19 +222,45 @@
             keepGoing = false;
             break;
           }
-          const { error } = await supabase.functions.invoke('game-record', {
-            body: operation.body
-          });
-          if (error) {
-            console.warn('[GameRecord] 上傳暫時失敗，保留待補傳資料：', error);
-            keepGoing = false;
-            break;
+
+          let failure = await sendOnce(supabase, operation);
+          if (failure && failure.status === 401) {
+            await recoverSession(supabase);
+            failure = await sendOnce(supabase, operation);
           }
-          await deleteOperation(operation.id);
+
+          if (!failure) {
+            await deleteOperation(operation.id);
+            continue;
+          }
+
+          // 永久失敗：搬到失敗區，繼續處理下一筆
+          if (failure.permanent) {
+            console.warn('[GameRecord] 這筆資料被伺服器拒絕，已移到失敗區：', failure.message, operation.body && operation.body.action);
+            await markFailed(operation, failure);
+            continue;
+          }
+
+          // 伺服器內部錯誤：累計次數，太多次就放棄這筆
+          if (failure.status >= 500) {
+            const attempts = (operation.attempts || 0) + 1;
+            if (attempts >= MAX_SERVER_RETRIES) {
+              console.warn('[GameRecord] 重試多次仍失敗，已移到失敗區：', failure.message);
+              await markFailed(operation, failure);
+              continue;
+            }
+            await putOperation({ ...operation, attempts });
+          }
+
+          console.warn('[GameRecord] 上傳暫時失敗，保留待補傳資料：', failure.status, failure.message);
+          keepGoing = false;
+          scheduleRetry();
+          break;
         }
       }
     } catch (error) {
       console.warn('[GameRecord] 尚未能連線，資料會保留待補傳：', error);
+      scheduleRetry();
     } finally {
       flushing = false;
       if (flushRequested && navigator.onLine) {
@@ -164,6 +268,90 @@
         flushPending();
       }
     }
+  }
+
+  // ---- 離開頁面時的草稿（同步寫入 localStorage，關頁面前一定來得及）----
+  function saveDraft(extra = {}) {
+    try {
+      if (!currentGame) return;
+      localStorage.setItem(DRAFT_KEY, JSON.stringify({
+        game: currentGame,
+        startBody,
+        progress,
+        question: currentQuestion,
+        sequenceNo,
+        updatedAt: Date.now(),
+        ...extra
+      }));
+    } catch (_) {}
+  }
+
+  function clearDraft() {
+    try { localStorage.removeItem(DRAFT_KEY); } catch (_) {}
+  }
+
+  // 下次開啟時，把上一局中斷的遊戲補記成 abandoned
+  function recoverDraft() {
+    let draft = null;
+    try { draft = JSON.parse(localStorage.getItem(DRAFT_KEY) || 'null'); } catch (_) {}
+    if (!draft || !draft.game || !draft.startBody) return;
+    if (currentGame && currentGame.id === draft.game.id) return;
+
+    const lastAt = draft.hiddenAt || draft.updatedAt || Date.now();
+    const idle = Date.now() - lastAt;
+    // 避免誤判：另一個分頁可能還在玩
+    if (idle < STALE_DRAFT_MS) return;
+    if (!draft.hidden && idle < STALE_DRAFT_VISIBLE_MS) return;
+
+    clearDraft();
+
+    const gameId = draft.game.id;
+    const prog = draft.progress || { questions: 0, correct: 0, score: 0, maxStreak: 0 };
+    let questions = prog.questions;
+    let seq = draft.sequenceNo || 0;
+
+    enqueue('start', draft.startBody);   // start 具冪等性，重複送不會出錯
+
+    const q = draft.question;
+    if (q) {
+      const events = (q.events || []).slice();
+      events.push({
+        sequence_no: ++seq,
+        event_type: 'question_completed',
+        event_data: { result: 'abandoned' },
+        occurred_at: new Date(lastAt).toISOString()
+      });
+      enqueue('event', {
+        action: 'event',
+        game_id: gameId,
+        question: {
+          id: q.id,
+          question_no: q.question_no,
+          song_no: q.song_no,
+          question_type: q.question_type,
+          attempt_count: Math.max(0, Number(q.attempt_count) || 0),
+          is_correct: null,
+          used_hint: !!q.used_hint,
+          is_skipped: false,
+          time: Math.max(0, Math.round(lastAt - (q.startedAt || lastAt))),
+          score: 0
+        },
+        events
+      });
+      questions += 1;
+    }
+
+    enqueue('finish', {
+      action: 'finish',
+      game_id: gameId,
+      status: 'abandoned',
+      total_time: Math.max(0, lastAt - (draft.game.startedAt || lastAt)),
+      total_questions: questions,
+      correct_count: prog.correct || 0,
+      total_score: prog.score || 0,
+      max_combo: prog.maxStreak || 0,
+      ended_at: new Date(lastAt).toISOString()
+    });
   }
 
   function addEvent(type, data = {}) {
@@ -174,6 +362,7 @@
       event_data: data,
       occurred_at: new Date().toISOString()
     });
+    saveDraft();
   }
 
   function startGame(options) {
@@ -184,8 +373,9 @@
     };
     currentQuestion = null;
     sequenceNo = 0;
+    progress = { questions: 0, correct: 0, score: 0, streak: 0, maxStreak: 0 };
 
-    enqueue('start', {
+    startBody = {
       action: 'start',
       game: {
         id: currentGame.id,
@@ -196,7 +386,9 @@
         scoring_version: options.scoring_version,
         scoring_snapshot: options.scoring_snapshot
       }
-    });
+    };
+    enqueue('start', startBody);
+    saveDraft();
     return currentGame.id;
   }
 
@@ -247,6 +439,17 @@
     const gameId = currentGame.id;
     currentQuestion = null;
 
+    progress.questions += 1;
+    progress.score += question.score;
+    if (question.is_correct === true) {
+      progress.correct += 1;
+      progress.streak += 1;
+      progress.maxStreak = Math.max(progress.maxStreak, progress.streak);
+    } else {
+      progress.streak = 0;
+    }
+    saveDraft();
+
     enqueue('event', {
       action: 'event',
       game_id: gameId,
@@ -261,6 +464,8 @@
     const totalTime = Math.max(0, Date.now() - currentGame.startedAt);
     currentGame = null;
     currentQuestion = null;
+    startBody = null;
+    clearDraft();
 
     enqueue('finish', {
       action: 'finish',
@@ -281,12 +486,27 @@
     recordEvent,
     completeQuestion,
     finishGame,
-    flushPending
+    flushPending,
+    // 除錯用：在主控台執行 await GameRecord.getFailed() 可查看被拒絕的資料
+    getFailed: async () => (await getAllOperations()).filter(op => op.failed)
   };
 
+  function onHidden() {
+    saveDraft({ hidden: true, hiddenAt: Date.now() });
+  }
+
+  window.addEventListener('pagehide', onHidden);
   window.addEventListener('online', flushPending);
-  window.addEventListener('load', flushPending);
+  window.addEventListener('load', () => {
+    recoverDraft();
+    flushPending();
+  });
   document.addEventListener('visibilitychange', () => {
-    if (document.visibilityState === 'visible') flushPending();
+    if (document.visibilityState === 'hidden') {
+      onHidden();
+    } else {
+      saveDraft({ hidden: false, hiddenAt: null });
+      flushPending();
+    }
   });
 })();
