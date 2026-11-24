@@ -32,6 +32,22 @@
     });
   };
 
+  // 分頁識別碼：同一分頁重新整理後不變，新開分頁則不同
+  function getTabId() {
+    try {
+      let id = sessionStorage.getItem('sf_tab_id');
+      if (!id) {
+        id = uuid();
+        sessionStorage.setItem('sf_tab_id', id);
+      }
+      return id;
+    } catch (_) {
+      return null;
+    }
+  }
+
+  const tabId = getTabId();
+
   function getPlayerId() {
     let id = localStorage.getItem(PLAYER_KEY);
     if (!id) {
@@ -281,6 +297,7 @@
         question: currentQuestion,
         sequenceNo,
         updatedAt: Date.now(),
+        tabId,
         ...extra
       }));
     } catch (_) {}
@@ -311,9 +328,13 @@
 
       const lastAt = draft.hiddenAt || draft.updatedAt || Date.now();
       const idle = Date.now() - lastAt;
-      // 避免誤判：另一個分頁可能還在玩
-      if (idle < STALE_DRAFT_MS) continue;
-      if (!draft.hidden && idle < STALE_DRAFT_VISIBLE_MS) continue;
+      // 同一個分頁重新整理：頁面已重新載入，舊的那局一定已經中斷，立即補記
+      const sameTab = !!tabId && draft.tabId === tabId;
+      if (!sameTab) {
+        // 其他分頁的草稿：避免誤判（對方可能還在玩），所以要等一段時間
+        if (idle < STALE_DRAFT_MS) continue;
+        if (!draft.hidden && idle < STALE_DRAFT_VISIBLE_MS) continue;
+      }
 
       try { localStorage.removeItem(key); } catch (_) {}
       enqueueAbandoned(draft, lastAt);
