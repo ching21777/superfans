@@ -114,7 +114,7 @@ devPanel.innerHTML = `
     <div class="dev-check-intro">更新歌曲後先跑完整健檢；只讀資料，不會修改歌單或題庫。</div>
     <div class="dev-check-actions">
       <button class="bevel go" id="dev-check-all">一鍵完整健檢</button>
-      <button class="bevel btn-sm" id="dev-check-apple-live">Apple Music 實際查詢</button>
+      <button class="bevel btn-sm" id="dev-check-apple-live">曲庫可播放性健檢</button>
     </div>
     <div class="dev-check-actions dev-check-categories">
       <button class="bevel btn-sm" data-check="tracks">歌曲資料</button>
@@ -1852,7 +1852,9 @@ countdown = function (callback) {
       if (/歌名與歌曲基本資料不一致/.test(message)) return '比對題庫與 TRACKS 的歌名，確認只是版本／別名差異，或修正成一致。';
       if (/重複題型/.test(message)) return '確認是否刻意為同一首歌建立相同題型；若不是，請調整或移除重複題目。';
       if (/查詢結果與歌曲資料不完全相符/.test(message)) return '確認 Apple Music 查到的是正確版本；若選錯，重新綁定正確歌曲。';
-      if (/查詢失敗/.test(message)) return '先確認網路或稍後重試；不要只因暫時查詢失敗就急著更換 ID。';
+      if (/查詢失敗|查詢異常/.test(message)) return '先確認網路或稍後重試；不要只因暫時查詢失敗就急著更換 ID。';
+      if (/previewUrl/.test(message)) return '確認 Apple Music 是否有提供這首歌的試聽音檔，或改找有試聽的正確版本。';
+      if (/找不到符合|沒有搜尋結果/.test(message)) return '檢查歌手／歌名資料，並確認 Apple Music 台灣區是否有符合且可試聽的版本。'
       if (/沒有已綁定 ID/.test(message)) return '先替需要測試播放的歌曲綁定 ID，再執行實際查詢。';
       return '確認這是否符合目前的歌曲規劃；若是預期狀況，可以暫時不處理。';
     }
@@ -1935,44 +1937,152 @@ countdown = function (callback) {
     });
   }
 
+  function normalizeGameMatchText(value) {
+    return (value || '').toLowerCase()
+      .replace(/[()[\]{}（）【】]/g, '')
+      .replace(/[\s\-_.,?!'"]/g, '');
+  }
+
+  function waitForAppleCheck(ms) {
+    return new Promise(resolve => setTimeout(resolve, ms));
+  }
+
   async function runDevAppleLiveCheck() {
-    const candidates = [...TRACKS, ...(typeof TEST !== 'undefined' ? TEST : [])]
-      .filter(song => song?.appleMusicId != null && song.appleMusicId !== '');
+    const sourceTracks = [
+      ...(Array.isArray(TRACKS) ? TRACKS : []),
+      ...(typeof TEST !== 'undefined' && Array.isArray(TEST) ? TEST : [])
+    ];
+    const candidates = [];
     const results = [];
+
+    sourceTracks.forEach((song, index) => {
+      if (!song || typeof song !== 'object' ||
+          !String(song.artist ?? '').trim() || !String(song.title ?? '').trim()) {
+        results.push({
+          group: '曲庫資料',
+          level: 'error',
+          message: '歌曲資料缺少歌手或歌名，無法查詢',
+          detail: '曲庫第 ' + (index + 1) + ' 筆'
+        });
+        return;
+      }
+      candidates.push(song);
+    });
+
+    const total = candidates.length;
     let checked = 0;
-    devCheckStatus.textContent = `Apple Music 查詢中（0／${candidates.length}）…`;
+    devCheckStatus.textContent = '曲庫可播放性健檢中（0／' + total + '）…';
+
     for (const song of candidates) {
-      const label = `${song.no}｜${song.artist} - ${song.title}`;
+      const label = (song.no ?? '無編號') + '｜' + song.artist + ' - ' + song.title;
+      const artistKey = normalizeGameMatchText(song.artist);
+      const titleKey = normalizeGameMatchText(song.title);
+      let outcome = null;
+
       try {
-        const response = await fetch(
-          `https://itunes.apple.com/lookup?id=${encodeURIComponent(song.appleMusicId)}&country=TW`
-        );
-        if (!response.ok) throw new Error(`HTTP ${response.status}`);
-        const data = await response.json();
-        const track = (data.results || []).find(item => item.previewUrl);
-        if (!track) {
-          results.push({ group: 'Apple Music 實際查詢', level: 'error', message: '查不到可播放的試聽音檔', detail: label });
-        } else {
-          const sameTitle = devCheckNormalize(track.trackName) === devCheckNormalize(song.title);
-          const sameArtist = devCheckNormalize(track.artistName) === devCheckNormalize(song.artist);
-          if (!sameTitle || !sameArtist) {
-            results.push({ group: 'Apple Music 實際查詢', level: 'warning', message: '查詢結果與歌曲資料不完全相符', detail: `${label}；查到：${track.artistName} - ${track.trackName}` });
+        // 與遊戲一致：有 ID 時先 lookup；有 previewUrl 就直接採用，不再比對歌名／歌手。
+        if (song.appleMusicId != null && song.appleMusicId !== '') {
+          try {
+            const response = await fetch(
+              'https://itunes.apple.com/lookup?id=' + encodeURIComponent(song.appleMusicId) + '&country=TW'
+            );
+            const data = await response.json();
+            const idTrack = (data.results || []).find(item => item.previewUrl);
+            if (idTrack) {
+              outcome = {
+                level: 'info',
+                message: '可播放（使用已綁定 ID）',
+                detail: label + '；Apple Music：' + (idTrack.artistName || '未知歌手') + ' - ' + (idTrack.trackName || '未知歌名')
+              };
+            }
+          } catch (error) {
+            // 遊戲在 ID lookup 失敗時也會退回歌名搜尋。
+          }
+        }
+
+        // 沒有 ID，或 ID 沒有可播放音檔：依遊戲規則搜尋歌名。
+        if (!outcome) {
+          const response = await fetch(
+            'https://itunes.apple.com/search?term=' + encodeURIComponent(song.artist + ' ' + song.title) + '&entity=song&limit=10&country=TW'
+          );
+          if (!response.ok) throw new Error('HTTP ' + response.status);
+          const data = await response.json();
+          const tracks = Array.isArray(data.results) ? data.results : [];
+          const playableMatches = tracks.filter(item =>
+            item.previewUrl &&
+            normalizeGameMatchText(item.artistName).includes(artistKey) &&
+            normalizeGameMatchText(item.trackName) === titleKey
+          );
+
+          if (playableMatches.length) {
+            const match = playableMatches[0];
+            outcome = {
+              level: 'info',
+              message: '可播放（歌名搜尋成功）',
+              detail: label + '；Apple Music：' + match.artistName + ' - ' + match.trackName
+            };
           } else {
-            results.push({ group: 'Apple Music 實際查詢', level: 'info', message: 'ID 可查詢且有試聽音檔', detail: label });
+            const titleArtistMatches = tracks.filter(item =>
+              normalizeGameMatchText(item.artistName).includes(artistKey) &&
+              normalizeGameMatchText(item.trackName) === titleKey
+            );
+            if (titleArtistMatches.length) {
+              const match = titleArtistMatches[0];
+              outcome = {
+                level: 'warning',
+                message: '找到符合歌曲，但沒有可播放的 previewUrl',
+                detail: label + '；候選：' + match.artistName + ' - ' + match.trackName
+              };
+            } else if (tracks.length) {
+              const previews = tracks.filter(item => item.previewUrl).slice(0, 3);
+              const candidatesText = (previews.length ? previews : tracks.slice(0, 3))
+                .map(item => (item.artistName || '未知歌手') + ' - ' + (item.trackName || '未知歌名') + (item.previewUrl ? '（有試聽）' : '（無試聽）'))
+                .join('；');
+              outcome = {
+                level: 'error',
+                message: '找不到符合歌手與歌名的歌曲',
+                detail: label + '；搜尋候選：' + (candidatesText || '無可辨識候選')
+              };
+            } else {
+              outcome = {
+                level: 'error',
+                message: 'Apple Music 沒有搜尋結果',
+                detail: label
+              };
+            }
           }
         }
       } catch (error) {
-        results.push({ group: 'Apple Music 實際查詢', level: 'warning', message: '查詢失敗，可能是網路或服務暫時無回應', detail: `${label}；${error.message}` });
+        outcome = {
+          level: 'warning',
+          message: '查詢異常，可能是網路或 Apple Music 暫時無回應',
+          detail: label + '；' + (error.message || error)
+        };
       }
-      checked++;
-      devCheckStatus.textContent = `Apple Music 查詢中（${checked}／${candidates.length}）…`;
-    }
-    if (!candidates.length) {
-      results.push({ group: 'Apple Music 實際查詢', level: 'warning', message: '目前沒有已綁定 ID 的歌曲可供查詢' });
-    }
-    renderDevCheckResults(results, 'Apple Music 實際查詢');
-  }
 
+      results.push({
+        group: outcome.level === 'info' ? '可播放歌曲' :
+          outcome.message.includes('previewUrl') ? '找到歌曲但無試聽音檔' :
+          outcome.message.includes('查詢異常') ? '查詢異常' : '無法找到符合歌曲',
+        ...outcome
+      });
+
+      checked++;
+      devCheckStatus.textContent = '曲庫可播放性健檢中（' + checked + '／' + total + '）…';
+      if (checked < total) await waitForAppleCheck(250);
+    }
+
+    const playable = results.filter(item => item.level === 'info').length;
+    const failed = results.length - playable;
+    results.unshift({
+      group: '健檢摘要',
+      level: failed ? 'warning' : 'info',
+      message: '共檢查 ' + total + ' 首有效歌曲：' + playable + ' 首可播放、' + failed + ' 首需確認',
+      detail: '本次只讀取 TRACKS／TEST 與 Apple Music 查詢結果，不會修改歌曲或歌單資料。'
+    });
+
+    renderDevCheckResults(results, '曲庫可播放性健檢');
+  }
   $('dev-check-all').addEventListener('click', () => {
     renderDevCheckResults(runDevDataChecks('all'));
   });
