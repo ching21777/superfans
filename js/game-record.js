@@ -4,6 +4,8 @@
   const PLAYER_KEY = 'sf_player_id';
   const DB_NAME = 'super-fans-records';
   const STORE_NAME = 'operations';
+  const VERSION = '2026-11-24-locks';
+  const LOCK_PREFIX = 'sf-game-';
   const DRAFT_PREFIX = 'sf_game_draft:';   // 每一局各存一份草稿，不會互相覆蓋
   const MAX_SERVER_RETRIES = 10;          // 伺服器連續 5xx 超過這個次數，就把該筆搬到失敗區
   const RETRY_DELAY_MS = 30000;           // 暫時失敗後，隔多久自動再試一次
@@ -21,6 +23,7 @@
   let flushRequested = false;
   let retryTimer = null;
   let opCounter = 0;
+  let releaseGameLock = null;
   let progress = { questions: 0, correct: 0, score: 0, streak: 0, maxStreak: 0 };
   let startBody = null;
 
@@ -286,6 +289,41 @@
     }
   }
 
+  // ---- 用 Web Locks 判斷「這局的頁面還活著嗎」----
+  // 遊戲進行中，頁面持有一把以遊戲 ID 命名的鎖。頁面關閉、重新整理、當機時，
+  // 瀏覽器會自動釋放它，所以能精準分辨「還在玩」與「已中斷」，不必猜時間。
+  function holdGameLock(gameId) {
+    releaseLock();
+    if (!navigator.locks || !navigator.locks.request) return;
+    try {
+      let release;
+      const held = new Promise(resolve => { release = resolve; });
+      navigator.locks.request(LOCK_PREFIX + gameId, () => held).catch(() => {});
+      releaseGameLock = release;
+    } catch (_) {}
+  }
+
+  function releaseLock() {
+    if (releaseGameLock) {
+      releaseGameLock();
+      releaseGameLock = null;
+    }
+  }
+
+  // true = 還活著，false = 已中斷，null = 瀏覽器不支援（改用時間判斷）
+  async function isOwnerAlive(gameId) {
+    if (!navigator.locks || !navigator.locks.request) return null;
+    try {
+      return await navigator.locks.request(
+        LOCK_PREFIX + gameId,
+        { ifAvailable: true },
+        lock => (lock ? false : true)
+      );
+    } catch (_) {
+      return null;
+    }
+  }
+
   // ---- 離開頁面時的草稿（同步寫入 localStorage，關頁面前一定來得及）----
   function saveDraft(extra = {}) {
     try {
@@ -308,7 +346,7 @@
   }
 
   // 找出所有「已中斷」的草稿，補記成 abandoned
-  function recoverDrafts() {
+  async function recoverDrafts() {
     const keys = [];
     try {
       for (let i = 0; i < localStorage.length; i++) {
@@ -326,16 +364,24 @@
       }
       if (currentGame && currentGame.id === draft.game.id) continue;   // 正在玩的這局
 
+      const alive = await isOwnerAlive(draft.game.id);
+      if (alive === true) continue;   // 持有這局的頁面還活著（例如另一個分頁正在玩）
+
       const lastAt = draft.hiddenAt || draft.updatedAt || Date.now();
-      const idle = Date.now() - lastAt;
-      // 同一個分頁重新整理：頁面已重新載入，舊的那局一定已經中斷，立即補記
-      const sameTab = !!tabId && draft.tabId === tabId;
-      if (!sameTab) {
-        // 其他分頁的草稿：避免誤判（對方可能還在玩），所以要等一段時間
-        if (idle < STALE_DRAFT_MS) continue;
-        if (!draft.hidden && idle < STALE_DRAFT_VISIBLE_MS) continue;
+      if (alive === null) {
+        // 瀏覽器不支援 Web Locks：退回用時間與分頁識別碼推測
+        const idle = Date.now() - lastAt;
+        const sameTab = !!tabId && draft.tabId === tabId;
+        if (!sameTab) {
+          if (idle < STALE_DRAFT_MS) continue;
+          if (!draft.hidden && idle < STALE_DRAFT_VISIBLE_MS) continue;
+        }
       }
 
+      // 等待期間可能已被另一次檢查處理掉
+      let stillThere = null;
+      try { stillThere = localStorage.getItem(key); } catch (_) {}
+      if (!stillThere) continue;
       try { localStorage.removeItem(key); } catch (_) {}
       enqueueAbandoned(draft, lastAt);
     }
@@ -426,6 +472,7 @@
       }
     };
     enqueue('start', startBody);
+    holdGameLock(currentGame.id);
     saveDraft();
     return currentGame.id;
   }
@@ -504,6 +551,7 @@
     currentQuestion = null;
     startBody = null;
     clearDraft(gameId);
+    releaseLock();
 
     enqueue('finish', {
       action: 'finish',
@@ -519,6 +567,7 @@
   }
 
   window.GameRecord = {
+    version: VERSION,
     startGame,
     startQuestion,
     recordEvent,
