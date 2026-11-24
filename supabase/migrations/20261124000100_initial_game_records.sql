@@ -1,3 +1,6 @@
+-- pg_dump disables body validation because these PL/pgSQL functions reference tables created later in this migration.
+SET check_function_bodies = false;
+
 --
 --
 
