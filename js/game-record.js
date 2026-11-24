@@ -4,7 +4,7 @@
   const PLAYER_KEY = 'sf_player_id';
   const DB_NAME = 'super-fans-records';
   const STORE_NAME = 'operations';
-  const DRAFT_KEY = 'sf_game_draft';
+  const DRAFT_PREFIX = 'sf_game_draft:';   // 每一局各存一份草稿，不會互相覆蓋
   const MAX_SERVER_RETRIES = 10;          // 伺服器連續 5xx 超過這個次數，就把該筆搬到失敗區
   const RETRY_DELAY_MS = 30000;           // 暫時失敗後，隔多久自動再試一次
   const FAILED_KEEP_MS = 14 * 24 * 3600 * 1000;  // 失敗區保留 14 天
@@ -274,7 +274,7 @@
   function saveDraft(extra = {}) {
     try {
       if (!currentGame) return;
-      localStorage.setItem(DRAFT_KEY, JSON.stringify({
+      localStorage.setItem(DRAFT_PREFIX + currentGame.id, JSON.stringify({
         game: currentGame,
         startBody,
         progress,
@@ -286,25 +286,41 @@
     } catch (_) {}
   }
 
-  function clearDraft() {
-    try { localStorage.removeItem(DRAFT_KEY); } catch (_) {}
+  function clearDraft(gameId) {
+    try { localStorage.removeItem(DRAFT_PREFIX + gameId); } catch (_) {}
   }
 
-  // 下次開啟時，把上一局中斷的遊戲補記成 abandoned
-  function recoverDraft() {
-    let draft = null;
-    try { draft = JSON.parse(localStorage.getItem(DRAFT_KEY) || 'null'); } catch (_) {}
-    if (!draft || !draft.game || !draft.startBody) return;
-    if (currentGame && currentGame.id === draft.game.id) return;
+  // 找出所有「已中斷」的草稿，補記成 abandoned
+  function recoverDrafts() {
+    const keys = [];
+    try {
+      for (let i = 0; i < localStorage.length; i++) {
+        const key = localStorage.key(i);
+        if (key && key.startsWith(DRAFT_PREFIX)) keys.push(key);
+      }
+    } catch (_) { return; }
 
-    const lastAt = draft.hiddenAt || draft.updatedAt || Date.now();
-    const idle = Date.now() - lastAt;
-    // 避免誤判：另一個分頁可能還在玩
-    if (idle < STALE_DRAFT_MS) return;
-    if (!draft.hidden && idle < STALE_DRAFT_VISIBLE_MS) return;
+    for (const key of keys) {
+      let draft = null;
+      try { draft = JSON.parse(localStorage.getItem(key) || 'null'); } catch (_) {}
+      if (!draft || !draft.game || !draft.startBody) {
+        try { localStorage.removeItem(key); } catch (_) {}
+        continue;
+      }
+      if (currentGame && currentGame.id === draft.game.id) continue;   // 正在玩的這局
 
-    clearDraft();
+      const lastAt = draft.hiddenAt || draft.updatedAt || Date.now();
+      const idle = Date.now() - lastAt;
+      // 避免誤判：另一個分頁可能還在玩
+      if (idle < STALE_DRAFT_MS) continue;
+      if (!draft.hidden && idle < STALE_DRAFT_VISIBLE_MS) continue;
 
+      try { localStorage.removeItem(key); } catch (_) {}
+      enqueueAbandoned(draft, lastAt);
+    }
+  }
+
+  function enqueueAbandoned(draft, lastAt) {
     const gameId = draft.game.id;
     const prog = draft.progress || { questions: 0, correct: 0, score: 0, maxStreak: 0 };
     let questions = prog.questions;
@@ -366,6 +382,7 @@
   }
 
   function startGame(options) {
+    recoverDrafts();   // 開新局前，先把之前中斷的遊戲補記起來
     currentGame = {
       id: uuid(),
       player_id: getPlayerId(),
@@ -465,7 +482,7 @@
     currentGame = null;
     currentQuestion = null;
     startBody = null;
-    clearDraft();
+    clearDraft(gameId);
 
     enqueue('finish', {
       action: 'finish',
@@ -498,7 +515,7 @@
   window.addEventListener('pagehide', onHidden);
   window.addEventListener('online', flushPending);
   window.addEventListener('load', () => {
-    recoverDraft();
+    recoverDrafts();
     flushPending();
   });
   document.addEventListener('visibilitychange', () => {
@@ -506,6 +523,7 @@
       onHidden();
     } else {
       saveDraft({ hidden: false, hiddenAt: null });
+      recoverDrafts();
       flushPending();
     }
   });
