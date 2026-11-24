@@ -1971,6 +1971,7 @@ countdown = function (callback) {
 
     const total = candidates.length;
     let checked = 0;
+    let playable = 0;
     devCheckStatus.textContent = '曲庫可播放性健檢中（0／' + total + '）…';
 
     for (const song of candidates) {
@@ -2060,20 +2061,22 @@ countdown = function (callback) {
         };
       }
 
-      results.push({
-        group: outcome.level === 'info' ? '可播放歌曲' :
-          outcome.message.includes('previewUrl') ? '找到歌曲但無試聽音檔' :
-          outcome.message.includes('查詢異常') ? '查詢異常' : '無法找到符合歌曲',
-        ...outcome
-      });
+      if (outcome.level === 'info') {
+        playable++;
+      } else {
+        results.push({
+          group: outcome.message.includes('previewUrl') ? '找到歌曲但無試聽音檔' :
+            outcome.message.includes('查詢異常') ? '查詢異常' : '無法找到符合歌曲',
+          ...outcome
+        });
+      }
 
       checked++;
       devCheckStatus.textContent = '曲庫可播放性健檢中（' + checked + '／' + total + '）…';
       if (checked < total) await waitForAppleCheck(250);
     }
 
-    const playable = results.filter(item => item.level === 'info').length;
-    const failed = results.length - playable;
+    const failed = results.length;
     results.unshift({
       group: '健檢摘要',
       level: failed ? 'warning' : 'info',
