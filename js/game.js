@@ -220,7 +220,7 @@ async function getAppleMusicTrack(song) {
     const results = (data.results || []).filter(x => x.previewUrl);
 
     return results.find(x =>
-      normalizeMatchText(x.artistName) === normalizeMatchText(song.artist) &&
+      normalizeMatchText(x.artistName).includes(normalizeMatchText(song.artist)) &&
       normalizeMatchText(x.trackName) === normalizeMatchText(song.title)
     ) || null;
 
