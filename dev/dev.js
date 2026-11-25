@@ -857,8 +857,8 @@ function getAppleBatchPlaylistSongs() {
   const key = appleBatchPlaylist.value;
   const all = getAppleBatchTracks();
   if (key === 'all') return all;
-  if (key === 'maleTest') return all.filter(song => /^91\\d{2}$/.test(String(song.no)));
-  if (key === 'femaleTest') return all.filter(song => /^92\\d{2}$/.test(String(song.no)));
+  if (key === 'maleTest') return all.filter(song => /^91\d{2}$/.test(String(song.no)));
+  if (key === 'femaleTest') return all.filter(song => /^92\d{2}$/.test(String(song.no)));
   const entries = playlists?.[key];
   if (!Array.isArray(entries)) return [];
   const wanted = new Set(entries.map(value => normalizeAppleBatchText(value)));
