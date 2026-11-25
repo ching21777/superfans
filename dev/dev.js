@@ -1035,7 +1035,7 @@ appleBatchExport.addEventListener('click', () => {
     const title = JSON.stringify(String(item.title));
     const artist = JSON.stringify(String(item.artist));
     const rawId = String(item.trackId);
-    const appleMusicId = /^\\d+$/.test(rawId) ? rawId : JSON.stringify(rawId);
+    const appleMusicId = Number.isFinite(Number(rawId)) && rawId.trim() !== '' ? String(Number(rawId)) : JSON.stringify(rawId);
     return "  { no: " + no + ", title: " + title + ", artist: " + artist + ", appleMusicId: " + appleMusicId + " },";
   }).join('\n');
   appleBatchOutput.value = output || '// 所選歌單尚無人工確認的歌曲';
