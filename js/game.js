@@ -414,13 +414,24 @@ function runTimer(resetDeadline = true) {
         (bufferRemaining / (CFG.MAX_TIME + CFG.TEXT_BUFFER) * 100) + '%';
       $('trow').classList.toggle('buffer-only', elapsed >= CFG.MAX_TIME);
       $('choice-btn').disabled = elapsed >= CFG.MAX_TIME;
+
+      if (elapsed >= CFG.MAX_TIME) {
+        $('tnum').textContent = '正常作答結束';
+        $('tbuffer-label').textContent =
+          '打字限定｜剩餘 ' + Math.ceil(bufferRemaining) + 's';
+      } else {
+        $('tnum').textContent =
+          '正常作答｜剩餘 ' + Math.ceil(normalRemaining) + 's';
+        $('tbuffer-label').textContent = '打字限定 +10s';
+      }
     } else {
       $('tbar').style.width = (timeLeft / CFG.MAX_TIME * 100) + '%';
       $('tbuffer').style.width = '0%';
       $('trow').classList.remove('buffer-only');
+      $('tnum').textContent = '剩餘 ' + Math.ceil(timeLeft) + 's';
+      $('tbuffer-label').textContent = '';
     }
 
-    $('tnum').textContent = Math.ceil(timeLeft) + 's';
     $('trow').classList.toggle('danger', timeLeft <= 3);
 
     if (timeLeft <= 0) {
@@ -651,6 +662,8 @@ function toChoice() {
   $('trow').classList.remove('buffer-only');
   $('tbuffer').style.width = '0%';
   $('tbar').style.width = (timeLeft / CFG.MAX_TIME * 100) + '%';
+  $('tnum').textContent = '剩餘 ' + Math.ceil(timeLeft) + 's';
+  $('tbuffer-label').textContent = '';
   runTimer(false);
 }
 
@@ -1228,7 +1241,10 @@ $('trow').style.visibility = isLyricsMode() ? 'hidden' : '';
   if (isLyricsMode()) $('trow').classList.add('single-mode');
   $('tbar').style.width = isLyricsMode() ? '100%' : '66.6667%';
   $('tbuffer').style.width = isLyricsMode() ? '0%' : '33.3333%';
-  $('tnum').textContent = timeLeft + 's';
+  $('tnum').textContent = isLyricsMode()
+    ? '剩餘 ' + timeLeft + 's'
+    : '正常作答｜剩餘 ' + CFG.MAX_TIME + 's';
+  $('tbuffer-label').textContent = isLyricsMode() ? '' : '打字限定 +10s';
 
   renderProg();
 

@@ -557,77 +557,91 @@ body {
 
 .timer-row {
   flex: none;
-  display: flex;
-  align-items: center;
-  gap: var(--sp-3);
+  width: 100%;
 }
 
+.timer-content { width: 100%; }
+
 .timer-track {
-  flex: 1;
   display: flex;
+  width: 100%;
   height: var(--sp-3);
   overflow: hidden;
   border-radius: var(--r-pill);
   background: linear-gradient(180deg, #5A585D, #29282D);
-  box-shadow:
-    inset 0 2px 3px rgba(0,0,0,.6),
-    0 1px 0 rgba(255,255,255,.12);
+  box-shadow: inset 0 2px 3px rgba(0,0,0,.6), 0 1px 0 rgba(255,255,255,.12);
 }
 
-.timer-fill,
-.timer-buffer {
-  flex: none;
-  height: 100%;
-}
+.timer-fill, .timer-buffer { flex: none; height: 100%; }
 
 .timer-fill {
   width: 66.6667%;
-  border-radius: var(--r-pill) 0 0 var(--r-pill);
+  border-radius: 0 var(--r-pill) var(--r-pill) 0;
   background: linear-gradient(180deg, #F1F1F3, #A9AAAF 60%, #77777F);
 }
 
 .timer-buffer {
   width: 33.3333%;
-  border-radius: 0 var(--r-pill) var(--r-pill) 0;
-  background: linear-gradient(180deg, #F4D77A, #D6A84B 60%, #9C7228);
+  border-radius: var(--r-pill) 0 0 var(--r-pill);
+  background: linear-gradient(180deg, #77757A, #555359 60%, #3D3B40);
 }
 
-.timer-row.buffer-only .timer-buffer {
-  border-radius: var(--r-pill);
-}
+.timer-row.buffer-only .timer-buffer { border-radius: var(--r-pill); }
 
-.timer-row.single-mode .timer-buffer {
-  display: none;
-}
+.timer-row.single-mode .timer-buffer,
+.timer-row.single-mode .buffer-label { display: none; }
 
 .timer-row.single-mode .timer-fill {
+  width: 100% !important;
   border-radius: var(--r-pill);
 }
 
-.timer-number {
-  min-width: 3ch;
-  text-align: right;
-  font-family: var(--serif);
-  font-weight: 900;
-  color: var(--paper);
+.timer-labels {
+  display: flex;
+  align-items: center;
+  margin-top: 4px;
+  min-height: 16px;
+  font-size: var(--fs-xs);
+  line-height: 1.2;
+  color: #777278;
 }
 
-.timer-row.danger {
-  animation: shake .25s infinite;
+.timer-label {
+  min-width: 0;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
 }
+
+.buffer-label {
+  width: 33.3333%;
+  padding-right: 4px;
+  text-align: left;
+  color: #68656A;
+}
+
+.normal-label {
+  width: 66.6667%;
+  padding-left: 4px;
+  text-align: right;
+  color: #A6A4A9;
+  font-family: var(--serif);
+  font-weight: 700;
+}
+
+.timer-row.single-mode .normal-label { width: 100%; }
+
+.timer-row.danger { animation: shake .25s infinite; }
 
 .timer-row.danger .timer-fill,
 .timer-row.danger .timer-buffer {
   background: linear-gradient(180deg, #FF9AA5, #C52B43 65%, #791B30);
 }
 
-.timer-row.danger .timer-number {
-  color: var(--red-light);
-}
+.timer-row.danger .normal-label,
+.timer-row.danger .buffer-label { color: var(--red-light); }
 
-.timer-row.done {
-  opacity: .3;
-}
+.timer-row.done { opacity: .3; }
 
 
 /* ---- 時間到提示 ---- */
