@@ -564,6 +564,7 @@ body {
 
 .timer-track {
   flex: 1;
+  display: flex;
   height: var(--sp-3);
   overflow: hidden;
   border-radius: var(--r-pill);
@@ -573,11 +574,34 @@ body {
     0 1px 0 rgba(255,255,255,.12);
 }
 
-.timer-fill {
-  width: 100%;
+.timer-fill,
+.timer-buffer {
+  flex: none;
   height: 100%;
-  border-radius: var(--r-pill);
+}
+
+.timer-fill {
+  width: 66.6667%;
+  border-radius: var(--r-pill) 0 0 var(--r-pill);
   background: linear-gradient(180deg, #F1F1F3, #A9AAAF 60%, #77777F);
+}
+
+.timer-buffer {
+  width: 33.3333%;
+  border-radius: 0 var(--r-pill) var(--r-pill) 0;
+  background: linear-gradient(180deg, #F4D77A, #D6A84B 60%, #9C7228);
+}
+
+.timer-row.buffer-only .timer-buffer {
+  border-radius: var(--r-pill);
+}
+
+.timer-row.single-mode .timer-buffer {
+  display: none;
+}
+
+.timer-row.single-mode .timer-fill {
+  border-radius: var(--r-pill);
 }
 
 .timer-number {
@@ -592,7 +616,8 @@ body {
   animation: shake .25s infinite;
 }
 
-.timer-row.danger .timer-fill {
+.timer-row.danger .timer-fill,
+.timer-row.danger .timer-buffer {
   background: linear-gradient(180deg, #FF9AA5, #C52B43 65%, #791B30);
 }
 
