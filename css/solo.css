@@ -562,87 +562,139 @@ body {
 
 .timer-content { width: 100%; }
 
+/* 細軌道：兩段之間留 2px 縫隙當分界 */
 .timer-track {
   display: flex;
+  gap: 2px;
   width: 100%;
-  height: var(--sp-3);
-  overflow: hidden;
-  border-radius: var(--r-pill);
-  background: linear-gradient(180deg, #5A585D, #29282D);
-  box-shadow: inset 0 2px 3px rgba(0,0,0,.6), 0 1px 0 rgba(255,255,255,.12);
+  height: 6px;
+  background: transparent;
+  box-shadow: none;
 }
 
-.timer-fill, .timer-buffer { flex: none; height: 100%; }
+.timer-fill, .timer-buffer {
+  flex: none;
+  height: 100%;
+  transition: background .3s ease;
+}
 
+/* 正常作答：亮銀 */
 .timer-fill {
   width: 66.6667%;
-  border-radius: 0 var(--r-pill) var(--r-pill) 0;
-  background: linear-gradient(180deg, #F1F1F3, #A9AAAF 60%, #77777F);
+  border-radius: 2px var(--r-pill) var(--r-pill) 2px;
+  background: linear-gradient(180deg, #E6E6EA, #A9AAAF);
 }
 
+/* 打字限定：同色系較暗，不用紫色 */
 .timer-buffer {
   width: 33.3333%;
-  border-radius: var(--r-pill) 0 0 var(--r-pill);
-  background: linear-gradient(180deg, #77757A, #555359 60%, #3D3B40);
+  border-radius: var(--r-pill) 2px 2px var(--r-pill);
+  background: linear-gradient(180deg, #6E6D74, #4A494F);
 }
 
-.timer-row.buffer-only .timer-buffer { border-radius: var(--r-pill); }
+.timer-row.buffer-only .timer-buffer {
+  border-radius: var(--r-pill);
+  background: linear-gradient(180deg, #CFCFD4, #9A9AA1); /* 輪到它時提亮 */
+}
 
-.timer-row.single-mode .timer-buffer,
-.timer-row.single-mode .buffer-label { display: none; }
+/* 單段模式（試玩等） */
+.timer-row.single-mode .timer-buffer { display: none; }
 
 .timer-row.single-mode .timer-fill {
-  width: 100% !important;
-  border-radius: var(--r-pill);
+  border-radius: 0;
 }
 
-.timer-labels {
-  display: flex;
-  align-items: center;
-  margin-top: 4px;
-  min-height: 16px;
-  font-size: var(--fs-xs);
-  line-height: 1.2;
-  color: #777278;
-}
+/* 文字標籤全部隱藏（JS 照寫無妨） */
+.timer-labels { display: none; }
 
-.timer-label {
-  min-width: 0;
-  overflow: hidden;
-  white-space: nowrap;
-  text-overflow: ellipsis;
-}
-
-.buffer-label {
-  width: 33.3333%;
-  padding-right: 4px;
-  text-align: left;
-  color: #68656A;
-}
-
-.normal-label {
-  width: 66.6667%;
-  padding-left: 4px;
-  text-align: right;
-  color: #A6A4A9;
-  font-family: var(--serif);
-  font-weight: 700;
-}
-
-.timer-row.single-mode .normal-label { width: 100%; }
-
+/* 危險：整條轉紅 */
 .timer-row.danger { animation: shake .25s infinite; }
 
 .timer-row.danger .timer-fill,
 .timer-row.danger .timer-buffer {
-  background: linear-gradient(180deg, #FF9AA5, #C52B43 65%, #791B30);
+  background: linear-gradient(180deg, #FF9AA5, #C52B43);
 }
-
-.timer-row.danger .normal-label,
-.timer-row.danger .buffer-label { color: var(--red-light); }
 
 .timer-row.done { opacity: .3; }
 
+
+/* 時間軸貼齊面板上緣 */
+.ibox .timer-row {
+  margin: calc(-1 * var(--sp-3)) calc(-1 * var(--sp-3)) var(--sp-2);
+  width: auto;
+  overflow: hidden;
+  border-radius: var(--r-sm) var(--r-sm) 0 0;
+}
+
+.ibox .timer-track {
+  height: 5px;
+  gap: 0;
+  border-radius: 0;
+  background: rgba(0,0,0,.14);
+  box-shadow: none;
+}
+
+/* 貼邊後不需要膠囊圓角，改成直條 */
+.ibox .timer-fill,
+.ibox .timer-buffer,
+.ibox .timer-row.buffer-only .timer-buffer {
+  border-radius: 0;
+}
+
+/* 軌道：加深，讓「已消耗」的空槽看得出來 */
+.ibox .timer-track {
+  background: rgba(0,0,0,.22);
+}
+
+/* 正常段：深炭色，最醒目 */
+.ibox .timer-fill {
+  background: linear-gradient(180deg, #4A484E, #29282C);
+}
+
+/* 緩衝段（等待中） */
+.ibox .timer-buffer {
+  background: linear-gradient(180deg, #7E75AC, #6A6199);
+}
+
+/* 打字階段：緩衝段換成跟正常段一樣深，表示「現在輪到它」 */
+.ibox .timer-row.buffer-only .timer-buffer {
+  background: linear-gradient(180deg, #B3AADB, #A49AD1);
+}
+
+/* 危險：紅色 */
+.ibox .timer-row.danger .timer-fill,
+.ibox .timer-row.danger .timer-buffer {
+  background: linear-gradient(180deg, #F06B79, #C52B43);
+}
+
+.ibox .timer-row.done {
+  display: none;
+}
+
+@keyframes input-alarm {
+  0%   { box-shadow:
+           inset 0 2px 4px rgba(0,0,0,.16),
+           0 0 0 2px rgba(164,154,209,.9),
+           0 0 14px rgba(164,154,209,.55); }
+  50%  { box-shadow:
+           inset 0 2px 4px rgba(0,0,0,.16),
+           0 0 0 2px rgba(164,154,209,.15),
+           0 0 0 rgba(164,154,209,0); }
+}
+
+.app:has(.timer-row.danger) .irow input:not(.shake) {
+  animation: input-alarm .5s steps(1) infinite;
+}
+
+.ibox .timer-row.danger { animation: none; }
+
+.ibox .timer-row.danger .timer-track {
+  animation: timer-alarm .5s steps(1) infinite;
+}
+
+@keyframes timer-alarm {
+  50% { filter: brightness(.45); }
+}
 
 /* ---- 時間到提示 ---- */
 

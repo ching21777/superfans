@@ -415,6 +415,12 @@ function runTimer(resetDeadline = true) {
       $('trow').classList.toggle('buffer-only', elapsed >= CFG.MAX_TIME);
       $('choice-btn').disabled = elapsed >= CFG.MAX_TIME;
 
+      if (elapsed >= CFG.MAX_TIME && !audio.paused) {
+  audio.pause();
+  $('disc').classList.remove('spin');
+  $('cd').classList.remove('on');
+}
+
       if (elapsed >= CFG.MAX_TIME) {
         $('tnum').textContent = '正常作答結束';
         $('tbuffer-label').textContent =
@@ -613,6 +619,7 @@ function submitAnswer() {
   b.classList.remove('shake');
   void b.offsetWidth;
   b.classList.add('shake');
+  setTimeout(() => b.classList.remove('shake'), 400);
 
   if (window.matchMedia('(hover: none) and (pointer: coarse)').matches) {
     b.focus({ preventScroll: true });
@@ -1572,6 +1579,14 @@ function reveal() {
       $('cd').classList.add('on');
     }).catch(() => {});
   }
+
+  // 一般猜歌：答案揭曉時恢復播放
+if (!isLyricsMode()) {
+  audio.play().then(() => {
+    $('disc').classList.add('spin');
+    $('cd').classList.add('on');
+  }).catch(() => {});
+}
 
   $('b-title').textContent = cur.title;
   $('b-artist').textContent = cur.artist;
