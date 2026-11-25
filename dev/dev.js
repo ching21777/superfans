@@ -82,7 +82,10 @@ devPanel.innerHTML = `
     <button class="bevel go" id="dev-apple-batch-start" type="button">預抓本批歌曲（20 首）</button>
     <div id="dev-apple-batch-status" aria-live="polite">尚未執行</div>
     <div id="dev-apple-batch-results"></div>
-    <button class="bevel btn-sm" id="dev-apple-batch-export" type="button">匯出所選歌單已確認歌曲</button>
+    <div style="display:flex;gap:6px;margin-top:6px;">
+      <button class="bevel btn-sm" id="dev-apple-batch-export" type="button">匯出所選歌單已確認歌曲</button>
+      <button class="bevel btn-sm" id="dev-apple-batch-clear" type="button">清除所選歌單紀錄</button>
+    </div>
     <textarea id="dev-apple-batch-output" placeholder="已確認的歌曲物件會整理在這裡" style="width:100%;height:160px;margin-top:6px;display:none;"></textarea>
 
     <!-- 已綁定歌曲 -->
@@ -783,6 +786,7 @@ const appleBatchStart = $('dev-apple-batch-start');
 const appleBatchStatus = $('dev-apple-batch-status');
 const appleBatchResults = $('dev-apple-batch-results');
 const appleBatchExport = $('dev-apple-batch-export');
+const appleBatchClear = $('dev-apple-batch-clear');
 const appleBatchOutput = $('dev-apple-batch-output');
 const appleBatchPlaylist = $('dev-apple-batch-playlist');
 const appleBatchLimit = $('dev-apple-batch-limit');
@@ -794,6 +798,24 @@ try {
   appleBatchItems = JSON.parse(localStorage.getItem(APPLE_BATCH_KEY) || '{}') || {};
 } catch (error) {
   appleBatchItems = {};
+}
+
+// 以歌曲編號＋歌手＋歌名核對舊紀錄，避免同編號換歌後沿用錯誤 ID。
+function removeStaleAppleBatchItems() {
+  const currentSongs = new Map(
+    getAppleBatchTracks().map(song => [String(song.no), song])
+  );
+
+  Object.entries(appleBatchItems).forEach(([no, item]) => {
+    const song = currentSongs.get(no);
+    if (
+      !song ||
+      normalizeAppleBatchText(item.artist) !== normalizeAppleBatchText(song.artist) ||
+      normalizeAppleBatchText(item.title) !== normalizeAppleBatchText(song.title)
+    ) {
+      delete appleBatchItems[no];
+    }
+  });
 }
 
 function saveAppleBatchItems() {
@@ -823,7 +845,11 @@ function getAppleBatchTracks() {
 
 function getAppleBatchPlaylistKeys() {
   return typeof playlists === 'object' && playlists
-    ? Object.keys(playlists).filter(key => Array.isArray(playlists[key]))
+    ? Object.keys(playlists).filter(key =>
+        Array.isArray(playlists[key]) &&
+        key !== 'male2000s' &&
+        key !== 'female2000s'
+      )
     : [];
 }
 
@@ -831,6 +857,8 @@ function getAppleBatchPlaylistSongs() {
   const key = appleBatchPlaylist.value;
   const all = getAppleBatchTracks();
   if (key === 'all') return all;
+  if (key === 'maleTest') return all.filter(song => /^91\\d{2}$/.test(String(song.no)));
+  if (key === 'femaleTest') return all.filter(song => /^92\\d{2}$/.test(String(song.no)));
   const entries = playlists?.[key];
   if (!Array.isArray(entries)) return [];
   const wanted = new Set(entries.map(value => normalizeAppleBatchText(value)));
@@ -839,6 +867,15 @@ function getAppleBatchPlaylistSongs() {
 
 function initAppleBatchPlaylistOptions() {
   const labels = typeof names === 'object' && names ? names : {};
+  [
+    { value: 'maleTest', label: '901 男歌手精選' },
+    { value: 'femaleTest', label: '902 女歌手精選' }
+  ].forEach(item => {
+    const option = document.createElement('option');
+    option.value = item.value;
+    option.textContent = item.label;
+    appleBatchPlaylist.appendChild(option);
+  });
   getAppleBatchPlaylistKeys().forEach(key => {
     const option = document.createElement('option');
     option.value = key;
@@ -1025,6 +1062,31 @@ async function runAppleMusicBatchPrefetch() {
 appleBatchPlaylist.addEventListener('change', updateAppleBatchControls);
 appleBatchLimit.addEventListener('change', updateAppleBatchControls);
 appleBatchStart.addEventListener('click', runAppleMusicBatchPrefetch);
+appleBatchClear.addEventListener('click', () => {
+  const selectedKey = appleBatchPlaylist.value;
+  const selectedSongs = getAppleBatchPlaylistSongs();
+  if (!selectedSongs.length) {
+    alert('所選歌單沒有歌曲紀錄可清除');
+    return;
+  }
+
+  const label = appleBatchPlaylist.selectedOptions[0]?.textContent || '所選歌單';
+  if (!confirm('確定清除「' + label + '」的 Apple Music 批次配對紀錄？此操作不會修改 TRACKS。')) return;
+
+  if (selectedKey === 'all') {
+    appleBatchItems = {};
+  } else {
+    selectedSongs.forEach(song => {
+      delete appleBatchItems[String(song.no)];
+    });
+  }
+
+  saveAppleBatchItems();
+  appleBatchOutput.value = '';
+  appleBatchOutput.style.display = 'none';
+  updateAppleBatchControls();
+  appleBatchStatus.textContent = '已清除「' + label + '」的批次配對紀錄。';
+});
 appleBatchExport.addEventListener('click', () => {
   const selectedNos = new Set(getAppleBatchPlaylistSongs().map(song => String(song.no)));
   const confirmed = Object.values(appleBatchItems).filter(item =>
@@ -1043,6 +1105,8 @@ appleBatchExport.addEventListener('click', () => {
   appleBatchOutput.focus();
   appleBatchOutput.select();
 });
+removeStaleAppleBatchItems();
+saveAppleBatchItems();
 initAppleBatchPlaylistOptions();
 updateAppleBatchControls();
 
