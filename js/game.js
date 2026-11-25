@@ -24,6 +24,7 @@ const CFG = {
   PAUSE_MAX: 1,
   CHOICE_COST: 0,
   MAX_TIME: 20,
+  TEXT_BUFFER: 10,
   REVEAL_MS: 5000,
   LYRIC_PLAY_SEC: 8   // 接歌詞：題庫沒填 playUntil 時的預設秒數
 };
@@ -388,14 +389,37 @@ function finishQuestionTime() {
   questionElapsed = 0;
 }
 
-function runTimer() {
+function runTimer(resetDeadline = true) {
   clearInterval(tick);
-  endAt = Date.now() + timeLeft * 1000;
+  if (resetDeadline) endAt = Date.now() + timeLeft * 1000;
 
   tick = setInterval(() => {
     timeLeft = Math.max(0, (endAt - Date.now()) / 1000);
 
-    $('tbar').style.width = (timeLeft / CFG.MAX_TIME * 100) + '%';
+    const elapsed = questionStartAt
+      ? Math.max(0, (Date.now() - questionStartAt) / 1000)
+      : 0;
+    const isTypingQuestion = !isLyricsMode() && !usedChoice;
+
+    if (isTypingQuestion) {
+      const normalRemaining = Math.max(0, CFG.MAX_TIME - elapsed);
+      const bufferRemaining = Math.max(
+        0,
+        CFG.MAX_TIME + CFG.TEXT_BUFFER - Math.max(elapsed, CFG.MAX_TIME)
+      );
+
+      $('tbar').style.width =
+        (normalRemaining / (CFG.MAX_TIME + CFG.TEXT_BUFFER) * 100) + '%';
+      $('tbuffer').style.width =
+        (bufferRemaining / (CFG.MAX_TIME + CFG.TEXT_BUFFER) * 100) + '%';
+      $('trow').classList.toggle('buffer-only', elapsed >= CFG.MAX_TIME);
+      $('choice-btn').disabled = elapsed >= CFG.MAX_TIME;
+    } else {
+      $('tbar').style.width = (timeLeft / CFG.MAX_TIME * 100) + '%';
+      $('tbuffer').style.width = '0%';
+      $('trow').classList.remove('buffer-only');
+    }
+
     $('tnum').textContent = Math.ceil(timeLeft) + 's';
     $('trow').classList.toggle('danger', timeLeft <= 3);
 
@@ -589,6 +613,18 @@ function toChoice() {
   if (isLyricsMode()) return;
   if (!active || isPaused || choiceUsed) return;
 
+  const elapsed = questionStartAt
+    ? Math.max(0, (Date.now() - questionStartAt) / 1000)
+    : 0;
+  if (elapsed >= CFG.MAX_TIME) {
+    $('choice-btn').disabled = true;
+    return;
+  }
+
+  timeLeft = Math.max(0, CFG.MAX_TIME - elapsed);
+  endAt = questionStartAt + CFG.MAX_TIME * 1000;
+  clearInterval(tick);
+
   choiceUsed = true;
   usedChoice = true;
   if (window.GameRecord) window.GameRecord.recordEvent('choice_mode_selected');
@@ -610,6 +646,12 @@ function toChoice() {
 
   $('type-sec').style.display = 'none';
   $('choice-sec').style.display = 'block';
+
+  $('trow').classList.add('single-mode');
+  $('trow').classList.remove('buffer-only');
+  $('tbuffer').style.width = '0%';
+  $('tbar').style.width = (timeLeft / CFG.MAX_TIME * 100) + '%';
+  runTimer(false);
 }
 
 $('ogrid').onclick = e => {
@@ -677,12 +719,16 @@ if (remaining.length <= 1) {
 
 
 function correct(isChoice) {
+  timeLeft = Math.max(0, (endAt - Date.now()) / 1000);
   finishQuestionTime();
 
   combo++;
   maxCombo = Math.max(maxCombo, combo);
 
-  const s = calcScore(isChoice, timeLeft, combo, choiceMiss || (usedHint && isChoice), questionAttempts, usedHint);
+  const scoreTimeLeft = isLyricsMode() || isChoice
+    ? timeLeft
+    : Math.max(0, timeLeft - CFG.TEXT_BUFFER);
+  const s = calcScore(isChoice, scoreTimeLeft, combo, choiceMiss || (usedHint && isChoice), questionAttempts, usedHint);
 
   // 首字提示 + 選擇題：中斷連擊
   if (usedHint && isChoice) {
@@ -692,8 +738,8 @@ function correct(isChoice) {
 
   // 專輯品質：剩餘時間越多越好
   let cond = 'near-mint';
-  if (timeLeft >= 10) cond = 'gem-mint';
-  else if (timeLeft < 5) cond = 'good';
+  if (scoreTimeLeft >= 10) cond = 'gem-mint';
+  else if (scoreTimeLeft < 5) cond = 'good';
 
   cds.push({art: cur.art, cond});
 
@@ -1175,9 +1221,14 @@ $('trow').style.visibility = isLyricsMode() ? 'hidden' : '';
   $('items').style.display = '';
   applyItemMode();
 
-  timeLeft = CFG.MAX_TIME;
-  $('tbar').style.width = '100%';
-  $('tnum').textContent = CFG.MAX_TIME + 's';
+  timeLeft = isLyricsMode()
+    ? CFG.MAX_TIME
+    : CFG.MAX_TIME + CFG.TEXT_BUFFER;
+  $('trow').classList.remove('single-mode', 'buffer-only', 'danger');
+  if (isLyricsMode()) $('trow').classList.add('single-mode');
+  $('tbar').style.width = isLyricsMode() ? '100%' : '66.6667%';
+  $('tbuffer').style.width = isLyricsMode() ? '0%' : '33.3333%';
+  $('tnum').textContent = timeLeft + 's';
 
   renderProg();
 
