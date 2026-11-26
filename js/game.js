@@ -776,18 +776,16 @@ if (!isLyricsMode()) {
 
   b.disabled = true;
 
-  if (isLyricsMode()) {
-    b.classList.add('wrong');
-  } else {
-    // 歌名快答：讓叉叉獨立成為可上色的元素
+  // 兩種模式共用同一個答錯狀態：按下後立即進入深灰內縮
+  b.classList.add('wrong');
+
+  if (!isLyricsMode()) {
+    // 歌名快答：叉叉獨立成為可上色的元素
     const mark = document.createElement('span');
     mark.className = 'wrong-mark';
     mark.textContent = '✖';
     b.append(document.createTextNode(' '), mark);
   }
-
-  // 所有答錯都先顯示錯誤回饋
-  b.classList.add('wrong-flash');
 
   // 答錯立即中斷連擊
   choiceMiss = true;
@@ -802,12 +800,6 @@ if (!isLyricsMode()) {
   }
 
   if (remaining.length <= 1) {
-    // 歌詞接唱維持原本最後錯誤狀態；歌名快答先保留紅色叉叉
-    if (isLyricsMode()) {
-      b.classList.remove('wrong-flash');
-      b.classList.add('final-wrong');
-    }
-
     // 歌詞接唱才播放錯誤音效
     if (isLyricsMode()) {
       const wrongSound = $('wrong-sound');
@@ -821,23 +813,8 @@ if (!isLyricsMode()) {
 
     cds.push({ art: cur.art, cond: 'poor' });
 
-    // 先顯示 0.3 秒錯誤回饋，再轉為失效狀態並揭曉正解
-    setTimeout(() => {
-      if (!isLyricsMode()) {
-        b.classList.remove('wrong-flash');
-        b.classList.add('wrong-locked');
-      }
-      holdCorrectChoice();
-    }, 300);
-
-  } else {
-    // 一般答錯：紅色叉叉短暫顯示，再轉為深灰失效狀態
-    setTimeout(() => {
-      b.classList.remove('wrong-flash');
-      if (!isLyricsMode()) {
-        b.classList.add('wrong-locked');
-      }
-    }, 300);
+    // 保留 0.3 秒答錯回饋時間，但顏色不再延遲切換
+    setTimeout(holdCorrectChoice, 300);
   }
 };
 
