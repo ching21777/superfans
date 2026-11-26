@@ -40,13 +40,14 @@
   //   mode / level ＝（選填）覆寫由編號推出的值，給還沒編號的項目用
   // 下面的編號是依規則排的「範例」，請換成你的真實編號。
   const SONGS = [
-    { k: 'drama',    no: '00111' },
-    { k: 'she',      no: '20112' },
-    { k: 'fish',     no: '20212' },
-    { k: 'vagabond', no: '00213', mode: 1, level: 3, status: 'soon' },
+    { k: 'drama',    no: '20112' },
+    { k: 'she',      no: '30113' },
+    { k: 'fish',     no: '30213' },
+    { k: 'vagabond', no: '＊＊＊', mode: 1, level: 3, status: 'soon' },
+    { k: '你一定聽過的西洋歌曲', no: '＊＊＊', mode: 1, level: 2, status: 'soon' },
     { k: 'lyrics',   no: '00321' },
-    { k: 'male2000s',   no: '90111' },
-    { k: 'female2000s', no: '90211' },
+    { k: 'male',   no: '00111' },
+    { k: 'female', no: '00211' },
     { k: 'jay',          no: '＊＊＊', mode: 2, level: 3, status: 'soon' },
     { k: 'LIVE 演唱會預習歌單', no: '＊＊＊', mode: 2, level: 3, status: 'soon' },
   ];

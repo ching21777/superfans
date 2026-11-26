@@ -54,7 +54,7 @@ vagabond:[
     "A_Root 同根生 鬧祭",
     "A_Root 同根生 山鬼"
   ],
-male2000s:[
+male:[
     "周杰倫 簡單愛",
     "周杰倫 夜曲",
     "周杰倫 七里香",
@@ -136,7 +136,7 @@ male2000s:[
     "張震嶽 思念是一種病",
     "張震嶽 再見"
   ],
-  female2000s:[
+  female:[
     "蔡依林 看我72變",
     "蔡依林 說愛你",
     "蔡依林 馬德里不思議",
@@ -227,8 +227,8 @@ const names={
   jay:'周杰倫到底在唱什麼咧',
   lyrics:'多語K歌🎤中英日台通通有',
   helloNico:'Hello Nico 神秘歌單',
-  male2000s:'2000年代男歌手精選',
-  female2000s:'2000年代女歌手精選'};
+  male:'入門挑戰 ► 男歌手們',
+  female:'新手挑戰 ► 女歌手們'};
 
 document.querySelectorAll('.tb[data-k]').forEach(button => {
   const name = names[button.dataset.k];

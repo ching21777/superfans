@@ -26,7 +26,8 @@ const CFG = {
   MAX_TIME: 20,
   TEXT_BUFFER: 10,
   REVEAL_MS: 5000,
-  LYRIC_PLAY_SEC: 8   // 接歌詞：題庫沒填 playUntil 時的預設秒數
+  LYRIC_PLAY_SEC: 8,   // 接歌詞：題庫沒填 playUntil 時的預設秒數
+  TYPING_GRACE: 3   // 20 秒前幾秒內有動作，視為還在作答
 };
 
 const GRADES = [
@@ -88,6 +89,10 @@ let reqId = 0,
 
 // 選擇題選項
 let opts = [];
+
+// 打字題 +10s：20 秒那一刻是否已判斷過（輸入框有字才給 +10s）
+let bufferDecided = false;
+let lastInputAt = 0;   // 最近一次作答動作的時間
 
 // 接歌詞：片段播放
 let clipTimer = null,
@@ -308,22 +313,22 @@ function renderLyricPrompt(item) {
   const answer = item.answer || '';
 
   if (item.type === 'fill') {
-  const parts = prompt.split('{{blank}}');
-  root.classList.add('is-fill');
+    const parts = prompt.split('{{blank}}');
+    root.classList.add('is-fill');
 
-  const fill = document.createElement('div');
-  fill.className = 'lc-fill';
+    const fill = document.createElement('div');
+    fill.className = 'lc-fill';
 
-  fill.append(document.createTextNode(parts[0] || ''));
-  fill.append(addGap(answer));
+    fill.append(document.createTextNode(parts[0] || ''));
+    fill.append(addGap(answer));
 
-  if (parts.length > 1) {
-    fill.append(document.createTextNode(parts.slice(1).join('{{blank}}')));
+    if (parts.length > 1) {
+      fill.append(document.createTextNode(parts.slice(1).join('{{blank}}')));
+    }
+
+    root.append(fill);
+    return;
   }
-
-  root.append(fill);
-  return;
-}
 
   root.classList.remove('is-fill');
 
@@ -389,6 +394,21 @@ function finishQuestionTime() {
   questionElapsed = 0;
 }
 
+// 隱藏 +10s 標籤（只淡出，不移除 urgent，避免淡出時閃回原色）
+function clearBufferUI() {
+  $('buffer-hint').classList.remove('show');
+}
+
+// 結束時凍結輸入框：保留文字，沒答對且有字就顯示紅框
+function freezeInput(markWrong) {
+  if (isLyricsMode() || usedChoice) return;
+  const inp = $('inp');
+  inp.readOnly = true;
+  inp.blur();   // 同時收起手機鍵盤
+  inp.classList.toggle('final-wrong', markWrong && inp.value.trim().length > 0);
+}
+
+
 function runTimer(resetDeadline = true) {
   clearInterval(tick);
   if (resetDeadline) endAt = Date.now() + timeLeft * 1000;
@@ -401,44 +421,66 @@ function runTimer(resetDeadline = true) {
       : 0;
     const isTypingQuestion = !isLyricsMode() && !usedChoice;
 
+    let danger = timeLeft <= 3;
+
     if (isTypingQuestion) {
+      const inBuffer = elapsed >= CFG.MAX_TIME;
+
+      // 20 秒那一刻：輸入框有字才給 +10s，空的就直接逾時
+      if (inBuffer && !bufferDecided) {
+        bufferDecided = true;
+
+        const recentlyActive = Date.now() - lastInputAt <= CFG.TYPING_GRACE * 1000;
+if (!recentlyActive && $('inp').value.trim().length < 1) {
+          clearInterval(tick);
+          timeout();
+          return;
+        }
+      }
+
       const normalRemaining = Math.max(0, CFG.MAX_TIME - elapsed);
       const bufferRemaining = Math.max(
         0,
         CFG.MAX_TIME + CFG.TEXT_BUFFER - Math.max(elapsed, CFG.MAX_TIME)
       );
 
-      $('tbar').style.width =
-        (normalRemaining / (CFG.MAX_TIME + CFG.TEXT_BUFFER) * 100) + '%';
-      $('tbuffer').style.width =
-        (bufferRemaining / (CFG.MAX_TIME + CFG.TEXT_BUFFER) * 100) + '%';
-      $('trow').classList.toggle('buffer-only', elapsed >= CFG.MAX_TIME);
-      $('choice-btn').disabled = elapsed >= CFG.MAX_TIME;
+      // 只有「正常作答的最後 3 秒」才亮 danger；+10s 階段交給左上角標籤
+      danger = !inBuffer && normalRemaining <= 3;
 
-      if (elapsed >= CFG.MAX_TIME && !audio.paused) {
-  audio.pause();
-  $('disc').classList.remove('spin');
-  $('cd').classList.remove('on');
-}
+      // 計時條只顯示正常作答的 20 秒
+      $('tbar').style.width = (normalRemaining / CFG.MAX_TIME * 100) + '%';
+      $('tbuffer').style.width = '0%';
+      $('choice-btn').disabled = inBuffer;
 
-      if (elapsed >= CFG.MAX_TIME) {
-        $('tnum').textContent = '正常作答結束';
-        $('tbuffer-label').textContent =
-          '打字限定｜剩餘 ' + Math.ceil(bufferRemaining) + 's';
+      if (inBuffer) {
+        // 音樂停止
+        if (!audio.paused) {
+          audio.pause();
+          $('disc').classList.remove('spin');
+          $('cd').classList.remove('on');
+        }
+
+        // 輸入框左上角：完成作答 10s、9s...
+        const hint = $('buffer-hint');
+        hint.textContent = '完成作答 ' + Math.ceil(bufferRemaining) + 's';
+        hint.classList.add('show');
+        hint.classList.toggle('urgent', bufferRemaining <= 3);
+
+        $('tnum').textContent = '完成作答';
       } else {
-        $('tnum').textContent =
-          '正常作答｜剩餘 ' + Math.ceil(normalRemaining) + 's';
-        $('tbuffer-label').textContent = '打字限定 +10s';
+        $('tnum').textContent = '剩餘 ' + Math.ceil(normalRemaining) + 's';
       }
+
+      $('tbuffer-label').textContent = '';
     } else {
+      clearBufferUI();
       $('tbar').style.width = (timeLeft / CFG.MAX_TIME * 100) + '%';
       $('tbuffer').style.width = '0%';
-      $('trow').classList.remove('buffer-only');
       $('tnum').textContent = '剩餘 ' + Math.ceil(timeLeft) + 's';
       $('tbuffer-label').textContent = '';
     }
 
-    $('trow').classList.toggle('danger', timeLeft <= 3);
+    $('trow').classList.toggle('danger', danger);
 
     if (timeLeft <= 0) {
       clearInterval(tick);
@@ -458,6 +500,7 @@ function stopAll() {
   $('disc').classList.remove('spin');
   $('cd').classList.remove('on');
   $('trow').classList.remove('danger');
+  clearBufferUI();
 }
 
 function playNow() {
@@ -489,6 +532,7 @@ function doHint() {
   updHintBtn();
 
   $('inp').value = cur.title.trim().charAt(0);
+  lastInputAt = Date.now();
 }
 
 // 更新提示按鈕
@@ -535,12 +579,12 @@ function calcScore(isChoice, tLeft, comboNow, lostCombo, attempts, usedHint = fa
 
   // 提示折扣：首字提示 + 選擇題，額外降至 20%
   const hintRate = isLyricsMode()
-  ? Math.pow(0.5, lyricsItemCount)
-  : usedHint && isChoice
-    ? 0.2
-    : usedHint
-      ? 0.8
-      : 1;
+    ? Math.pow(0.5, lyricsItemCount)
+    : usedHint && isChoice
+      ? 0.2
+      : usedHint
+        ? 0.8
+        : 1;
 
   const totalScore = base + speed + bonus;
 
@@ -571,16 +615,15 @@ function useEliminate() {
 
   const remaining = [...$('ogrid').querySelectorAll('.opt:not(:disabled)')];
 
-const wrongs = remaining
-  .filter(b => opts[+b.dataset.i] !== getLyricAnswer());
+  const wrongs = remaining
+    .filter(b => opts[+b.dataset.i] !== getLyricAnswer());
 
-    
-    // 剩餘選項只剩 2 個，或錯誤選項不足 2 個時，停用道具
-if (remaining.length <= 2 || wrongs.length < 2) {
-  $('choice-btn').disabled = true;
-  $('choice-sub').textContent = '無法使用';
-  return;
-}
+  // 剩餘選項只剩 2 個，或錯誤選項不足 2 個時，停用道具
+  if (remaining.length <= 2 || wrongs.length < 2) {
+    $('choice-btn').disabled = true;
+    $('choice-sub').textContent = '無法使用';
+    return;
+  }
 
   const b = wrongs[Math.floor(Math.random() * wrongs.length)];
   b.disabled = true;
@@ -613,7 +656,11 @@ function submitAnswer() {
   combo = 0;
   updCombo();
 
+  lastInputAt = Date.now();   // 答錯後輸入框被清空，但仍算有在作答
+
   $('inp').value = '';
+  $('inp').readOnly = false;
+  $('inp').classList.remove('final-wrong');
 
   const b = $('inp');
   b.classList.remove('shake');
@@ -666,7 +713,6 @@ function toChoice() {
   $('choice-sec').style.display = 'block';
 
   $('trow').classList.add('single-mode');
-  $('trow').classList.remove('buffer-only');
   $('tbuffer').style.width = '0%';
   $('tbar').style.width = (timeLeft / CFG.MAX_TIME * 100) + '%';
   $('tnum').textContent = '剩餘 ' + Math.ceil(timeLeft) + 's';
@@ -688,59 +734,61 @@ $('ogrid').onclick = e => {
     return;
   }
 
-b.disabled = true;
-if (isLyricsMode()) b.classList.add('wrong');
-else b.textContent += ' ✖';
+  b.disabled = true;
+  if (isLyricsMode()) b.classList.add('wrong');
+  else b.textContent += ' ✖';
 
-// 所有答錯都先顯示紅框
-b.classList.add('wrong-flash');
+  // 所有答錯都先顯示紅框
+  b.classList.add('wrong-flash');
 
-// 答錯立即中斷連擊
-choiceMiss = true;
-combo = 0;
-updCombo();
+  // 答錯立即中斷連擊
+  choiceMiss = true;
+  combo = 0;
+  updCombo();
 
-const remaining = [...$('ogrid').querySelectorAll('.opt:not(:disabled)')];
+  const remaining = [...$('ogrid').querySelectorAll('.opt:not(:disabled)')];
 
-if (isLyricsMode() && remaining.length <= 2) {
-  $('choice-btn').disabled = true;
-  $('choice-sub').textContent = '無法使用';
-}
-
-if (remaining.length <= 1) {
-  // 最後一次答錯：保留紅框並閃爍
-  b.classList.remove('wrong-flash');
-  b.classList.add('final-wrong');
-
-  // 歌詞接唱才播放錯誤音效
-  if (isLyricsMode()) {
-    const wrongSound = $('wrong-sound');
-    wrongSound.currentTime = 0;
-    wrongSound.play().catch(() => {});
+  if (isLyricsMode() && remaining.length <= 2) {
+    $('choice-btn').disabled = true;
+    $('choice-sub').textContent = '無法使用';
   }
 
-  active = false;
-  finishQuestionTime();
-  completeRecordQuestion(false, 'wrong', 0);
-
-  cds.push({ art: cur.art, cond: 'poor' });
-
-  // 先讓錯誤回饋出現 0.3 秒，再揭曉正解
-  setTimeout(holdCorrectChoice, 300);
-
-} else {
-  // 一般答錯：短暫紅框後恢復原本灰化狀態
-  setTimeout(() => {
+  if (remaining.length <= 1) {
+    // 最後一次答錯：保留紅框並閃爍
     b.classList.remove('wrong-flash');
-  }, 300);
-}
+    b.classList.add('final-wrong');
 
+    // 歌詞接唱才播放錯誤音效
+    if (isLyricsMode()) {
+      const wrongSound = $('wrong-sound');
+      wrongSound.currentTime = 0;
+      wrongSound.play().catch(() => {});
+    }
+
+    active = false;
+    finishQuestionTime();
+    completeRecordQuestion(false, 'wrong', 0);
+
+    cds.push({ art: cur.art, cond: 'poor' });
+
+    // 先讓錯誤回饋出現 0.3 秒，再揭曉正解
+    setTimeout(holdCorrectChoice, 300);
+
+  } else {
+    // 一般答錯：短暫紅框後恢復原本灰化狀態
+    setTimeout(() => {
+      b.classList.remove('wrong-flash');
+    }, 300);
+  }
 };
 
 
 function correct(isChoice) {
+  if (!isChoice) freezeInput(false);
+
   timeLeft = Math.max(0, (endAt - Date.now()) / 1000);
   finishQuestionTime();
+  clearBufferUI();
 
   combo++;
   maxCombo = Math.max(maxCombo, combo);
@@ -777,6 +825,7 @@ function holdCorrectChoice() {
   active = false;
   clearInterval(tick);
   $('trow').classList.remove('danger');
+  clearBufferUI();
 
   if (isLyricsMode()) revealLyricCard();
 
@@ -799,18 +848,17 @@ function holdCorrectChoice() {
 }
 
 
-
-
-
 function timeout() {
   finishQuestionTime();
   completeRecordQuestion(false, 'timeout', 0);
+  clearBufferUI();
   combo = 0;
   updCombo();
 
   cds.push({art: cur.art, cond: 'poor'});
 
   active = false;
+  freezeInput(true);
   $('timeout-overlay').style.display = 'flex';
 
   // 逾時後也要讓玩家看見正解，流程與答對時一致。
@@ -863,10 +911,10 @@ function begin(demo) {
   document.querySelectorAll('.ov').forEach(m => m.style.display = 'none');
 
   $('mode').textContent = demo
-  ? '試玩模式'
-  : (isLyricsMode()
-      ? (theme === 'helloNico' ? '歌詞接唱' : '歌詞接唱')
-      : '歌名搶答');
+    ? '試玩模式'
+    : (isLyricsMode()
+        ? (theme === 'helloNico' ? '歌詞接唱' : '歌詞接唱')
+        : '歌名搶答');
   $('mode').style.display = 'block';
   $('quit-btn').style.display = 'block';
 
@@ -1201,6 +1249,11 @@ async function loadQuestion() {
   lyricsItemCount = 0;
   questionAttempts = 0;
 
+  // +10s 狀態重置
+  bufferDecided = false;
+  lastInputAt = 0;
+$('buffer-hint').classList.remove('show', 'urgent');   // 新的一題才重置紅色狀態
+
   // 每首新歌重新開放一次提示
   hintLeft = 1;
   updHintBtn();
@@ -1227,12 +1280,13 @@ async function loadQuestion() {
   $('next-sec').style.display = 'none';
 
   // 歌詞模式：切換整個遊戲畫面的顯示狀態
-document.querySelector('.app').classList.toggle('lyrics-mode', isLyricsMode());
-$('trow').style.visibility = isLyricsMode() ? 'hidden' : '';
+  document.querySelector('.app').classList.toggle('lyrics-mode', isLyricsMode());
+  $('trow').style.visibility = isLyricsMode() ? 'hidden' : '';
 
   $('stage').classList.remove('rev', 'lyrics-q', 'ly-listen', 'ly-leave', 'ly-enter');
   $('inp').value = '';
-  $('inp').classList.remove('shake');
+$('inp').readOnly = false;
+$('inp').classList.remove('shake', 'final-wrong');
 
   $('tap').style.display = 'none';
 
@@ -1241,17 +1295,16 @@ $('trow').style.visibility = isLyricsMode() ? 'hidden' : '';
   $('items').style.display = '';
   applyItemMode();
 
+  // 打字題內部仍是 30 秒（20 + 10），但計時條一律只顯示單段 20 秒
   timeLeft = isLyricsMode()
     ? CFG.MAX_TIME
     : CFG.MAX_TIME + CFG.TEXT_BUFFER;
-  $('trow').classList.remove('single-mode', 'buffer-only', 'danger');
-  if (isLyricsMode()) $('trow').classList.add('single-mode');
-  $('tbar').style.width = isLyricsMode() ? '100%' : '66.6667%';
-  $('tbuffer').style.width = isLyricsMode() ? '0%' : '33.3333%';
-  $('tnum').textContent = isLyricsMode()
-    ? '剩餘 ' + timeLeft + 's'
-    : '正常作答｜剩餘 ' + CFG.MAX_TIME + 's';
-  $('tbuffer-label').textContent = isLyricsMode() ? '' : '打字限定 +10s';
+  $('trow').classList.remove('buffer-only', 'danger');
+  $('trow').classList.add('single-mode');
+  $('tbar').style.width = '100%';
+  $('tbuffer').style.width = '0%';
+  $('tnum').textContent = '剩餘 ' + CFG.MAX_TIME + 's';
+  $('tbuffer-label').textContent = '';
 
   renderProg();
 
@@ -1266,7 +1319,7 @@ $('trow').style.visibility = isLyricsMode() ? 'hidden' : '';
           artist = term.slice(0, sp),
           title = term.slice(sp + 1);
 
-        const song = TRACKS.find(track =>
+    const song = TRACKS.find(track =>
       normalizeMatchText(track.artist) === normalizeMatchText(artist) &&
       normalizeMatchText(track.title) === normalizeMatchText(title)
     );
@@ -1298,7 +1351,7 @@ $('trow').style.visibility = isLyricsMode() ? 'hidden' : '';
         playNow();
         return;
       }
-        } catch (e) {
+    } catch (e) {
       if (my !== reqId) return;
     }
   } // 結束 while
@@ -1321,22 +1374,22 @@ $('trow').style.visibility = isLyricsMode() ? 'hidden' : '';
   - 題目內容：type（previous / next / fill）、prompt、answer、distractors
   - fill 題型的 prompt 使用 {{blank}} 標記挖空位置
 */
-  async function loadLyricsQuestion(my) {
+async function loadLyricsQuestion(my) {
   const item = queue[qPtr++];
 
-if (!item) {
-  if (qDone === 0) {
-    alert('目前沒有可載入的歌詞題目，請確認題庫設定。');
-    toTheme();
+  if (!item) {
+    if (qDone === 0) {
+      alert('目前沒有可載入的歌詞題目，請確認題庫設定。');
+      toTheme();
+      return;
+    }
+
+    total = qDone;
+    finish();
     return;
   }
 
-  total = qDone;
-  finish();
-  return;
-}
-
-const song = TRACKS.find(track => track.no === item.no);
+  const song = TRACKS.find(track => track.no === item.no);
 
   if (!song) {
     console.error(`找不到歌曲資料：${item.no}`);
@@ -1562,6 +1615,7 @@ function reveal() {
 
   $('trow').classList.remove('danger');
   $('trow').classList.add('done');
+  clearBufferUI();
 
   $('art').src = cur.art;
   $('case').classList.add('rev');
@@ -1581,27 +1635,28 @@ function reveal() {
   }
 
   // 一般猜歌：答案揭曉時恢復播放
-if (!isLyricsMode()) {
-  audio.play().then(() => {
-    $('disc').classList.add('spin');
-    $('cd').classList.add('on');
-  }).catch(() => {});
-}
+  if (!isLyricsMode()) {
+    audio.play().then(() => {
+      $('disc').classList.add('spin');
+      $('cd').classList.add('on');
+    }).catch(() => {});
+  }
 
   $('b-title').textContent = cur.title;
   $('b-artist').textContent = cur.artist;
   $('b-meta').textContent = [cur.album, cur.year].filter(Boolean).join(' · ');
   $('banner').classList.add('show');
 
+  // 打字題：輸入框留在畫面上，直到下一題才重置
   $('type-sec').style.display = 'none';
-$('choice-sec').style.display = 'none';
+  $('choice-sec').style.display = 'none';
 
-if (isLyricsMode()) {
-  $('lyric-prompt').style.display = 'flex';
-  revealLyricCard();
-} else {
-  $('lyric-prompt').style.display = 'none';
-}
+  if (isLyricsMode()) {
+    $('lyric-prompt').style.display = 'flex';
+    revealLyricCard();
+  } else {
+    $('lyric-prompt').style.display = 'none';
+  }
   $('ls-wait').style.display = 'none';
   $('items').style.display = 'none';
 
@@ -1617,9 +1672,6 @@ if (isLyricsMode()) {
   clearTimeout(nextT);
   nextT = setTimeout(next, CFG.REVEAL_MS);
 }
-
-
-
 
 
 function showResult() {
@@ -1683,6 +1735,10 @@ $('inp').addEventListener('keydown', e => {
 
   e.preventDefault();
   submitAnswer();
+});
+
+$('inp').addEventListener('input', () => {
+  if (active) lastInputAt = Date.now();   // 打字或刪除都算
 });
 
 $('inp').placeholder = isMobile
