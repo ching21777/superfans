@@ -238,6 +238,43 @@ async function getAppleMusicTrack(song) {
   }
 }
 
+// 歌名模式：提前查詢並預載歌曲，避免切題後才開始等待
+const songPreloadCache = new Map();
+
+function prepareSong(term) {
+  if (!term) return Promise.resolve(null);
+  if (songPreloadCache.has(term)) return songPreloadCache.get(term);
+
+  const task = (async () => {
+    const sp = term.indexOf(' ');
+    const artist = term.slice(0, sp);
+    const title = term.slice(sp + 1);
+    const song = TRACKS.find(track =>
+      normalizeMatchText(track.artist) === normalizeMatchText(artist) &&
+      normalizeMatchText(track.title) === normalizeMatchText(title)
+    );
+
+    const track = await getAppleMusicTrack({
+      artist,
+      title,
+      appleMusicId: song?.appleMusicId
+    });
+
+    if (!track?.previewUrl) return null;
+
+    // 獨立音訊物件在背景載入；正式播放時由共用 audio 接手
+    const preloadAudio = new Audio();
+    preloadAudio.preload = 'auto';
+    preloadAudio.src = track.previewUrl;
+    preloadAudio.load();
+
+    return { track, preloadAudio };
+  })().catch(() => null);
+
+  songPreloadCache.set(term, task);
+  return task;
+}
+
 // 歌詞字數轉換成星星（中文逐字、英文逐詞、數字逐字）
 function updateLyricStars(text) {
   const units = text.match(/[\p{Script=Han}\p{N}]|[\p{L}]+(?:['’][\p{L}]+)?/gu) || [];
@@ -553,10 +590,14 @@ function playNow() {
       $('disc').classList.add('spin');
       $('cd').classList.add('on');
 
-      $('choice-btn').disabled = false;
-$('choice-sub').textContent = CFG.CHOICE_COST
-  ? `花 ${CFG.CHOICE_COST} 金幣`
-  : '分數打折';
+      $('choice-btn').disabled = choiceUsed || usedHint;
+      $('choice-sub').textContent = usedHint
+        ? '不可併用'
+        : choiceUsed
+          ? '已使用'
+          : CFG.CHOICE_COST
+            ? `花 ${CFG.CHOICE_COST} 金幣`
+            : '分數打折';
 
       questionStartAt = Date.now();
       startRecordQuestion();
@@ -731,22 +772,25 @@ function toChoice() {
   if (isLyricsMode()) return;
   if (!active || isPaused || choiceUsed || usedHint) return;
 
-  // 音訊尚未開始、計時起點未建立時，不允許切換選擇題
-  if (!questionStartAt) return;
+  const hasStarted = !!questionStartAt;
 
-  const elapsed = questionStartAt
-    ? Math.max(0, (Date.now() - questionStartAt) / 1000)
-    : 0;
-  if (elapsed >= CFG.MAX_TIME) {
-    $('choice-btn').disabled = true;
-    return;
+  if (hasStarted) {
+    const elapsed = (Date.now() - questionStartAt) / 1000;
+    if (elapsed >= CFG.MAX_TIME) {
+      $('choice-btn').disabled = true;
+      return;
+    }
+
+    timeLeft = Math.max(0, CFG.MAX_TIME - elapsed);
+    endAt = questionStartAt + CFG.MAX_TIME * 1000;
+    audioPlayId++; // 已開始播放時，保留舊回呼防護
+  } else {
+    // 音訊播放回呼尚未完成：先切換介面，等播放成功再開始倒數
+    timeLeft = CFG.MAX_TIME;
   }
 
-  timeLeft = Math.max(0, CFG.MAX_TIME - elapsed);
-  endAt = questionStartAt + CFG.MAX_TIME * 1000;
   clearInterval(tick);
 
-  audioPlayId++; // 切換選擇題時，讓尚未完成的播放回呼失效
   choiceUsed = true;
   usedChoice = true;
   if (window.GameRecord) window.GameRecord.recordEvent('choice_mode_selected');
@@ -775,7 +819,9 @@ function toChoice() {
   $('tbar').style.width = (timeLeft / CFG.MAX_TIME * 100) + '%';
   $('tnum').textContent = '剩餘 ' + Math.ceil(timeLeft) + 's';
   $('tbuffer-label').textContent = '';
-  runTimer(false);
+
+  // 若播放尚未成功，playNow() 成功後才會啟動計時
+  if (hasStarted) runTimer(false);
 }
 
 $('ogrid').onclick = e => {
@@ -1026,6 +1072,9 @@ function begin(demo) {
   totalAnswerTime = 0;
   questionElapsed = 0;
   questionStartAt = 0;
+
+  // 倒數期間先查詢並預載第一首歌；試玩模式也同步背景準備
+  if (!isLyricsMode()) prepareSong(queue[qPtr]);
 
   if (demo) loadQuestion();
   else countdown(loadQuestion);
@@ -1364,10 +1413,12 @@ $('inp').classList.remove('shake', 'final-wrong');
 
   $('tap').style.display = 'none';
 
-  $('choice-btn').disabled = !isLyricsMode();
+  $('choice-btn').disabled = isLyricsMode();
   $('choice-sub').textContent = isLyricsMode()
-  ? '可用一次'
-  : '歌曲載入中…';
+    ? '可用一次'
+    : CFG.CHOICE_COST
+      ? `花 ${CFG.CHOICE_COST} 金幣`
+      : '分數打折';
   $('items').style.display = '';
   applyItemMode();
 
@@ -1401,13 +1452,10 @@ $('inp').classList.remove('shake', 'final-wrong');
     );
 
     try {
-      const t = await getAppleMusicTrack({
-        artist,
-        title,
-        appleMusicId: song?.appleMusicId
-      });
-
+      const prepared = await prepareSong(term);
       if (my !== reqId) return;
+
+      const t = prepared?.track || null;
 
       if (t) {
         cur = {
@@ -1424,6 +1472,9 @@ $('inp').classList.remove('shake', 'final-wrong');
         active = true;
 
         focusInput();
+
+        // 玩家聽目前歌曲時，背景準備下一首
+        prepareSong(queue[qPtr]);
         playNow();
         return;
       }
