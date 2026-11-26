@@ -90,6 +90,9 @@ let reqId = 0,
 
 let choiceItemsLeft = 5;
 let hintItemsLeft = 5;
+let lyricsEliminateItemsLeft = 3;
+let lyricsHintItemsLeft = 3;
+let lyricsEliminateUsed = false;
 
 // 選擇題選項
 let opts = [];
@@ -726,29 +729,41 @@ function grade(s) {
 
 /* 接歌詞道具：隨機刪掉一個錯誤選項（分數 ×0.8，不影響連擊） */
 function useEliminate() {
-  if (!active || isPaused || !isLyricsMode()) return;
+  if (!active || isPaused || !isLyricsMode() || lyricsEliminateItemsLeft <= 0) return;
 
   const remaining = [...$('ogrid').querySelectorAll('.opt:not(:disabled)')];
 
   const wrongs = remaining
     .filter(b => opts[+b.dataset.i] !== getLyricAnswer());
 
-  // 剩餘選項只剩 2 個，或錯誤選項不足 2 個時，停用道具
-  if (remaining.length <= 2 || wrongs.length < 2) {
-    $('choice-btn').disabled = true;
-    $('choice-sub').textContent = '無法使用';
-    return;
-  }
+  // 次數已用完時，優先維持「已用完」
+if (lyricsEliminateItemsLeft <= 0) {
+  $('choice-btn').disabled = true;
+  $('choice-sub').textContent = '已用完';
+  return;
+}
+
+// 剩餘選項不足時，暫時無法使用
+if (remaining.length <= 2 || wrongs.length < 2) {
+  $('choice-btn').disabled = true;
+  $('choice-sub').textContent = '選項不足';
+  return;
+}
 
   const b = wrongs[Math.floor(Math.random() * wrongs.length)];
   b.disabled = true;
   b.classList.add('removed');
+  lyricsEliminateUsed = true;
 
-  usedHint = true;                 // 沿用既有的提示折扣 0.8
-  if (window.GameRecord) window.GameRecord.recordEvent('hint_used', { type: 'eliminate' });
-  lyricsItemCount++;
-  $('choice-btn').disabled = true;
-  $('choice-sub').textContent = '已使用';
+  usedHint = true;
+if (window.GameRecord) window.GameRecord.recordEvent('hint_used', { type: 'eliminate' });
+lyricsItemCount++;
+lyricsEliminateItemsLeft--;
+
+$('choice-btn').disabled = true;
+$('choice-sub').textContent = lyricsEliminateItemsLeft <= 0
+  ? '已用完'
+  : `剩 ${lyricsEliminateItemsLeft} 次`;
 }
 
 function submitAnswer() {
@@ -904,9 +919,15 @@ if (!isLyricsMode()) {
   const remaining = [...$('ogrid').querySelectorAll('.opt:not(:disabled)')];
 
   if (isLyricsMode() && remaining.length <= 2) {
-    $('choice-btn').disabled = true;
-    $('choice-sub').textContent = '無法使用';
-  }
+  $('choice-btn').disabled = true;
+
+  $('choice-sub').textContent =
+    lyricsEliminateItemsLeft <= 0
+      ? '已用完'
+      : lyricsEliminateUsed
+        ? `剩 ${lyricsEliminateItemsLeft} 次`
+        : '選項不足';
+}
 
   if (remaining.length <= 1) {
     // 歌詞接唱才播放錯誤音效
@@ -1067,6 +1088,8 @@ function begin(demo) {
   hintLeft = 1;
 choiceItemsLeft = 5;
 hintItemsLeft = 5;
+lyricsEliminateItemsLeft = 3;
+lyricsHintItemsLeft = 3;
 usedChoice = false;
 
 $('choice-btn').disabled = false;
@@ -1184,18 +1207,22 @@ function applyItemMode() {
   const c = $('choice-btn'), h = $('pause-btn');
 
   if (isLyricsMode()) {
-    c.querySelector('.ic').textContent = '✂️';
-    c.querySelector('b').textContent = '刪去一項';
-    $('choice-sub').textContent = '可用一次';
-    c.disabled = false;
-    c.onclick = useEliminate;
+  c.querySelector('.ic').textContent = '✂️';
+  c.querySelector('b').textContent = '刪去一項';
+  $('choice-sub').textContent = lyricsEliminateItemsLeft <= 0
+    ? '已用完'
+    : `剩 ${lyricsEliminateItemsLeft} 次`;
+  c.disabled = lyricsEliminateItemsLeft <= 0;
+  c.onclick = useEliminate;
 
-    h.querySelector('.ic').textContent = '💡';
-    h.querySelector('b').textContent = '顯示歌詞';
-    $('pause-sub').textContent = '可用一次';
-    h.disabled = false;
-    h.onclick = revealLyricHint;
-  } else {
+  h.querySelector('.ic').textContent = '💡';
+  h.querySelector('b').textContent = '顯示歌詞';
+  $('pause-sub').textContent = lyricsHintItemsLeft <= 0
+    ? '已用完'
+    : `剩 ${lyricsHintItemsLeft} 次`;
+  h.disabled = lyricsHintItemsLeft <= 0;
+  h.onclick = revealLyricHint;
+} else {
     c.querySelector('.ic').textContent = '🆘';
     c.querySelector('b').textContent = '改選擇題';
     c.onclick = toChoice;
@@ -1368,15 +1395,20 @@ function showLyricQuestion() {
 
 /* 歌詞提示：顯示上一句歌詞 */
 function revealLyricHint() {
+  if (lyricsHintItemsLeft <= 0) return;
+
   const card = $('lyric-prev').closest('.lyric-card');
   if (card) card.classList.add('lyric-cover-open');
 
   usedHint = true;
   if (window.GameRecord) window.GameRecord.recordEvent('hint_used', { type: 'lyric_hint' });
   lyricsItemCount++;
+  lyricsHintItemsLeft--;
 
   $('pause-btn').disabled = true;
-  $('pause-sub').textContent = '已使用';
+  $('pause-sub').textContent = lyricsHintItemsLeft <= 0
+    ? '已用完'
+    : `剩 ${lyricsHintItemsLeft} 次`;
 }
 
 /* 答對答錯：顯示上一句歌詞 */
@@ -1397,6 +1429,7 @@ async function loadQuestion() {
   cur = null;
   choiceUsed = false;
   choiceMiss = false;
+  lyricsEliminateUsed = false;
   isPaused = false;
   usedChoice = false;
   usedHint = false;
