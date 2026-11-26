@@ -467,7 +467,7 @@ function runTimer(resetDeadline = true) {
       // 計時條只顯示正常作答的 20 秒
       $('tbar').style.width = (normalRemaining / CFG.MAX_TIME * 100) + '%';
       $('tbuffer').style.width = '0%';
-      $('choice-btn').disabled = inBuffer;
+      $('choice-btn').disabled = usedHint || inBuffer;
 
       if (inBuffer) {
         // 音樂停止
