@@ -899,7 +899,7 @@ if (timeLeft <= 0) {
   b.classList.add('wrong');
 
   if (!isLyricsMode()) {
-    // 歌名快答：叉叉獨立成為可上色的元素
+    // 歌名搶答：叉叉獨立成為可上色的元素
     const mark = document.createElement('span');
     mark.className = 'wrong-mark';
     mark.textContent = '✖';

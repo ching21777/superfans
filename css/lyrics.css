@@ -338,7 +338,7 @@
   text-decoration: none;
 }
 
-/* 答錯叉叉：使用與歌名快答相同的磚紅色 */
+/* 答錯叉叉：使用與歌名搶答相同的磚紅色 */
 .lyric-opt.wrong .lo-key {
   color: var(--answer-wrong-mark);
   background: transparent;

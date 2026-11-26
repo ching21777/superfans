@@ -7,7 +7,7 @@
 
 /* 模式設定：之後新增模式，只要在這裡加一筆（並在 saveHistory 決定 mode）*/
 const LB_MODES = [
-  {k: 'song',   name: '歌名快答',   desc: '比高分 · 分數越高越好'},
+  {k: 'song',   name: '歌名搶答',   desc: '比高分 · 分數越高越好'},
   {k: 'lyrics', name: '歌詞接唱', desc: '接唱歌詞 · 分數越高越好'}
 ];
 
@@ -108,7 +108,7 @@ function loadHistory() {
 
   // 首頁顯示的四種遊戲模式
   const homeModes = [
-    {k: 'song', name: '歌名快答'},
+    {k: 'song', name: '歌名搶答'},
     {k: 'lyrics', name: '歌詞接唱'},
     // {k: 'singer', name: '歌手辨識 Coming Soon'},
     // {k: 'composer', name: '»» 猜猜作曲家'}

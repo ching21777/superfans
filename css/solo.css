@@ -54,7 +54,7 @@
   --danger-glow: rgba(184, 66, 77, .32);
   --danger-glow-soft: rgba(184, 66, 77, .16);
 
-  /* 答題選項狀態：歌名快答、歌詞接唱共用 */
+  /* 答題選項狀態：歌名搶答、歌詞接唱共用 */
   --answer-correct-text: #2B2108;
   --answer-correct-bg: linear-gradient(180deg, #FBEBB8 0%, #E7C56F 55%, #C49A3C 100%);
   --answer-correct-shadow: inset 0 2px 1px rgba(255,255,255,.8), 0 4px 0 #8A6A22, 0 0 14px rgba(217,180,91,.6);
