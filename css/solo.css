@@ -941,7 +941,7 @@ body {
   font-size: var(--fs-xl);
   font-weight: 900;
   line-height: 1.2;
-  color: var(--red-dark);
+  color: var(--red);
 }
 
 .banner span {
@@ -1086,6 +1086,7 @@ body {
   gap: var(--sp-2);
 }
 
+
 .opt {
   padding: var(--sp-4) var(--sp-3);
   font-size: var(--fs-md);
@@ -1108,55 +1109,72 @@ body {
 }
 
 .opt:active:not(:disabled) {
-  filter: brightness(1.25);
-  transform: translateY(3px);
+  transform: translateY(1px);
   box-shadow:
     inset 0 2px 4px rgba(0,0,0,.25),
     0 1px 1px rgba(0,0,0,.2);
 }
 
 .opt:disabled {
-  color: var(--white);
-  background: linear-gradient(180deg, #B8B8BB, #89898E);
-  box-shadow: 0 2px 0 #55555A;
+  color: #77777D;
+  background: linear-gradient(
+    180deg,
+    #D5D5D8 0%,
+    #B8B8BD 22%,
+    #A2A2A8 60%,
+    #898990 100%
+  );
+  box-shadow:
+    inset 0 1px 1px rgba(255,255,255,.6),
+    0 2px 0 #66666E;
   cursor: not-allowed;
 }
 
-/* 猜歌模式：正解高亮 */
+/* 答對：維持原本全按鈕金色高亮 */
 .opt.correct {
   color: #2B2108;
-  background: linear-gradient(180deg,#FBEBB8 0%,#E7C56F 55%,#C49A3C 100%) !important;
-  border: 2px solid #E7C56F;
+  background: linear-gradient(
+    180deg,
+    #FBEBB8 0%,
+    #E7C56F 55%,
+    #C49A3C 100%
+  );
   box-shadow:
     inset 0 2px 1px rgba(255,255,255,.8),
     0 4px 0 #8A6A22,
-    0 0 14px rgba(217,180,91,.6) !important;
+    0 0 14px rgba(217,180,91,.6);
 }
 
-/* 答錯時的磚紅框提示 */
-.opt.wrong-flash,
-.opt.final-wrong {
-  border: 2px solid var(--danger) !important;
-  background: var(--danger-bg) !important;
-  box-shadow: 0 0 12px var(--danger-glow);
+
+/* 答錯：短暫讓底部厚度轉為暗紅色 */
+.opt:disabled.wrong-flash {
+  box-shadow:
+    inset 0 2px 1px rgba(255,255,255,.9),
+    inset 0 -2px 1px rgba(70,70,78,.3),
+    0 1px 0 rgba(255,255,255,.25),
+    0 4px 0 #873F3F,
+    0 6px 8px rgba(0,0,0,.28);
 }
 
-/* 最後一次答錯：磚紅快速閃爍 2 秒 */
-.opt.final-wrong {
-  animation: finalWrongFlash .25s ease-in-out 4;
+/* 答錯後：深灰、內縮、底座感減弱 */
+.opt:disabled.final-wrong,
+.opt:disabled.wrong {
+  color: #77777D;
+  background: linear-gradient(
+    180deg,
+    #A5A5AA 0%,
+    #88888F 45%,
+    #707078 100%
+  );
+  transform: translateY(3px);
+  box-shadow:
+    inset 0 3px 5px rgba(0,0,0,.28),
+    inset 0 -1px 1px rgba(255,255,255,.12),
+    0 1px 0 #55555C;
+  cursor: not-allowed;
 }
 
-@keyframes finalWrongFlash {
-  0%, 100% {
-    background: var(--danger-bg);
-    box-shadow: 0 0 12px var(--danger-glow);
-  }
 
-  50% {
-    background: var(--danger-bg-faint);
-    box-shadow: none;
-  }
-}
 
 /* ---- 遊戲道具 ---- */
 
