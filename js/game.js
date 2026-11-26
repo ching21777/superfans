@@ -541,6 +541,11 @@ function playNow() {
       $('disc').classList.add('spin');
       $('cd').classList.add('on');
 
+      $('choice-btn').disabled = false;
+$('choice-sub').textContent = CFG.CHOICE_COST
+  ? `花 ${CFG.CHOICE_COST} 金幣`
+  : '分數打折';
+
       questionStartAt = Date.now();
       startRecordQuestion();
 
@@ -1346,8 +1351,10 @@ $('inp').classList.remove('shake', 'final-wrong');
 
   $('tap').style.display = 'none';
 
-  $('choice-btn').disabled = false;
-  $('choice-sub').textContent = CFG.CHOICE_COST ? `花 ${CFG.CHOICE_COST} 金幣` : '分數打折';
+  $('choice-btn').disabled = !isLyricsMode();
+  $('choice-sub').textContent = isLyricsMode()
+  ? '可用一次'
+  : '歌曲載入中…';
   $('items').style.display = '';
   applyItemMode();
 
