@@ -563,6 +563,10 @@ function doHint() {
   if (window.GameRecord) window.GameRecord.recordEvent('hint_used', { type: 'first_letter' });
   updHintBtn();
 
+  // 首字提示與切換選擇題不可併用
+  $('choice-btn').disabled = true;
+  $('choice-sub').textContent = '不可併用';
+
   $('inp').value = cur.title.trim().charAt(0);
   lastInputAt = Date.now();
 }
@@ -708,7 +712,7 @@ function submitAnswer() {
 // 改選擇題
 function toChoice() {
   if (isLyricsMode()) return;
-  if (!active || isPaused || choiceUsed) return;
+  if (!active || isPaused || choiceUsed || usedHint) return;
 
   // 音訊尚未開始、計時起點未建立時，不允許切換選擇題
   if (!questionStartAt) return;
