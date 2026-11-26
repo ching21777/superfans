@@ -258,7 +258,7 @@ body {
 /* HOME：低調金屬 */
 .quit-btn {
   display: none;
-  padding: var(--sp-1) var(--sp-3);
+  padding: var(--sp-1) var(--sp-4);
   font-size: var(--fs-xs);
   color: rgba(255,255,255,.8);
   background: linear-gradient(180deg, #55545A, #343338 65%, #242327);
@@ -267,7 +267,6 @@ body {
     0 3px 0 #151518,
     0 4px 6px rgba(0,0,0,.25);
 }
-
 
 /* ---- 按鈕尺寸 ---- */
 
@@ -1294,7 +1293,7 @@ box-shadow:
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 24px;
+  gap: 36px;
 }
 
 .playlist-intro-ring {
@@ -1343,9 +1342,9 @@ box-shadow:
 .playlist-intro-center {
   position: relative;
   z-index: 1;
-  width: 76%;
+  width: 82%;
   aspect-ratio: 1;
-  padding: 18px;
+  padding: 26px;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -1369,6 +1368,8 @@ box-shadow:
   overflow-wrap: normal;
   word-break: normal;
   text-shadow: 0 2px 5px rgba(0,0,0,.65);
+  max-width: 100%;
+  text-wrap: pretty;
 }
 
 .playlist-intro-subtitle {
@@ -1378,9 +1379,19 @@ box-shadow:
 }
 
 .playlist-intro-back {
-  min-width: 104px;
-  justify-content: center;
-  text-align: center;
+  min-width: 0;
+  padding: 20px;
+  background: none;
+  border: 0;
+  box-shadow: none;
+  color: #B9B9BE;
+  font-size: var(--fs-sm);
+  cursor: pointer;
+  transition: color .2s ease;
+}
+
+.playlist-intro-back:hover {
+  color: #F1F0EF;
 }
 
 .ov {
@@ -2391,13 +2402,7 @@ button:focus-visible {
     padding: 10px 16px;
   }
 
-  /* HOME：加大點擊範圍 */
-  .quit-btn {
-    min-width: 64px;
-    min-height: 44px;
-    padding: 8px 12px;
-    font-size: var(--fs-sm);
-  }
+
 
   /* 規則 ⓘ：30px → 44px */
   .rules-open {

@@ -34,7 +34,7 @@
         </svg>
       </button>
 
-      <button class="quit-btn" id="quit-btn" onclick="confirmQuit()">HOME</button>
+      <button class="quit-btn" id="quit-btn" onclick="confirmQuit()">退出</button>
     </div>
   </header>
 
@@ -366,10 +366,9 @@
       </svg>
       <div class="playlist-intro-center">
         <div class="playlist-intro-name" id="playlist-intro-name"></div>
-        <div class="playlist-intro-subtitle">準備開始</div>
+          <button class="playlist-intro-back" onclick="cancelPlaylistIntro()">← 返回</button>
       </div>
     </div>
-    <button class="bevel playlist-intro-back" type="button" onclick="cancelPlaylistIntro()">返回</button>
   </div>
 </div>
 <audio id="wrong-sound" src="audio/error-008.ogg" preload="auto"></audio>
