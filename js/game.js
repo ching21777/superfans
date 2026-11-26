@@ -12,11 +12,6 @@
    遊戲參數、評級、遊戲狀態與共用常數
 ========================================== */
 
-// 測試用：網址加上 ?previewTap=1 時，強制顯示手動播放按鈕
-if (new URLSearchParams(window.location.search).get('previewTap') === '1') {
-  document.documentElement.classList.add('preview-tap');
-}
-
 const CFG = {
   BASE: 60,
   SPEED: 50,
@@ -1227,7 +1222,7 @@ function applyItemMode() {
   c.onclick = useEliminate;
 
   h.querySelector('.ic').textContent = '💡';
-  h.querySelector('b').textContent = '顯示歌詞';
+  h.querySelector('b').textContent = '看前後歌詞';
   $('pause-sub').textContent = lyricsHintItemsLeft <= 0
     ? '已用完'
     : `剩 ${lyricsHintItemsLeft} 次`;
@@ -1252,7 +1247,7 @@ function setLyricStage(playing) {
   $('ls-text').classList.remove('beat');
 }
 
-/* 接歌詞：播放期間不顯示歌詞卡片 */
+/* 接歌詞：播放期間不卡片 */
 function showLyricText() {
   $('ls-wait').style.display = 'flex';
   $('ls-wait').style.visibility = 'hidden';

@@ -1175,6 +1175,7 @@ body {
   padding-top: var(--sp-2);
 }
 
+/* ---- 提示道具：統一銀白金屬按鍵風格 ---- */
 .item {
   position: relative;
   flex: 1;
@@ -1183,20 +1184,30 @@ body {
   gap: var(--sp-2);
   padding: var(--sp-2) var(--sp-3);
   text-align: left;
-  color: #29282C;
-  background: linear-gradient(180deg, #F4F3F4 0%, #D8D7DA 35%, #B7B6BB 75%, #96959B 100%);
-  border: 0;
+
+  color: #414141;
+  background: linear-gradient(
+    180deg,
+    #eeeeee 0%,
+    #d8d8d8 25%,
+    #c5c5c5 65%,
+    #b5b5b5 100%
+  );
+
+  border: none;
   border-radius: var(--r-sm);
+
   box-shadow:
-    inset 0 2px 1px rgba(255,255,255,.85),
-    inset 0 -2px 1px rgba(70,70,78,.3),
-    0 1px 0 rgba(255,255,255,.25),
-    0 4px 0 #626168,
-    0 6px 8px rgba(0,0,0,.28);
+    inset 0 2px 2px rgba(255,255,255,.95),
+    inset 0 -2px 3px rgba(120,120,120,.16),
+    0 3px 0 #aaa,
+    0 4px 7px rgba(0,0,0,.16);
+
   cursor: pointer;
   transition:
     transform var(--btn-transition),
     box-shadow var(--btn-transition),
+    background var(--btn-transition),
     filter var(--btn-transition);
 }
 
@@ -1209,12 +1220,12 @@ body {
   justify-content: center;
   border-radius: 50%;
   font-size: var(--fs-md);
-  color: var(--white);
-  background: linear-gradient(145deg, #77747D, #343238);
-  box-shadow:
-    inset 0 2px 1px rgba(255,255,255,.3),
-    inset 0 -2px 2px rgba(0,0,0,.4),
-    0 2px 3px rgba(0,0,0,.25);
+  color: #f0f0f0;
+background: linear-gradient(145deg, #77747D, #343238);
+box-shadow:
+  inset 0 2px 1px rgba(255,255,255,.3),
+  inset 0 -2px 2px rgba(0,0,0,.4),
+  0 2px 3px rgba(0,0,0,.2);
 }
 
 .item .tx {
@@ -2421,39 +2432,9 @@ html.preview-tap .tap {
     0 2px 4px rgba(0,0,0,.12);
 }
 
-/* ---- 提示道具：統一銀白金屬按鍵風格 ---- */
-.item {
-  color: #414141;
-  background: linear-gradient(
-    180deg,
-    #ffffff 0%,
-    #eeeeee 18%,
-    #d8d8d8 52%,
-    #c5c5c5 100%
-  );
-  border: none;
-  border-radius: 7px;
-  box-shadow:
-    inset 0 2px 2px rgba(255,255,255,.95),
-    inset 0 -2px 3px rgba(120,120,120,.16),
-    0 3px 0 #aaa,
-    0 4px 7px rgba(0,0,0,.16);
-  transition:
-    transform var(--btn-transition),
-    box-shadow var(--btn-transition),
-    background var(--btn-transition),
-    filter var(--btn-transition);
-}
 
-/* 圖示降低對比，避免搶過兩行提示文字 */
-.item .ic {
-  color: #555;
-  background: linear-gradient(145deg, #f7f7f7, #d0d0d0);
-  box-shadow:
-    inset 0 1px 2px rgba(255,255,255,.9),
-    inset 0 -1px 2px rgba(120,120,120,.16),
-    0 2px 3px rgba(0,0,0,.10);
-}
+
+
 
 /* 主標題：輕微內嵌感 */
 .item .tx b {
