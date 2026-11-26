@@ -710,6 +710,9 @@ function toChoice() {
   if (isLyricsMode()) return;
   if (!active || isPaused || choiceUsed) return;
 
+  // 音訊尚未開始、計時起點未建立時，不允許切換選擇題
+  if (!questionStartAt) return;
+
   const elapsed = questionStartAt
     ? Math.max(0, (Date.now() - questionStartAt) / 1000)
     : 0;
