@@ -698,7 +698,6 @@ devTrackExportBtn.addEventListener('click', () => {
 
 devTrackCopyBtn.addEventListener('click', async () => {
   await navigator.clipboard.writeText(devTrackExport.value);
-
   // 複製成功後，清空已綁定歌曲
   savedTracks = {};
 
@@ -891,19 +890,27 @@ function renderAppleBatchItems() {
     return;
   }
 
-  tracks.forEach(song => {
+  tracks.forEach((song, songIndex) => {
     const no = String(song.no);
     const item = appleBatchItems[no];
     const row = document.createElement('div');
-    row.style.cssText = 'padding:8px 0;border-bottom:1px solid #555;';
-    const heading = document.createElement('div');
-    heading.style.cssText = 'font-size:13px;margin-bottom:5px;';
-    heading.textContent = `${no}｜${song.artist} - ${song.title}`;
-    row.appendChild(heading);
+    row.style.cssText = [
+      'display:grid',
+      'grid-template-columns:42px minmax(0,1fr) auto auto',
+      'gap:6px',
+      'align-items:center',
+      'padding:6px 0',
+      'border-bottom:1px solid #555'
+    ].join(';');
+
+    const number = document.createElement('span');
+    number.style.cssText = 'color:#fff;font-size:13px;font-weight:600;text-align:left;';
+    number.textContent = no;
+    row.appendChild(number);
 
     if (song.appleMusicId != null && song.appleMusicId !== '') {
       const bound = document.createElement('div');
-      bound.style.cssText = 'font-size:12px;color:#aaa;';
+      bound.style.cssText = 'grid-column:2 / -1;font-size:12px;color:#aaa;min-width:0;';
       bound.textContent = `已綁定 Apple Music ID：${song.appleMusicId}`;
       row.appendChild(bound);
       appleBatchResults.appendChild(row);
@@ -913,21 +920,21 @@ function renderAppleBatchItems() {
     const candidates = item && Array.isArray(item.candidates) ? item.candidates : [];
     if (!item) {
       const pending = document.createElement('div');
-      pending.style.cssText = 'font-size:12px;color:#aaa;';
+      pending.style.cssText = 'grid-column:2 / -1;font-size:12px;color:#aaa;';
       pending.textContent = '尚未搜尋';
       row.appendChild(pending);
     } else if (!candidates.length) {
       const empty = document.createElement('div');
-      empty.style.cssText = 'font-size:12px;color:#aaa;';
+      empty.style.cssText = 'grid-column:2 / -1;font-size:12px;color:#aaa;';
       empty.textContent = item.error || '沒有找到候選歌曲';
       row.appendChild(empty);
     } else {
       const select = document.createElement('select');
-      select.style.cssText = 'width:100%;margin:4px 0;';
+      select.style.cssText = 'width:100%;min-width:0;margin:0;';
       candidates.forEach((candidate, index) => {
         const option = document.createElement('option');
         option.value = String(index);
-        option.textContent = `${candidate.trackName}｜${candidate.artistName}｜${candidate.collectionName || '未知專輯'}（ID ${candidate.trackId}）`;
+        option.textContent = `${index + 1}. ${candidate.trackName}｜${candidate.artistName}｜${candidate.collectionName || '未知專輯'}（ID ${candidate.trackId}）`;
         if (String(candidate.trackId) === String(item.selectedTrackId)) option.selected = true;
         select.appendChild(option);
       });
@@ -942,12 +949,12 @@ function renderAppleBatchItems() {
       const selected = candidates.find(candidate =>
         String(candidate.trackId) === String(item.selectedTrackId)
       ) || candidates[0];
-      const actions = document.createElement('div');
-      actions.style.cssText = 'display:flex;gap:6px;align-items:center;';
+
       const preview = document.createElement('button');
       preview.type = 'button';
       preview.className = 'bevel btn-sm';
       preview.textContent = '▶ 試聽';
+      preview.style.cssText = 'white-space:nowrap;';
       preview.disabled = !selected.previewUrl;
       preview.addEventListener('click', async () => {
         if (!selected.previewUrl) return;
@@ -960,10 +967,13 @@ function renderAppleBatchItems() {
           alert('音檔播放失敗，請再試一次');
         }
       });
+      row.appendChild(preview);
+
       const confirm = document.createElement('button');
       confirm.type = 'button';
       confirm.className = 'bevel btn-sm';
-      confirm.textContent = item.confirmed ? '已確認 ✓' : '確認這首';
+      confirm.textContent = item.confirmed ? '已確認 ✓' : '確認';
+      confirm.style.cssText = 'white-space:nowrap;';
       confirm.disabled = !selected.previewUrl;
       confirm.addEventListener('click', () => {
         item.selectedTrackId = selected.trackId;
@@ -971,13 +981,9 @@ function renderAppleBatchItems() {
         saveAppleBatchItems();
         renderAppleBatchItems();
       });
-      actions.append(preview, confirm);
-      row.appendChild(actions);
-      const state = document.createElement('div');
-      state.style.cssText = 'font-size:11px;color:#aaa;margin-top:4px;';
-      state.textContent = item.confirmed ? '已確認，等待匯出' : '請先試聽，再確認正確歌曲';
-      row.appendChild(state);
+      row.appendChild(confirm);
     }
+
     appleBatchResults.appendChild(row);
   });
 }
@@ -1397,8 +1403,7 @@ devTrackSearch.addEventListener('input', () => {
 // 初始顯示
 renderDevTrackSongs();
   
-  const devSongSearch = $('dev-song-search');
-  const devSongResults = $('dev-song-results');
+  const devSongSearch = $('dev-song-search');  const devSongResults = $('dev-song-results');
 
 // 合併 lyrics.js 的所有歌曲題庫
 const allLyricsSongs = [
@@ -2097,8 +2102,7 @@ countdown = function (callback) {
 
     if (checkApple) {
       const idOwners = new Map();
-      let bound = 0;
-      allTracks.forEach(song => {
+      let bound = 0;      allTracks.forEach(song => {
         const id = song?.appleMusicId;
         if (id == null || id === '') return;
         bound++;
