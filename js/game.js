@@ -88,6 +88,9 @@ let reqId = 0,
     hintLeft = 1,
     wasRunning = false;
 
+let choiceItemsLeft = 5;
+let hintItemsLeft = 5;
+
 // 選擇題選項
 let opts = [];
 
@@ -526,7 +529,8 @@ function runTimer(resetDeadline = true) {
       // 計時條只顯示正常作答的 20 秒
       $('tbar').style.width = (normalRemaining / CFG.MAX_TIME * 100) + '%';
       $('tbuffer').style.width = '0%';
-      $('choice-btn').disabled = usedHint || inBuffer;
+      $('choice-btn').disabled =
+  usedHint || choiceUsed || choiceItemsLeft <= 0 || inBuffer;
 
       if (inBuffer) {
         // 音樂停止
@@ -600,14 +604,15 @@ function playNow() {
       $('disc').classList.add('spin');
       $('cd').classList.add('on');
 
-      $('choice-btn').disabled = choiceUsed || usedHint;
+      $('choice-btn').disabled =
+  choiceUsed || usedHint || choiceItemsLeft <= 0;
       $('choice-sub').textContent = usedHint
-        ? '不可併用'
-        : choiceUsed
-          ? '已使用'
-          : CFG.CHOICE_COST
-            ? `花 ${CFG.CHOICE_COST} 金幣`
-            : '分數打折';
+  ? '不可併用'
+  : choiceUsed
+    ? '已使用'
+    : choiceItemsLeft <= 0
+      ? '已用完'
+      : `剩 ${choiceItemsLeft} 次`;
 
       questionStartAt = Date.now();
       startRecordQuestion();
@@ -623,16 +628,18 @@ function playNow() {
 // 一字提示
 function doHint() {
   if (isLyricsMode()) return;
-  if (!active || isPaused || hintLeft <= 0 || !cur) return;
+  if (!active || isPaused || hintLeft <= 0 || hintItemsLeft <= 0 || !cur) return;
   if (usedChoice) return;
 
   hintLeft--;
+  hintItemsLeft--;
   usedHint = true;
   if (window.GameRecord) window.GameRecord.recordEvent('hint_used', { type: 'first_letter' });
   updHintBtn();
 
   // 首字提示與切換選擇題不可併用
-  $('choice-btn').disabled = true;
+  $('choice-btn').disabled =
+  usedHint || choiceUsed || choiceItemsLeft <= 0 || inBuffer;
   $('choice-sub').textContent = '不可併用';
 
   $('inp').value = cur.title.trim().charAt(0);
@@ -641,8 +648,12 @@ function doHint() {
 
 // 更新提示按鈕
 function updHintBtn() {
-  $('pause-btn').disabled = hintLeft <= 0;
-  $('pause-sub').textContent = hintLeft > 0 ? '每題一次' : '已使用';
+  const disabled = hintLeft <= 0 || hintItemsLeft <= 0;
+
+  $('pause-btn').disabled = disabled;
+  $('pause-sub').textContent = hintItemsLeft <= 0
+    ? '已用完'
+    : `剩 ${hintItemsLeft} 次`;
 }
 
 
@@ -780,7 +791,7 @@ function submitAnswer() {
 // 改選擇題
 function toChoice() {
   if (isLyricsMode()) return;
-  if (!active || isPaused || choiceUsed || usedHint) return;
+  if (!active || isPaused || choiceUsed || usedHint || choiceItemsLeft <= 0) return;
 
   const hasStarted = !!questionStartAt;
 
@@ -803,6 +814,11 @@ function toChoice() {
 
   choiceUsed = true;
   usedChoice = true;
+  choiceItemsLeft--;
+  $('choice-btn').disabled = choiceItemsLeft <= 0;
+  $('choice-sub').textContent = choiceItemsLeft <= 0
+  ? '已用完'
+  : `剩 ${choiceItemsLeft} 次`;
   if (window.GameRecord) window.GameRecord.recordEvent('choice_mode_selected');
   $('choice-btn').disabled = true;
   $('pause-btn').disabled = true;
@@ -1049,8 +1065,13 @@ function begin(demo) {
   $('quit-btn').style.display = 'block';
 
   hintLeft = 1;
-  usedChoice = false;
-  updHintBtn();
+choiceItemsLeft = 5;
+hintItemsLeft = 5;
+usedChoice = false;
+
+$('choice-btn').disabled = false;
+$('choice-sub').textContent = '剩 5 次';
+updHintBtn();
 
   score = 0;
   shown = 0;
