@@ -1349,7 +1349,7 @@ box-shadow:
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 8px;
+  gap: 0px;
   text-align: center;
   border-radius: 50%;
   background: linear-gradient(145deg, #343438 0%, #252529 48%, #19191D 100%);
@@ -1362,14 +1362,15 @@ box-shadow:
 .playlist-intro-name {
   color: #F1F0EF;
   font-family: var(--serif);
-  font-size: clamp(18px, 5vw, 24px);
+  font-size: clamp(21px, 5.5vw, 28px);
   font-weight: 900;
   line-height: 1.35;
   overflow-wrap: normal;
   word-break: normal;
   text-shadow: 0 2px 5px rgba(0,0,0,.65);
   max-width: 100%;
-  text-wrap: pretty;
+  text-wrap: balance;
+  transform: translateY(14px);
 }
 
 .playlist-intro-subtitle {
@@ -1380,7 +1381,8 @@ box-shadow:
 
 .playlist-intro-back {
   min-width: 0;
-  padding: 20px;
+  margin-top: 14px;
+  padding: 8px 12px;
   background: none;
   border: 0;
   box-shadow: none;
