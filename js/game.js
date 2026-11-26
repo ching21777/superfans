@@ -398,10 +398,20 @@ function songPool() {
     ? [...playlists.drama, ...playlists.she, ...playlists.fish]
     : playlists[theme];
 
+  // 歌單若使用歌曲編號，從 TRACKS 取得完整歌曲資料
+  const resolvedPool = pool
+    .map(item => {
+      if (!/^\d+$/.test(item)) return item;
+
+      const song = TRACKS.find(track => track.no === item);
+      return song ? `${song.artist} ${song.title}` : null;
+    })
+    .filter(Boolean);
+
   // TEST 中的歌曲保留資料，但不參與任何一般歌名模式或試玩模式
   const inactiveSongs = typeof TEST !== 'undefined' ? TEST : [];
 
-  return pool.filter(term =>
+  return resolvedPool.filter(term =>
     !inactiveSongs.some(song =>
       normalizeMatchText(term) ===
       normalizeMatchText(`${song.artist} ${song.title}`)
