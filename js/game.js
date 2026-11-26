@@ -75,6 +75,7 @@ let recordQuestionsCompleted = 0;
 
 // 計時與暫停
 let reqId = 0,
+    audioPlayId = 0,
     startAt = 0,
     totalAnswerTime = 0,
     questionStartAt = 0,
@@ -513,6 +514,7 @@ function runTimer(resetDeadline = true) {
 }
 
 function stopAll() {
+  audioPlayId++; // 讓尚未完成的舊音訊回呼失效
   clearInterval(tick);
   clearTimeout(clipTimer);
   clearInterval(lsTick);
@@ -527,8 +529,14 @@ function stopAll() {
 }
 
 function playNow() {
+  const myReq = reqId;
+  const myPlay = ++audioPlayId;
+
   return audio.play()
     .then(() => {
+      // 題目或播放流程已更新：忽略舊回呼，避免重啟計時器
+      if (myReq !== reqId || myPlay !== audioPlayId || !active) return;
+
       $('tap').style.display = 'none';
       $('disc').classList.add('spin');
       $('cd').classList.add('on');
@@ -539,6 +547,7 @@ function playNow() {
       runTimer();
     })
     .catch(() => {
+      if (myReq !== reqId || myPlay !== audioPlayId || !active) return;
       $('tap').style.display = 'flex';
     });
 }
@@ -713,6 +722,7 @@ function toChoice() {
   endAt = questionStartAt + CFG.MAX_TIME * 1000;
   clearInterval(tick);
 
+  audioPlayId++; // 切換選擇題時，讓尚未完成的播放回呼失效
   choiceUsed = true;
   usedChoice = true;
   if (window.GameRecord) window.GameRecord.recordEvent('choice_mode_selected');
