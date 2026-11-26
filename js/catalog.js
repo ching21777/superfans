@@ -204,6 +204,11 @@
 
   window.openCatalog = function () {
     try { render(); } catch (err) { console.error('[catalog] render 失敗：', err); }
+    if (window.preloadPlaylistIntroArtworks) {
+      const keys = [...document.querySelectorAll('#m-catalog .sb-song:not(.soon)')]
+        .map(btn => btn.dataset.k);
+      window.preloadPlaylistIntroArtworks(keys);
+    }
     show('m-catalog');                 // 就算渲染出錯，也一定會打開
   };
 
