@@ -1395,7 +1395,7 @@ box-shadow:
   max-width: 100%;
   color: #FFFFFF;
   font-family: var(--serif);
-  font-size: clamp(14px, 3.8vw, 20px);
+  font-size: clamp(18px, 5vw, 24px);
   font-weight: 900;
   line-height: 1.25;
   white-space: normal;
