@@ -308,30 +308,21 @@
   font-weight: 700;
 }
 
-.lyric-opt.wrong,
+/* 道具刪除：維持獨立的灰色停用狀態；答錯不做透明度淡化 */
 .lyric-opt.removed {
   opacity: .35;
 }
 
-/* 答對後停留：標示正解、其餘變暗 */
+/* 答對後停留：未作答的選項變暗；已答錯／刪除狀態不再二次變色 */
 .ogrid.held {
   pointer-events: none;
 }
 
-.ogrid.held .lyric-opt:not(.correct) {
+.ogrid.held .lyric-opt:not(.correct):not(.wrong):not(.removed) {
   opacity: .35;
 }
 
-.lyric-opt.correct {
-  color: #2B2108;
-
-  background: linear-gradient(180deg,#FBEBB8 0%,#E7C56F 55%,#C49A3C 100%);
-  box-shadow:
-    inset 0 2px 1px rgba(255,255,255,.8),
-    0 4px 0 #8A6A22,
-    0 0 14px rgba(217,180,91,.6);
-}
-
+/* 正解的字母鍵保留原本勾勾識別 */
 .lyric-opt.correct .lo-key {
   background: var(--red);
   font-size: 0;
@@ -347,18 +338,21 @@
   text-decoration: none;
 }
 
-.lyric-opt.wrong .lo-key,
-.lyric-opt.removed .lo-key {
-  background: #888;
-}
-
+/* 答錯叉叉：使用與歌名快答相同的磚紅色 */
 .lyric-opt.wrong .lo-key {
+  color: var(--answer-wrong-mark);
+  background: transparent;
   font-size: 0;
 }
 
 .lyric-opt.wrong .lo-key::after {
   content: "✖";
-  font-size: 12px;
+  font-size: 14px;
+}
+
+/* 道具刪除的字母鍵維持灰色 */
+.lyric-opt.removed .lo-key {
+  background: #888;
 }
 
 
