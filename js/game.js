@@ -1103,6 +1103,7 @@ window.preloadPlaylistIntroArtworks = preloadPlaylistIntroArtworks;
 function loadPlaylistIntroArtwork(k) {
   const image = $('playlist-intro-art');
   const requestId = ++playlistIntroArtworkRequest;
+  const deadline = Date.now() + 3000;
 
   image.style.opacity = '0';
   image.style.display = 'none';
@@ -1113,11 +1114,21 @@ function loadPlaylistIntroArtwork(k) {
   }
 
   playlistIntroArtworkCache.get(k).then(url => {
-    if (requestId !== playlistIntroArtworkRequest || !url) return;
+    if (requestId !== playlistIntroArtworkRequest || !url || Date.now() >= deadline) return;
 
-    image.onload = () => {
-      if (requestId === playlistIntroArtworkRequest) image.style.opacity = '1';
+    const revealArtwork = () => {
+      if (requestId !== playlistIntroArtworkRequest) return;
+
+      // 開場時間已結束就不補顯示，絕不影響遊戲開始
+      if (Date.now() >= deadline) {
+        image.style.display = 'none';
+        return;
+      }
+
+      image.style.opacity = '1';
     };
+
+    image.onload = revealArtwork;
     image.onerror = () => {
       if (requestId === playlistIntroArtworkRequest) image.style.display = 'none';
     };
@@ -1125,10 +1136,8 @@ function loadPlaylistIntroArtwork(k) {
     image.src = url;
     image.style.display = 'block';
 
-    // 圖片已在背景載入完成時，直接淡入
-    if (image.complete && image.naturalWidth > 0) {
-      image.style.opacity = '1';
-    }
+    // 圖片已在背景載入完成時，也沿用淡入效果
+    if (image.complete && image.naturalWidth > 0) revealArtwork();
   });
 }
 
