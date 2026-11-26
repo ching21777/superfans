@@ -1067,7 +1067,14 @@ function pickTheme(k) {
     (typeof names !== 'undefined' && names[k]) || k;
 
   clearTimeout(playlistIntroTimer);
+
+  const intro = $('playlist-intro');
+  intro.classList.remove('is-active');
   show('playlist-intro');
+
+  // 每次顯示時重新啟動圓環動畫，避免它在隱藏畫面時就先跑完
+  void intro.offsetWidth;
+  intro.classList.add('is-active');
 
   playlistIntroTimer = setTimeout(() => {
     playlistIntroTimer = null;
