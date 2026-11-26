@@ -1285,26 +1285,95 @@ box-shadow:
 /* ---- 通用彈窗 ---- */
 
 
-/* ---- 歌單開場：取代原本 3、2、1、GO 倒數 ---- */
+/* ---- 歌單開場：圓形金屬 Loading ---- */
 .playlist-intro {
   z-index: 10000;
 }
 
-.playlist-intro-card {
-  gap: var(--sp-4);
+.playlist-intro-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 24px;
+}
+
+.playlist-intro-ring {
+  position: relative;
+  width:  min( min(72vw, 240px), 240px);
+  aspect-ratio: 1;
+  display: grid;
+  place-items: center;
+}
+
+.playlist-intro-ring svg {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+  transform: rotate(-90deg);
+}
+
+.playlist-ring-track,
+.playlist-ring-progress {
+  fill: none;
+  stroke-width: 3.5;
+}
+
+.playlist-ring-track {
+  stroke: rgba(220,220,225,.2);
+}
+
+.playlist-ring-progress {
+  stroke: url(#playlist-ring-gradient);
+  stroke: #D9D9DE;
+  stroke-linecap: round;
+  stroke-dasharray: 528;
+  stroke-dashoffset: 528;
+  filter: drop-shadow(0 0 4px rgba(235,235,240,.35));
+  animation: playlist-ring-fill 2s linear forwards;
+}
+
+@keyframes playlist-ring-fill {
+  to { stroke-dashoffset: 0; }
+}
+
+.playlist-intro-center {
+  width: 72%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  text-align: center;
 }
 
 .playlist-intro-name {
-  color: var(--red-light);
-  line-height: 1.5;
-  text-shadow: 1px 2px 0 var(--red-dark), 2px 3px 0 rgba(0,0,0,.25);
+  color: #F1F0EF;
+  font-family: var(--serif);
+  font-size: clamp(19px, 5vw, 26px);
+  font-weight: 900;
+  line-height: 1.45;
+  overflow-wrap: anywhere;
+  text-shadow: 0 2px 5px rgba(0,0,0,.65);
 }
 
-.playlist-intro-card .bevel {
-  align-self: center;
-  min-width: 120px;
+.playlist-intro-subtitle {
+  color: #B9B9BE;
+  font-size: var(--fs-sm);
+  letter-spacing: .16em;
+}
+
+.playlist-intro-back {
+  min-width: 104px;
   justify-content: center;
   text-align: center;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .playlist-ring-progress {
+    animation-duration: 2s;
+  }
 }
 
 .ov {
