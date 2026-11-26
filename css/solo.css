@@ -54,6 +54,15 @@
   --danger-glow: rgba(184, 66, 77, .32);
   --danger-glow-soft: rgba(184, 66, 77, .16);
 
+  /* 答題選項狀態：歌名快答、歌詞接唱共用 */
+  --answer-correct-text: #2B2108;
+  --answer-correct-bg: linear-gradient(180deg, #FBEBB8 0%, #E7C56F 55%, #C49A3C 100%);
+  --answer-correct-shadow: inset 0 2px 1px rgba(255,255,255,.8), 0 4px 0 #8A6A22, 0 0 14px rgba(217,180,91,.6);
+  --answer-wrong-text: #77777D;
+  --answer-wrong-bg: linear-gradient(180deg, #A5A5AA 0%, #88888F 45%, #707078 100%);
+  --answer-wrong-shadow: inset 0 3px 5px rgba(0,0,0,.28), inset 0 -1px 1px rgba(255,255,255,.12), 0 1px 0 #55555C;
+  --answer-wrong-mark: #A56F74;
+
   /* 唱片色 */
   --disc-1: #B8B8BD;
   --disc-2: #F4F1EF;
@@ -1130,46 +1139,29 @@ body {
   cursor: not-allowed;
 }
 
-/* 答對：維持原本全按鈕金色高亮 */
+/* 答對：共用金色高亮 */
 .opt.correct {
-  color: #2B2108;
-  background: linear-gradient(
-    180deg,
-    #FBEBB8 0%,
-    #E7C56F 55%,
-    #C49A3C 100%
-  );
-  box-shadow:
-    inset 0 2px 1px rgba(255,255,255,.8),
-    0 4px 0 #8A6A22,
-    0 0 14px rgba(217,180,91,.6);
+  color: var(--answer-correct-text);
+  background: var(--answer-correct-bg);
+  box-shadow: var(--answer-correct-shadow);
 }
 
-
-/* 答錯標記：保留低彩度磚紅，不做閃爍或淡出 */
+/* 答錯標記：共用低彩度磚紅，不做閃爍或淡出 */
 .opt .wrong-mark {
   display: inline-block;
   margin-left: .35em;
-  color: #A56F74;
+  color: var(--answer-wrong-mark);
   font-weight: 900;
 }
 
-/* 答錯後：深灰、內縮、底座感減弱 */
-.opt:disabled.final-wrong,
+/* 答錯：立即進入深灰內縮狀態，不經過淡灰過渡 */
 .opt:disabled.wrong,
+.opt:disabled.final-wrong,
 .opt:disabled.wrong-locked {
-  color: #77777D;
-  background: linear-gradient(
-    180deg,
-    #A5A5AA 0%,
-    #88888F 45%,
-    #707078 100%
-  );
+  color: var(--answer-wrong-text);
+  background: var(--answer-wrong-bg);
   transform: translateY(3px);
-  box-shadow:
-    inset 0 3px 5px rgba(0,0,0,.28),
-    inset 0 -1px 1px rgba(255,255,255,.12),
-    0 1px 0 #55555C;
+  box-shadow: var(--answer-wrong-shadow);
   cursor: not-allowed;
 }
 
