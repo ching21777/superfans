@@ -1057,20 +1057,20 @@ function timeout() {
 
 let playlistIntroTimer = null;
 let playlistIntroArtworkRequest = 0;
+const playlistIntroArtworkCache = new Map();
 
-async function loadPlaylistIntroArtwork(k) {
-  const image = $('playlist-intro-art');
-  const requestId = ++playlistIntroArtworkRequest;
-
-  image.removeAttribute('src');
-  image.style.display = 'none';
-
+// 取得歌單封面，背景預載時不影響目前選中的歌單
+async function fetchPlaylistIntroArtwork(k) {
+  const previousTheme = theme;
+  theme = k;
   const pool = songPool();
-  if (!pool.length) return;
+  theme = previousTheme;
+
+  if (!pool?.length) return null;
 
   const term = pool[Math.floor(Math.random() * pool.length)];
   const splitAt = term.indexOf(' ');
-  if (splitAt < 1) return;
+  if (splitAt < 1) return null;
 
   const song = {
     artist: term.slice(0, splitAt),
@@ -1078,15 +1078,58 @@ async function loadPlaylistIntroArtwork(k) {
   };
 
   const track = await getAppleMusicTrack(song);
-  if (requestId !== playlistIntroArtworkRequest || !track?.artworkUrl100) return;
+  if (!track?.artworkUrl100) return null;
 
-  image.onload = () => {
-    if (requestId === playlistIntroArtworkRequest) image.style.display = 'block';
-  };
-  image.onerror = () => {
-    if (requestId === playlistIntroArtworkRequest) image.style.display = 'none';
-  };
-  image.src = track.artworkUrl100.replace('100x100', '600x600');
+  const url = track.artworkUrl100.replace('100x100', '600x600');
+  const preloadImage = new Image();
+
+  return new Promise(resolve => {
+    preloadImage.onload = () => resolve(url);
+    preloadImage.onerror = () => resolve(null);
+    preloadImage.src = url;
+  });
+}
+
+// 點歌目錄打開時，先在背景預載可玩的歌單封面
+function preloadPlaylistIntroArtworks(keys) {
+  keys.forEach(k => {
+    if (!playlistIntroArtworkCache.has(k)) {
+      playlistIntroArtworkCache.set(k, fetchPlaylistIntroArtwork(k).catch(() => null));
+    }
+  });
+}
+window.preloadPlaylistIntroArtworks = preloadPlaylistIntroArtworks;
+
+function loadPlaylistIntroArtwork(k) {
+  const image = $('playlist-intro-art');
+  const requestId = ++playlistIntroArtworkRequest;
+
+  image.style.opacity = '0';
+  image.style.display = 'none';
+  image.removeAttribute('src');
+
+  if (!playlistIntroArtworkCache.has(k)) {
+    playlistIntroArtworkCache.set(k, fetchPlaylistIntroArtwork(k).catch(() => null));
+  }
+
+  playlistIntroArtworkCache.get(k).then(url => {
+    if (requestId !== playlistIntroArtworkRequest || !url) return;
+
+    image.onload = () => {
+      if (requestId === playlistIntroArtworkRequest) image.style.opacity = '1';
+    };
+    image.onerror = () => {
+      if (requestId === playlistIntroArtworkRequest) image.style.display = 'none';
+    };
+
+    image.src = url;
+    image.style.display = 'block';
+
+    // 圖片已在背景載入完成時，直接淡入
+    if (image.complete && image.naturalWidth > 0) {
+      image.style.opacity = '1';
+    }
+  });
 }
 
 function pickTheme(k) {
