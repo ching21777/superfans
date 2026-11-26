@@ -1089,6 +1089,22 @@ async function loadPlaylistIntroArtwork(k) {
   image.src = track.artworkUrl100.replace('100x100', '600x600');
 }
 
+function fitPlaylistIntroName() {
+  const name = $('playlist-intro-name');
+  if (!name) return;
+
+  const maxSize = parseFloat(getComputedStyle(name).fontSize);
+  const minSize = 9;
+  name.style.fontSize = maxSize + 'px';
+
+  while (name.scrollWidth > name.clientWidth && parseFloat(name.style.fontSize) > minSize) {
+    name.style.fontSize = Math.max(
+      minSize,
+      parseFloat(name.style.fontSize) - 0.5
+    ) + 'px';
+  }
+}
+
 function pickTheme(k) {
   theme = k;
 
@@ -1104,6 +1120,7 @@ function pickTheme(k) {
   const intro = $('playlist-intro');
   intro.classList.remove('is-active');
   show('playlist-intro');
+  requestAnimationFrame(fitPlaylistIntroName);
 
   // 每次顯示時重新啟動圓環動畫，避免它在隱藏畫面時就先跑完
   void intro.offsetWidth;
