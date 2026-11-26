@@ -2420,3 +2420,90 @@ html.preview-tap .tap {
     0 1px 0 #aaa,
     0 2px 4px rgba(0,0,0,.12);
 }
+
+/* ---- 提示道具：統一銀白金屬按鍵風格 ---- */
+.item {
+  color: #414141;
+  background: linear-gradient(
+    180deg,
+    #ffffff 0%,
+    #eeeeee 18%,
+    #d8d8d8 52%,
+    #c5c5c5 100%
+  );
+  border: none;
+  border-radius: 7px;
+  box-shadow:
+    inset 0 2px 2px rgba(255,255,255,.95),
+    inset 0 -2px 3px rgba(120,120,120,.16),
+    0 3px 0 #aaa,
+    0 4px 7px rgba(0,0,0,.16);
+  transition:
+    transform var(--btn-transition),
+    box-shadow var(--btn-transition),
+    background var(--btn-transition),
+    filter var(--btn-transition);
+}
+
+/* 圖示降低對比，避免搶過兩行提示文字 */
+.item .ic {
+  color: #555;
+  background: linear-gradient(145deg, #f7f7f7, #d0d0d0);
+  box-shadow:
+    inset 0 1px 2px rgba(255,255,255,.9),
+    inset 0 -1px 2px rgba(120,120,120,.16),
+    0 2px 3px rgba(0,0,0,.10);
+}
+
+/* 主標題：輕微內嵌感 */
+.item .tx b {
+  color: #414141;
+  text-shadow: 0 1px 0 rgba(255,255,255,.85);
+}
+
+/* 副標題：較淡、較小，保留辨識度 */
+.item .tx small {
+  color: #777;
+  text-shadow: 0 1px 0 rgba(255,255,255,.7);
+}
+
+/* 滑鼠移入：只提亮，不額外加框 */
+@media (hover: hover) {
+  .item:hover:not(:disabled) {
+    filter: brightness(1.04);
+    transform: translateY(-1px);
+  }
+}
+
+/* 按下：整顆按鍵微微下沉 */
+.item:active:not(:disabled) {
+  transform: translateY(2px);
+  box-shadow:
+    inset 0 2px 4px rgba(100,100,100,.14),
+    0 1px 0 #aaa,
+    0 2px 4px rgba(0,0,0,.12);
+}
+
+/* 停用：保留金屬底色，但降低亮度與文字對比 */
+.item:disabled {
+  color: #888;
+  background: linear-gradient(180deg, #e4e4e4 0%, #d0d0d0 55%, #c2c2c2 100%);
+  filter: grayscale(.0);
+  opacity: .72;
+  box-shadow:
+    inset 0 1px 2px rgba(255,255,255,.75),
+    0 1px 2px rgba(0,0,0,.08);
+}
+
+.item:disabled .ic {
+  color: #999;
+  background: linear-gradient(145deg, #e5e5e5, #c9c9c9);
+  box-shadow: none;
+}
+
+.item:disabled .tx b,
+.item:disabled .tx small {
+  color: #888;
+  text-shadow: none;
+}
+
