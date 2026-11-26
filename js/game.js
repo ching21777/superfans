@@ -408,6 +408,20 @@ function freezeInput(markWrong) {
   inp.classList.toggle('final-wrong', markWrong && inp.value.trim().length > 0);
 }
 
+// 顯示答錯扣秒動畫
+function showTimePenalty(oldWidth, newWidth) {
+  const el = $('tpenalty');
+
+  el.classList.remove('play');
+
+  // 紅色區段位於扣秒前後的尾端差距
+  el.style.left = newWidth + '%';
+  el.style.width = (oldWidth - newWidth) + '%';
+
+  // 重新觸發動畫
+  void el.offsetWidth;
+  el.classList.add('play');
+}
 
 function runTimer(resetDeadline = true) {
   clearInterval(tick);
@@ -733,6 +747,25 @@ $('ogrid').onclick = e => {
     correct(isLyricsMode() ? false : true);
     return;
   }
+
+// 歌名快答：選擇題答錯扣除 3 秒
+if (!isLyricsMode()) {
+  const oldWidth = timeLeft / CFG.MAX_TIME * 100;
+
+  endAt -= 3000;
+
+  timeLeft = Math.max(0, (endAt - Date.now()) / 1000);
+
+  if (timeLeft <= 0) {
+    clearInterval(tick);
+    timeout();
+    return;
+  }
+
+  const newWidth = timeLeft / CFG.MAX_TIME * 100;
+
+  showTimePenalty(oldWidth, newWidth);
+}
 
   b.disabled = true;
   if (isLyricsMode()) b.classList.add('wrong');

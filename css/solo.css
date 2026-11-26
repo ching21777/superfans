@@ -572,6 +572,29 @@ body {
   box-shadow: none;
 }
 
+.timer-track {
+  position: relative;
+}
+
+.timer-penalty {
+  position: absolute;
+  top: 0;
+  height: 100%;
+  background: #D45B5B;
+  pointer-events: none;
+  z-index: 3;
+  opacity: 0;
+}
+
+.timer-penalty.play {
+  animation: penalty-fade .7s ease-out forwards;
+}
+
+@keyframes penalty-fade {
+  from { opacity: 1; }
+  to { opacity: 0; }
+}
+
 .timer-fill, .timer-buffer {
   flex: none;
   height: 100%;
