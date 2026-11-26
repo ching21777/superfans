@@ -12,6 +12,11 @@
    遊戲參數、評級、遊戲狀態與共用常數
 ========================================== */
 
+// 測試用：網址加上 ?previewTap=1 時，強制顯示手動播放按鈕
+if (new URLSearchParams(window.location.search).get('previewTap') === '1') {
+  document.documentElement.classList.add('preview-tap');
+}
+
 const CFG = {
   BASE: 60,
   SPEED: 50,
