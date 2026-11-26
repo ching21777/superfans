@@ -1371,7 +1371,9 @@ box-shadow:
 
 .playlist-intro-art {
   display: none;
+  opacity: 0;
   object-fit: cover;
+  transition: opacity .45s ease;
 }
 
 .playlist-intro-center::before {
