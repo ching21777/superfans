@@ -1299,7 +1299,7 @@ box-shadow:
 
 .playlist-intro-ring {
   position: relative;
-  width:  min( min(72vw, 240px), 240px);
+  width: min(72vw, 240px);
   aspect-ratio: 1;
   display: grid;
   place-items: center;
@@ -1326,7 +1326,6 @@ box-shadow:
 
 .playlist-ring-progress {
   stroke: url(#playlist-ring-gradient);
-  stroke: #D9D9DE;
   stroke-linecap: round;
   stroke-dasharray: 528;
   stroke-dashoffset: 528;
@@ -1372,7 +1371,8 @@ box-shadow:
 
 @media (prefers-reduced-motion: reduce) {
   .playlist-ring-progress {
-    animation-duration: 2s;
+    animation: none;
+    stroke-dashoffset: 0;
   }
 }
 
