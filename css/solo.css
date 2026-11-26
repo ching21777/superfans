@@ -1253,16 +1253,6 @@ box-shadow:
   cursor: not-allowed;
 }
 
-.item:disabled .ic {
-  color: #E5E5E7;
-  background: linear-gradient(145deg, #A3A3A8, #77777D);
-  box-shadow: none;
-}
-
-.item:disabled .tx small {
-  color: #77777D;
-}
-
 
 /* ========================================
    04. 遊戲流程與畫面
@@ -2467,8 +2457,8 @@ html.preview-tap .tap {
 }
 
 .item:disabled .ic {
-  color: #999;
-  background: linear-gradient(145deg, #e5e5e5, #c9c9c9);
+  color: #888;
+  background: linear-gradient(145deg, #D0D0D3, #B5B5BA);
   box-shadow: none;
 }
 
