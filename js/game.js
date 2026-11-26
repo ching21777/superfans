@@ -1080,7 +1080,7 @@ function pickTheme(k) {
     playlistIntroTimer = null;
     hide('playlist-intro');
     startGame();
-  }, 2000);
+  }, 3000);
 }
 
 function cancelPlaylistIntro() {
