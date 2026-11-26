@@ -36,13 +36,23 @@
   --text-sub: #655F60;
   --text-faint: #92898A;
 
-  /* 品牌色 */
+  /* 品牌色：只負責裝飾、Logo、主按鈕，不用在狀態提示 */
   --purple-light: #A49AD1;
   --magenta: #D51F3B;
   --yellow: #D9B45B;
   --red: #C52B43;
   --red-dark: #791B30;
   --red-light: #F06B79;
+
+  /* 危險色：低彩度暗磚紅（與品牌紅同源，但明度與彩度更沉穩） */
+  --danger: #B8424D;
+  --danger-light: #DF7B84;
+  --danger-dark: #7A232B;
+  --danger-deep: #471116;
+  --danger-bg: rgba(184, 66, 77, .15);
+  --danger-bg-faint: rgba(184, 66, 77, .03);
+  --danger-glow: rgba(184, 66, 77, .32);
+  --danger-glow-soft: rgba(184, 66, 77, .16);
 
   /* 唱片色 */
   --disc-1: #B8B8BD;
@@ -282,9 +292,9 @@ body {
   opacity: .7;
 }
 
-/* 危險動作的文字按鈕：給淺色底用 */
+/* 危險動作的文字按鈕：給淺色底用（淺底用深磚紅，確保對比） */
 .bevel.text.danger {
-  color: var(--red);
+  color: var(--danger-dark);
 }
 
 
@@ -520,9 +530,10 @@ body {
   transition: transform var(--t-fast);
 }
 
+/* 扣分：磚紅 */
 .score.penalty {
-  color: #E04455;
-  text-shadow: 2px 2px 0 #650D20, 4px 4px 0 rgba(0,0,0,.65);
+  color: var(--danger);
+  text-shadow: 2px 2px 0 var(--danger-deep), 4px 4px 0 rgba(0,0,0,.65);
   animation: score-penalty .4s ease;
 }
 
@@ -634,12 +645,13 @@ body {
 /* 文字標籤全部隱藏（JS 照寫無妨） */
 .timer-labels { display: none; }
 
-/* 危險：整條轉紅 */
+/* 危險：整條轉磚紅 */
 .timer-row.danger { animation: shake .25s infinite; }
 
 .timer-row.danger .timer-fill,
 .timer-row.danger .timer-buffer {
-  background: linear-gradient(180deg, #FF9AA5, #C52B43);
+  background: linear-gradient(180deg, var(--danger-light), var(--danger));
+  box-shadow: 0 0 8px var(--danger-glow);
 }
 
 .timer-row.done { opacity: .3; }
@@ -687,10 +699,11 @@ body {
   background: linear-gradient(180deg, #B3AADB, #A49AD1);
 }
 
-/* 危險：紅色 */
+/* 危險：磚紅 */
 .ibox .timer-row.danger .timer-fill,
 .ibox .timer-row.danger .timer-buffer {
-  background: linear-gradient(180deg, #F06B79, #C52B43);
+  background: linear-gradient(180deg, var(--danger-light), var(--danger));
+  box-shadow: none;
 }
 
 .ibox .timer-row.done {
@@ -740,10 +753,10 @@ body {
   transform: translateY(0);
 }
 
-/* 最後 3 秒：轉紅閃爍 */
+/* 最後 3 秒：轉磚紅閃爍 */
 .buffer-hint.urgent {
   color: var(--white);
-  background: linear-gradient(180deg, #F06B79, #C52B43);
+  background: linear-gradient(180deg, var(--danger-light), var(--danger));
   animation: hintBlink .5s steps(1) infinite;
 }
 
@@ -922,12 +935,13 @@ body {
   display: flex;
 }
 
+/* 答案標題：用酒紅，避免被誤讀成「答錯」 */
 .banner b {
   font-family: var(--serif);
   font-size: var(--fs-xl);
   font-weight: 900;
   line-height: 1.2;
-  color: var(--red);
+  color: var(--red-dark);
 }
 
 .banner span {
@@ -1051,17 +1065,17 @@ body {
   animation: shake .3s ease;
   box-shadow:
     inset 0 2px 4px rgba(0,0,0,.16),
-    0 0 0 2px #E87982,
-    0 0 10px rgba(224,68,85,.25);
+    0 0 0 2px var(--danger),
+    0 0 10px var(--danger-glow-soft);
 }
 
-/* 結束時凍結：保留玩家打的字，打錯顯示紅框 */
+/* 結束時凍結：保留玩家打的字，打錯顯示磚紅框 */
 .irow input.final-wrong,
 .irow input.final-wrong:focus {
   box-shadow:
     inset 0 2px 4px rgba(0,0,0,.16),
-    0 0 0 2px #E87982,
-    0 0 10px rgba(224,68,85,.25);
+    0 0 0 2px var(--danger),
+    0 0 10px var(--danger-glow-soft);
 }
 
 /* ---- 選擇題 ---- */
@@ -1119,27 +1133,27 @@ body {
     0 0 14px rgba(217,180,91,.6) !important;
 }
 
-/* 答錯時的紅框提示 */
+/* 答錯時的磚紅框提示 */
 .opt.wrong-flash,
 .opt.final-wrong {
-  border: 2px solid #ff5b68 !important;
-  background: rgba(255, 70, 85, .2) !important;
-  box-shadow: 0 0 12px rgba(255, 70, 85, .45);
+  border: 2px solid var(--danger) !important;
+  background: var(--danger-bg) !important;
+  box-shadow: 0 0 12px var(--danger-glow);
 }
 
-/* 最後一次答錯：紅色快速閃爍 2 秒 */
+/* 最後一次答錯：磚紅快速閃爍 2 秒 */
 .opt.final-wrong {
   animation: finalWrongFlash .25s ease-in-out 4;
 }
 
 @keyframes finalWrongFlash {
   0%, 100% {
-    background: rgba(255, 70, 85, .2);
-    box-shadow: 0 0 12px rgba(255, 70, 85, .45);
+    background: var(--danger-bg);
+    box-shadow: 0 0 12px var(--danger-glow);
   }
 
   50% {
-    background: rgba(255, 70, 85, .02);
+    background: var(--danger-bg-faint);
     box-shadow: none;
   }
 }
@@ -2330,4 +2344,3 @@ button:focus-visible {
   background: #222;
   color: #FFF;
 }
-
