@@ -445,7 +445,7 @@ function runTimer(resetDeadline = true) {
         bufferDecided = true;
 
         const recentlyActive = Date.now() - lastInputAt <= CFG.TYPING_GRACE * 1000;
-if (!recentlyActive && $('inp').value.trim().length < 1) {
+    if (!recentlyActive && $('inp').value.trim().length < 1) {
           clearInterval(tick);
           timeout();
           return;
@@ -493,6 +493,13 @@ if (!recentlyActive && $('inp').value.trim().length < 1) {
       $('tnum').textContent = '剩餘 ' + Math.ceil(timeLeft) + 's';
       $('tbuffer-label').textContent = '';
     }
+
+    // 紅色扣秒標記跟隨黑色時間軸尾端
+        const penalty = $('tpenalty');
+
+        if (penalty.classList.contains('play')) {
+          penalty.style.left = $('tbar').style.width;
+        }
 
     $('trow').classList.toggle('danger', danger);
 

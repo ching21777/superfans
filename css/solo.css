@@ -580,14 +580,18 @@ body {
   position: absolute;
   top: 0;
   height: 100%;
-  background: #D45B5B;
+  background: repeating-linear-gradient(
+  135deg,
+  #E6E6EA 0 3px,
+  transparent 3px 5px
+);
   pointer-events: none;
   z-index: 3;
   opacity: 0;
 }
 
 .timer-penalty.play {
-  animation: penalty-fade .7s ease-out forwards;
+  animation: penalty-fade .15s ease-out forwards;
 }
 
 @keyframes penalty-fade {
