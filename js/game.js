@@ -126,7 +126,7 @@ const LY_ENTER_MS = 500;
 
 // 題目與選項依序進場（結束後才開始作答倒數）
 // 答案揭曉前的停留時間
-const TITLE_HOLD_MS = 800;
+const TITLE_HOLD_MS = 1000;
 const LY_HOLD_MS    = 2000;
 
 const HISTORY_KEY = 'song_king_solo_history';
