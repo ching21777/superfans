@@ -1055,9 +1055,32 @@ function timeout() {
    開始遊戲、切換題目、歌詞接唱與題目載入
 ========================================== */
 
+let playlistIntroTimer = null;
+
 function pickTheme(k) {
   theme = k;
-  startGame();
+
+  // 先在使用者點擊時解鎖音訊，避免延遲開始後被瀏覽器擋下播放
+  unlockAudio();
+
+  $('playlist-intro-name').textContent =
+    (typeof names !== 'undefined' && names[k]) || k;
+
+  clearTimeout(playlistIntroTimer);
+  show('playlist-intro');
+
+  playlistIntroTimer = setTimeout(() => {
+    playlistIntroTimer = null;
+    hide('playlist-intro');
+    startGame();
+  }, 2000);
+}
+
+function cancelPlaylistIntro() {
+  clearTimeout(playlistIntroTimer);
+  playlistIntroTimer = null;
+  hide('playlist-intro');
+  openCatalog();
 }
 
 function begin(demo) {
@@ -1136,8 +1159,8 @@ updHintBtn();
   // 倒數期間先查詢並預載第一首歌；試玩模式也同步背景準備
   if (!isLyricsMode()) prepareSong(queue[qPtr]);
 
-  if (demo) loadQuestion();
-  else countdown(loadQuestion);
+  // 正式遊戲已在選歌單畫面等待 2 秒，這裡直接進入第一題
+  loadQuestion();
 }
 const startGame = () => begin(false);
 
@@ -1780,29 +1803,6 @@ function tag(side, t, c, delay = 0) {
     $('tags-' + side).appendChild(e);
     setTimeout(() => e.remove(), 1500);
   }, delay);
-}
-
-// 開場倒數
-function countdown(cb) {
-  const o = $('cdown');
-  let c = 3;
-
-  o.style.display = 'flex';
-  o.textContent = c;
-
-  const t = setInterval(() => {
-    c--;
-
-    if (c > 0) {
-      o.textContent = c;
-    } else if (c === 0) {
-      o.textContent = 'GO!';
-    } else {
-      clearInterval(t);
-      o.style.display = 'none';
-      cb();
-    }
-  }, 750);
 }
 
 // 揭曉答案
