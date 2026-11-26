@@ -1033,7 +1033,7 @@ async function runAppleMusicBatchPrefetch() {
     completed++;
     saveAppleBatchItems();
     renderAppleBatchItems();
-    await waitForAppleCheck(250);
+    await new Promise(resolve => setTimeout(resolve, 250));
   }
   appleBatchStatus.textContent = `本批搜尋完成：${completed} 首。請逐首試聽並確認。`;
   appleBatchStart.disabled = false;
