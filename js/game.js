@@ -1056,6 +1056,38 @@ function timeout() {
 ========================================== */
 
 let playlistIntroTimer = null;
+let playlistIntroArtworkRequest = 0;
+
+async function loadPlaylistIntroArtwork(k) {
+  const image = $('playlist-intro-art');
+  const requestId = ++playlistIntroArtworkRequest;
+
+  image.removeAttribute('src');
+  image.style.display = 'none';
+
+  const pool = songPool();
+  if (!pool.length) return;
+
+  const term = pool[Math.floor(Math.random() * pool.length)];
+  const splitAt = term.indexOf(' ');
+  if (splitAt < 1) return;
+
+  const song = {
+    artist: term.slice(0, splitAt),
+    title: term.slice(splitAt + 1)
+  };
+
+  const track = await getAppleMusicTrack(song);
+  if (requestId !== playlistIntroArtworkRequest || !track?.artworkUrl100) return;
+
+  image.onload = () => {
+    if (requestId === playlistIntroArtworkRequest) image.style.display = 'block';
+  };
+  image.onerror = () => {
+    if (requestId === playlistIntroArtworkRequest) image.style.display = 'none';
+  };
+  image.src = track.artworkUrl100.replace('100x100', '600x600');
+}
 
 function pickTheme(k) {
   theme = k;
@@ -1065,6 +1097,7 @@ function pickTheme(k) {
 
   $('playlist-intro-name').textContent =
     (typeof names !== 'undefined' && names[k]) || k;
+  loadPlaylistIntroArtwork(k);
 
   clearTimeout(playlistIntroTimer);
 
