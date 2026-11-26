@@ -886,6 +886,10 @@ endAt -= 5000;
 
 timeLeft = Math.max(0, (endAt - Date.now()) / 1000);
 
+const newWidth = timeLeft / CFG.MAX_TIME * 100;
+
+showTimePenalty(oldWidth, newWidth);
+
 if (timeLeft <= 0) {
   timeLeft = 0;
   $('tnum').textContent = '剩餘 0s';
@@ -899,10 +903,6 @@ if (timeLeft <= 0) {
 
   return;
 }
-
-const newWidth = timeLeft / CFG.MAX_TIME * 100;
-
-showTimePenalty(oldWidth, newWidth);
 
   b.disabled = true;
 
