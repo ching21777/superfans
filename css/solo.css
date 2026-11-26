@@ -1380,10 +1380,11 @@ box-shadow:
   pointer-events: none;
   background: linear-gradient(
     180deg,
-    rgba(0,0,0,.12) 0%,
-    rgba(0,0,0,.28) 35%,
-    rgba(0,0,0,.58) 62%,
-    rgba(0,0,0,.22) 100%
+    rgba(0,0,0,.22) 0%,
+    rgba(0,0,0,.38) 30%,
+    rgba(0,0,0,.68) 55%,
+    rgba(0,0,0,.42) 75%,
+    rgba(0,0,0,.28) 100%
   );
 }
 
@@ -1394,13 +1395,16 @@ box-shadow:
   max-width: 100%;
   color: #FFFFFF;
   font-family: var(--serif);
-  font-size: clamp(14px, 3.8vw, 20px);
+  font-size: clamp(11px, 3.5vw, 20px);
   font-weight: 900;
   line-height: 1.2;
   white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  text-shadow: 0 2px 7px rgba(0,0,0,.9);
+  overflow: visible;
+  text-overflow: clip;
+  text-shadow:
+    0 1px 2px rgba(0,0,0,1),
+    0 2px 6px rgba(0,0,0,.95),
+    0 0 12px rgba(0,0,0,.9);
   transform: translateY(14px);
 }
 
