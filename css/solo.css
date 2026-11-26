@@ -1330,6 +1330,9 @@ box-shadow:
   stroke-dasharray: 528;
   stroke-dashoffset: 528;
   filter: drop-shadow(0 0 4px rgba(235,235,240,.35));
+}
+
+.playlist-intro.is-active .playlist-ring-progress {
   animation: playlist-ring-fill 2s linear forwards;
 }
 
@@ -1367,13 +1370,6 @@ box-shadow:
   min-width: 104px;
   justify-content: center;
   text-align: center;
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .playlist-ring-progress {
-    animation: none;
-    stroke-dashoffset: 0;
-  }
 }
 
 .ov {
