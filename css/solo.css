@@ -1146,18 +1146,12 @@ body {
 }
 
 
-/* 答錯標記：平時維持低調灰色 */
+/* 答錯標記：保留低彩度磚紅，不做閃爍或淡出 */
 .opt .wrong-mark {
   display: inline-block;
   margin-left: .35em;
-  color: #77777D;
+  color: #A56F74;
   font-weight: 900;
-  transition: color .2s ease;
-}
-
-/* 答錯瞬間：只有叉叉短暫變紅 */
-.opt:disabled.wrong-flash .wrong-mark {
-  color: #C74747;
 }
 
 /* 答錯後：深灰、內縮、底座感減弱 */
