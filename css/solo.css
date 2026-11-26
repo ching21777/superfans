@@ -1244,10 +1244,22 @@ body {
 }
 
 .item:disabled {
+  color: #77777D;
+  background: linear-gradient(180deg, #D5D5D8 0%, #B8B8BD 45%, #A2A2A8 100%);
   filter: grayscale(1);
-  opacity: .45;
+  opacity: .8;
   box-shadow: none;
   cursor: not-allowed;
+}
+
+.item:disabled .ic {
+  color: #E5E5E7;
+  background: linear-gradient(145deg, #A3A3A8, #77777D);
+  box-shadow: none;
+}
+
+.item:disabled .tx small {
+  color: #77777D;
 }
 
 
