@@ -72,13 +72,31 @@ devPanel.innerHTML = `
     <div id="dev-track-results"></div>
 
     <div class="dev-section">Apple Music 批次配對</div>
-    <div class="dev-check-intro">先選歌單與每批數量，再抓取候選歌曲；請逐首試聽確認。結果只暫存於本機，不會直接修改 TRACKS。</div>
-    <div style="display:flex;gap:6px;align-items:center;margin:8px 0;">
-      <select id="dev-apple-batch-playlist" style="flex:1;min-width:0;">
-        <option value="all">全部未綁定歌曲</option>
-      </select>
-      <input id="dev-apple-batch-limit" type="number" min="1" max="200" value="20" aria-label="每批檢查數量" style="width:76px;">
-    </div>
+<div class="dev-check-intro">
+  輸入 TRACKS 歌曲編號範圍，再設定每批搜尋數量。結果只暫存於本機，不會直接修改 TRACKS。
+</div>
+
+<div style="display:flex;gap:6px;align-items:center;margin:8px 0;">
+  <input id="dev-apple-batch-start-no"
+    type="number" min="1" placeholder="起始編號"
+    value="9301" aria-label="起始歌曲編號"
+    style="flex:1;min-width:0;">
+
+  <span style="color:#aaa;">～</span>
+
+  <input id="dev-apple-batch-end-no"
+    type="number" min="1" placeholder="結束編號"
+    value="9360" aria-label="結束歌曲編號"
+    style="flex:1;min-width:0;">
+</div>
+
+<div style="display:flex;gap:6px;align-items:center;margin:8px 0;">
+  <input id="dev-apple-batch-limit"
+    type="number" min="1" max="200" value="20"
+    aria-label="每批檢查數量"
+    style="width:76px;">
+  <span style="color:#aaa;font-size:11px;">每批搜尋首數</span>
+</div>
     <button class="bevel go" id="dev-apple-batch-start" type="button">預抓本批歌曲（20 首）</button>
     <div id="dev-apple-batch-status" aria-live="polite">尚未執行</div>
     <div id="dev-apple-batch-results"></div>
@@ -782,329 +800,6 @@ renderDevTrackSaved();
 // ========================================
 // Apple Music 批次預抓與人工確認
 // ========================================
-const appleBatchStart = $('dev-apple-batch-start');
-const appleBatchStatus = $('dev-apple-batch-status');
-const appleBatchResults = $('dev-apple-batch-results');
-const appleBatchExport = $('dev-apple-batch-export');
-const appleBatchClear = $('dev-apple-batch-clear');
-const appleBatchOutput = $('dev-apple-batch-output');
-const appleBatchPlaylist = $('dev-apple-batch-playlist');
-const appleBatchLimit = $('dev-apple-batch-limit');
-const APPLE_BATCH_KEY = 'devAppleBatchResults';
-let appleBatchRunning = false;
-let appleBatchItems = {};
-
-try {
-  appleBatchItems = JSON.parse(localStorage.getItem(APPLE_BATCH_KEY) || '{}') || {};
-} catch (error) {
-  appleBatchItems = {};
-}
-
-// 以歌曲編號＋歌手＋歌名核對舊紀錄，避免同編號換歌後沿用錯誤 ID。
-function removeStaleAppleBatchItems() {
-  const currentSongs = new Map(
-    getAppleBatchTracks().map(song => [String(song.no), song])
-  );
-
-  Object.entries(appleBatchItems).forEach(([no, item]) => {
-    const song = currentSongs.get(no);
-    if (
-      !song ||
-      normalizeAppleBatchText(item.artist) !== normalizeAppleBatchText(song.artist) ||
-      normalizeAppleBatchText(item.title) !== normalizeAppleBatchText(song.title)
-    ) {
-      delete appleBatchItems[no];
-    }
-  });
-}
-
-function saveAppleBatchItems() {
-  localStorage.setItem(APPLE_BATCH_KEY, JSON.stringify(appleBatchItems));
-}
-
-function normalizeAppleBatchText(value) {
-  return String(value || '').toLowerCase()
-    .replace(/[()[\]{}（）【】「」『』]/g, '')
-    .replace(/[\s\-_.,?!'":：，。！？」、]/g, '');
-}
-
-function getAppleBatchTracks() {
-  const all = [
-    ...(Array.isArray(TRACKS) ? TRACKS : []),
-    ...(typeof TEST !== 'undefined' && Array.isArray(TEST) ? TEST : [])
-  ];
-  const seen = new Set();
-  return all.filter(song => {
-    if (!song || !song.no || !song.artist || !song.title) return false;
-    const key = String(song.no);
-    if (seen.has(key)) return false;
-    seen.add(key);
-    return true;
-  });
-}
-
-function getAppleBatchPlaylistKeys() {
-  return typeof playlists === 'object' && playlists
-    ? Object.keys(playlists).filter(key =>
-        Array.isArray(playlists[key]) &&
-        key !== 'male2000s' &&
-        key !== 'female2000s'
-      )
-    : [];
-}
-
-function getAppleBatchPlaylistSongs() {
-  const key = appleBatchPlaylist.value;
-  const all = getAppleBatchTracks();
-  if (key === 'all') return all;
-  if (key === 'maleTest') return all.filter(song => /^91\d{2}$/.test(String(song.no)));
-  if (key === 'femaleTest') return all.filter(song => /^92\d{2}$/.test(String(song.no)));
-  const entries = playlists?.[key];
-  if (!Array.isArray(entries)) return [];
-  const wanted = new Set(entries.map(value => normalizeAppleBatchText(value)));
-  return all.filter(song => wanted.has(normalizeAppleBatchText(song.artist + ' ' + song.title)));
-}
-
-function initAppleBatchPlaylistOptions() {
-  const labels = typeof names === 'object' && names ? names : {};
-  [
-    { value: 'maleTest', label: '901 男歌手精選' },
-    { value: 'femaleTest', label: '902 女歌手精選' }
-  ].forEach(item => {
-    const option = document.createElement('option');
-    option.value = item.value;
-    option.textContent = item.label;
-    appleBatchPlaylist.appendChild(option);
-  });
-  getAppleBatchPlaylistKeys().forEach(key => {
-    const option = document.createElement('option');
-    option.value = key;
-    option.textContent = labels[key] || key;
-    appleBatchPlaylist.appendChild(option);
-  });
-  updateAppleBatchControls();
-}
-
-function updateAppleBatchControls() {
-  const limit = Math.max(1, Math.min(200, Number.parseInt(appleBatchLimit.value, 10) || 20));
-  appleBatchLimit.value = String(limit);
-  const songs = getAppleBatchPlaylistSongs();
-  const pending = songs.filter(song =>
-    !song.appleMusicId && !appleBatchItems[String(song.no)]?.confirmed
-  );
-  appleBatchStart.textContent = '預抓本批歌曲（' + limit + ' 首）';
-  appleBatchStatus.textContent = '所選歌單共 ' + songs.length + ' 首｜尚有 ' + pending.length + ' 首未確認';
-  renderAppleBatchItems();
-}
-
-function getAppleBatchStatus(item) {
-  if (item.confirmed && item.trackId) return { text: '已人工確認｜Apple Music ID：' + item.trackId, color: '#63c985', background: 'rgba(42,145,75,.14)' };
-  if (item.error) return { text: item.error === '沒有搜尋結果' ? '尚無候選結果' : '查詢失敗｜' + item.error, color: '#ff7777', background: 'rgba(190,45,45,.14)' };
-  if (!item.candidate) return { text: item.searched ? '尚無候選結果' : '尚未檢查', color: item.searched ? '#ff7777' : '#aaa', background: item.searched ? 'rgba(190,45,45,.14)' : 'rgba(130,130,130,.10)' };
-  if (!item.candidate.previewUrl) return { text: (item.matchStatus || '找到候選') + '｜無試聽音檔，暫不可確認', color: '#ffbd59', background: 'rgba(190,130,35,.14)' };
-  if (item.matchStatus === '歌手歌名吻合，需試聽') return { text: '歌手歌名吻合｜待人工試聽', color: '#76baff', background: 'rgba(45,115,190,.14)' };
-  return { text: (item.matchStatus || '候選需核對') + '｜請人工核對', color: '#ffbd59', background: 'rgba(190,130,35,.14)' };
-}
-
-function renderAppleBatchItems() {
-  appleBatchResults.innerHTML = '';
-  const selectedSongs = getAppleBatchPlaylistSongs();
-  const selectedNos = new Set(selectedSongs.map(song => String(song.no)));
-  const items = Object.values(appleBatchItems).filter(item => selectedNos.has(String(item.no)));
-  if (!items.length) {
-    appleBatchResults.textContent = '所選歌單目前沒有批次配對紀錄';
-    return;
-  }
-
-  items.forEach(item => {
-    const row = document.createElement('div');
-    row.className = 'dev-track-result';
-    row.style.display = 'block';
-
-    const title = document.createElement('div');
-    title.className = 'dev-track-name';
-    title.textContent = item.no + '｜' + item.artist + ' - ' + item.title;
-
-    const statusInfo = getAppleBatchStatus(item);
-    const status = document.createElement('div');
-    status.className = 'dev-track-album';
-    status.textContent = statusInfo.text;
-    status.style.cssText = 'display:inline-block;margin-top:5px;padding:3px 7px;border-radius:4px;color:' + statusInfo.color + ';background:' + statusInfo.background + ';';
-
-    row.append(title, status);
-
-    if (item.candidates?.length) {
-      const controls = document.createElement('div');
-      controls.style.cssText = 'display:flex;gap:6px;align-items:center;margin-top:6px;';
-
-      const select = document.createElement('select');
-      select.style.cssText = 'flex:1;min-width:0;';
-      item.candidates.forEach((candidate, index) => {
-        const option = document.createElement('option');
-        option.value = String(index);
-        option.textContent = (index + 1) + '. ' + candidate.trackName + '｜' + candidate.artistName + (candidate.previewUrl ? '' : '（無試聽）');
-        select.appendChild(option);
-      });
-      const currentIndex = item.candidates.findIndex(candidate => String(candidate.trackId) === String(item.candidate?.trackId));
-      select.value = String(Math.max(0, currentIndex));
-
-      const play = document.createElement('button');
-      play.className = 'bevel btn-sm';
-      play.type = 'button';
-      play.textContent = '試聽';
-      play.addEventListener('click', async () => {
-        const candidate = item.candidates[Number(select.value)];
-        if (!candidate?.previewUrl) {
-          alert('這個候選版本沒有試聽音檔');
-          return;
-        }
-        devTrackAudio.pause();
-        devTrackAudio.src = candidate.previewUrl;
-        devTrackAudio.style.display = 'block';
-        try { await devTrackAudio.play(); }
-        catch (error) { alert('音檔播放失敗，請再試一次'); }
-      });
-
-      const confirm = document.createElement('button');
-      confirm.className = 'bevel btn-sm';
-      confirm.type = 'button';
-      confirm.textContent = item.confirmed ? '已確認' : '確認採用';
-      confirm.disabled = !!item.confirmed;
-      confirm.addEventListener('click', () => {
-        const candidate = item.candidates[Number(select.value)];
-        if (!candidate?.previewUrl) {
-          alert('請先選擇有試聽音檔的版本，並人工試聽確認');
-          return;
-        }
-        item.candidate = candidate;
-        item.trackId = candidate.trackId;
-        item.confirmed = true;
-        item.confirmedAt = new Date().toISOString();
-        saveAppleBatchItems();
-        updateAppleBatchControls();
-      });
-
-      controls.append(select, play, confirm);
-      row.appendChild(controls);
-    }
-
-    appleBatchResults.appendChild(row);
-  });
-}
-
-async function runAppleMusicBatchPrefetch() {
-  if (appleBatchRunning) return;
-  appleBatchRunning = true;
-  appleBatchStart.disabled = true;
-  try {
-    const allSongs = getAppleBatchPlaylistSongs();
-    const pending = allSongs.filter(song =>
-      !song.appleMusicId && !appleBatchItems[String(song.no)]?.confirmed
-    );
-    const limit = Math.max(1, Math.min(200, Number.parseInt(appleBatchLimit.value, 10) || 20));
-    const songs = pending.slice(0, limit);
-    if (!songs.length) {
-      appleBatchStatus.textContent = '所選歌單已沒有待配對歌曲。';
-      return;
-    }
-    let checked = 0;
-    appleBatchStatus.textContent = '準備搜尋 ' + songs.length + ' 首（本批上限 ' + limit + '）…';
-
-    for (const song of songs) {
-      const key = String(song.no);
-      const item = appleBatchItems[key] || {
-        no: key, artist: song.artist, title: song.title, confirmed: false
-      };
-      item.searched = true;
-      try {
-        const response = await fetch(
-          'https://itunes.apple.com/search?term=' +
-          encodeURIComponent(song.artist + ' ' + song.title) +
-          '&entity=song&limit=10&country=TW'
-        );
-        if (!response.ok) throw new Error('HTTP ' + response.status);
-        const data = await response.json();
-        const candidates = Array.isArray(data.results) ? data.results : [];
-        item.candidates = candidates;
-        item.candidate = candidates[0] || null;
-        item.confirmed = false;
-        item.error = candidates.length ? '' : '沒有搜尋結果';
-
-        if (item.candidate) {
-          const artistMatch = normalizeAppleBatchText(item.candidate.artistName).includes(normalizeAppleBatchText(song.artist));
-          const titleMatch = normalizeAppleBatchText(item.candidate.trackName) === normalizeAppleBatchText(song.title);
-          item.matchStatus = artistMatch && titleMatch
-            ? (item.candidate.previewUrl ? '歌手歌名吻合，需試聽' : '歌手歌名吻合，但無試聽')
-            : '歌手或歌名需人工核對';
-        }
-        appleBatchItems[key] = item;
-      } catch (error) {
-        item.error = error.message || '查詢失敗';
-        appleBatchItems[key] = item;
-      }
-
-      checked++;
-      renderAppleBatchItems();
-      appleBatchStatus.textContent = '批次搜尋中（' + checked + '／' + songs.length + '）…';
-      if (checked % 5 === 0) saveAppleBatchItems();
-      if (checked < songs.length) await waitForAppleCheck(250);
-    }
-
-    saveAppleBatchItems();
-    updateAppleBatchControls();
-    appleBatchStatus.textContent = '本批預抓完成：' + songs.length + ' 首；請逐首試聽並確認。';
-  } finally {
-    appleBatchRunning = false;
-    appleBatchStart.disabled = false;
-  }
-}
-
-appleBatchPlaylist.addEventListener('change', updateAppleBatchControls);
-appleBatchLimit.addEventListener('change', updateAppleBatchControls);
-appleBatchStart.addEventListener('click', runAppleMusicBatchPrefetch);
-appleBatchClear.addEventListener('click', () => {
-  const selectedKey = appleBatchPlaylist.value;
-  const selectedSongs = getAppleBatchPlaylistSongs();
-  if (!selectedSongs.length) {
-    alert('所選歌單沒有歌曲紀錄可清除');
-    return;
-  }
-
-  const label = appleBatchPlaylist.selectedOptions[0]?.textContent || '所選歌單';
-  if (!confirm('確定清除「' + label + '」的 Apple Music 批次配對紀錄？此操作不會修改 TRACKS。')) return;
-
-  if (selectedKey === 'all') {
-    appleBatchItems = {};
-  } else {
-    selectedSongs.forEach(song => {
-      delete appleBatchItems[String(song.no)];
-    });
-  }
-
-  saveAppleBatchItems();
-  appleBatchOutput.value = '';
-  appleBatchOutput.style.display = 'none';
-  updateAppleBatchControls();
-  appleBatchStatus.textContent = '已清除「' + label + '」的批次配對紀錄。';
-});
-appleBatchExport.addEventListener('click', () => {
-  const selectedNos = new Set(getAppleBatchPlaylistSongs().map(song => String(song.no)));
-  const confirmed = Object.values(appleBatchItems).filter(item =>
-    selectedNos.has(String(item.no)) && item.confirmed && item.trackId
-  );
-  const output = confirmed.map(item => {
-    const no = "'" + String(item.no).replace(/'/g, "\\'") + "'";
-    const title = JSON.stringify(String(item.title));
-    const artist = JSON.stringify(String(item.artist));
-    const rawId = String(item.trackId);
-    const appleMusicId = Number.isFinite(Number(rawId)) && rawId.trim() !== '' ? String(Number(rawId)) : JSON.stringify(rawId);
-    return "  { no: " + no + ", title: " + title + ", artist: " + artist + ", appleMusicId: " + appleMusicId + " },";
-  }).join('\n');
-  appleBatchOutput.value = output || '// 所選歌單尚無人工確認的歌曲';
-  appleBatchOutput.style.display = 'block';
-  appleBatchOutput.focus();
-  appleBatchOutput.select();
-});
 removeStaleAppleBatchItems();
 saveAppleBatchItems();
 initAppleBatchPlaylistOptions();
