@@ -1117,15 +1117,20 @@ function loadPlaylistIntroArtwork(k) {
     if (requestId !== playlistIntroArtworkRequest || !url || Date.now() >= deadline) return;
 
     const revealArtwork = () => {
-      if (requestId !== playlistIntroArtworkRequest) return;
+      // 等瀏覽器先繪製透明狀態，再開始淡入；避免手機跳過 transition
+      requestAnimationFrame(() => {
+        requestAnimationFrame(() => {
+          if (requestId !== playlistIntroArtworkRequest) return;
 
-      // 開場時間已結束就不補顯示，絕不影響遊戲開始
-      if (Date.now() >= deadline) {
-        image.style.display = 'none';
-        return;
-      }
+          // 開場時間已結束就不補顯示，絕不影響遊戲開始
+          if (Date.now() >= deadline) {
+            image.style.display = 'none';
+            return;
+          }
 
-      image.style.opacity = '1';
+          image.style.opacity = '1';
+        });
+      });
     };
 
     image.onload = revealArtwork;
