@@ -125,7 +125,9 @@ const LY_LEAVE_MS = 300;
 const LY_ENTER_MS = 500;
 
 // 題目與選項依序進場（結束後才開始作答倒數）
-const LY_HOLD_MS  = 2000;
+// 答案揭曉前的停留時間
+const TITLE_HOLD_MS = 800;
+const LY_HOLD_MS    = 2000;
 
 const HISTORY_KEY = 'song_king_solo_history';
 
@@ -880,7 +882,8 @@ function holdCorrectChoice() {
   }
 
   clearTimeout(clipTimer);
-  clipTimer = setTimeout(reveal, LY_HOLD_MS);
+  const holdMs = isLyricsMode() ? LY_HOLD_MS : TITLE_HOLD_MS;
+  clipTimer = setTimeout(reveal, holdMs);
 }
 
 
