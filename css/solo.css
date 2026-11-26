@@ -1146,19 +1146,24 @@ body {
 }
 
 
-/* 答錯：短暫讓底部厚度轉為暗紅色 */
-.opt:disabled.wrong-flash {
-  box-shadow:
-    inset 0 2px 1px rgba(255,255,255,.9),
-    inset 0 -2px 1px rgba(70,70,78,.3),
-    0 1px 0 rgba(255,255,255,.25),
-    0 4px 0 #873F3F,
-    0 6px 8px rgba(0,0,0,.28);
+/* 答錯標記：平時維持低調灰色 */
+.opt .wrong-mark {
+  display: inline-block;
+  margin-left: .35em;
+  color: #77777D;
+  font-weight: 900;
+  transition: color .2s ease;
+}
+
+/* 答錯瞬間：只有叉叉短暫變紅 */
+.opt:disabled.wrong-flash .wrong-mark {
+  color: #C74747;
 }
 
 /* 答錯後：深灰、內縮、底座感減弱 */
 .opt:disabled.final-wrong,
-.opt:disabled.wrong {
+.opt:disabled.wrong,
+.opt:disabled.wrong-locked {
   color: #77777D;
   background: linear-gradient(
     180deg,
