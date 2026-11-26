@@ -434,17 +434,6 @@ function unlockAudio() {
   const p = audio.play();
   if (p) p.then(() => audio.pause()).catch(() => {});
 
-  // 預熱歌詞接唱的錯誤音效
-  const wrongSound = $('wrong-sound');
-  wrongSound.muted = true;
-
-  wrongSound.play().then(() => {
-    wrongSound.pause();
-    wrongSound.currentTime = 0;
-    wrongSound.muted = false;
-  }).catch(() => {
-    wrongSound.muted = false;
-  });
 }
 
 // 累計目前這一段作答時間
