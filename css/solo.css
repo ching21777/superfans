@@ -1284,6 +1284,29 @@ box-shadow:
 
 /* ---- 通用彈窗 ---- */
 
+
+/* ---- 歌單開場：取代原本 3、2、1、GO 倒數 ---- */
+.playlist-intro {
+  z-index: 10000;
+}
+
+.playlist-intro-card {
+  gap: var(--sp-4);
+}
+
+.playlist-intro-name {
+  color: var(--red-light);
+  line-height: 1.5;
+  text-shadow: 1px 2px 0 var(--red-dark), 2px 3px 0 rgba(0,0,0,.25);
+}
+
+.playlist-intro-card .bevel {
+  align-self: center;
+  min-width: 120px;
+  justify-content: center;
+  text-align: center;
+}
+
 .ov {
   position: fixed;
   inset: 0;
