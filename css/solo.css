@@ -2365,3 +2365,8 @@ button:focus-visible {
   background: #222;
   color: #FFF;
 }
+
+/* 測試用：預覽手動播放按鈕（?previewTap=1） */
+html.preview-tap .tap {
+  display: flex !important;
+}
