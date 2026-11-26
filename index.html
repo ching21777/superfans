@@ -351,9 +351,18 @@
 </div>
 
 <div class="ov playlist-intro" id="playlist-intro">
-  <div class="mc playlist-intro-card">
-    <div class="mt playlist-intro-name" id="playlist-intro-name"></div>
-    <button class="bevel" type="button" onclick="cancelPlaylistIntro()">返回</button>
+  <div class="playlist-intro-content">
+    <div class="playlist-intro-ring">
+      <svg viewBox="0 0 184 184" aria-hidden="true">
+        <circle class="playlist-ring-track" cx="92" cy="92" r="84"></circle>
+        <circle class="playlist-ring-progress" cx="92" cy="92" r="84"></circle>
+      </svg>
+      <div class="playlist-intro-center">
+        <div class="playlist-intro-name" id="playlist-intro-name"></div>
+        <div class="playlist-intro-subtitle">準備開始</div>
+      </div>
+    </div>
+    <button class="bevel playlist-intro-back" type="button" onclick="cancelPlaylistIntro()">返回</button>
   </div>
 </div>
 <audio id="wrong-sound" src="audio/error-008.ogg" preload="auto"></audio>
