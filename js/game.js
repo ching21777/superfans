@@ -380,6 +380,18 @@ function unlockAudio() {
   audio.src = SILENT;
   const p = audio.play();
   if (p) p.then(() => audio.pause()).catch(() => {});
+
+  // 預熱歌詞接唱的錯誤音效
+  const wrongSound = $('wrong-sound');
+  wrongSound.muted = true;
+
+  wrongSound.play().then(() => {
+    wrongSound.pause();
+    wrongSound.currentTime = 0;
+    wrongSound.muted = false;
+  }).catch(() => {
+    wrongSound.muted = false;
+  });
 }
 
 // 累計目前這一段作答時間
@@ -739,7 +751,8 @@ function toChoice() {
   usedChoice = true;
   if (window.GameRecord) window.GameRecord.recordEvent('choice_mode_selected');
   $('choice-btn').disabled = true;
-  $('pause-btn').disabled = true; /*首字提示(前生是暫停)*/
+  $('pause-btn').disabled = true;
+  $('pause-sub').textContent = '不可併用';
 
   if (CFG.CHOICE_COST) {
     setScore(Math.max(0, score - CFG.CHOICE_COST));
