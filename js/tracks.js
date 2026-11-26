@@ -165,6 +165,68 @@ const TRACKS = [
   { no: '9258', title: "買你", artist: "魏如萱", appleMusicId: null },
   { no: '9259', title: "光年之外", artist: "鄧紫棋", appleMusicId: null },
   { no: '9260', title: "泡沫", artist: "鄧紫棋", appleMusicId: null },
+
+  // 戲劇主題曲／片尾曲
+  { no: '9301', title: "花香", artist: "許紹洋", appleMusicId: null },               // 《薰衣草》片尾曲
+  { no: '9302', title: "北極星的眼淚", artist: "張棟樑", appleMusicId: null },       // 《微笑PASTA》片尾曲
+  { no: '9303', title: "流星雨", artist: "F4", appleMusicId: null },                 // 《流星花園》片尾曲
+  { no: '9304', title: "專屬天使", artist: "TANK", appleMusicId: null },             // 《花樣少年少女》片尾曲
+  { no: '9305', title: "曖昧", artist: "楊丞琳", appleMusicId: null },               // 《惡魔在身邊》片尾曲
+  { no: '9306', title: "遺失的美好", artist: "張韶涵", appleMusicId: null },         // 《海豚灣戀人》片尾曲
+  { no: '9307', title: "一了百了", artist: "信樂團", appleMusicId: null },           // 《超人氣學園》片尾曲
+  { no: '9308', title: "好的事情", artist: "嚴爵", appleMusicId: null },             // 《醉後決定愛上你》片尾曲
+  { no: '9309', title: "勢在必行", artist: "Bii", appleMusicId: null },              // 《勇士們》片頭曲
+  { no: '9310', title: "想見你想見你想見你", artist: "八三夭", appleMusicId: null }, // 《想見你》片尾曲
+  { no: '9311', title: "以後別做朋友", artist: "周興哲", appleMusicId: null },       // 《16個夏天》片尾曲
+  { no: '9312', title: "我愛他", artist: "丁噹", appleMusicId: null },               // 《下一站，幸福》片頭曲
+  { no: '9313', title: "倒帶", artist: "蔡依林", appleMusicId: null },               // 《求婚事務所》片尾曲
+  { no: '9314', title: "癡心絕對", artist: "李聖傑", appleMusicId: null },           // 《愛上痞子男》片頭曲
+  { no: '9315', title: "魚仔", artist: "盧廣仲", appleMusicId: null },               // 《植劇場－花甲男孩轉大人》片頭曲
+  { no: '9316', title: "花都開好了", artist: "S.H.E", appleMusicId: null },          // 《薔薇之戀》片頭曲
+  { no: '9317', title: "Lydia", artist: "飛兒樂團", appleMusicId: null },            // 《鬥魚》片尾曲
+  { no: '9318', title: "隱形的翅膀", artist: "張韶涵", appleMusicId: null },         // 《愛殺17》片頭曲
+  { no: '9319', title: "雨愛", artist: "楊丞琳", appleMusicId: null },               // 《海派甜心》片尾曲
+  { no: '9320', title: "沒有如果", artist: "梁靜茹", appleMusicId: null },           // 《敗犬女王》片頭曲
+  { no: '9321', title: "還是會", artist: "韋禮安", appleMusicId: null },             // 《我可能不會愛你》片頭曲
+  { no: '9322', title: "微加幸福", artist: "郁可唯", appleMusicId: null },           // 《小資女孩向前衝》片尾曲
+  { no: '9323', title: "暫時的男朋友", artist: "嚴爵", appleMusicId: null },         // 《真愛趁現在》片尾曲
+  { no: '9324', title: "愛轉角", artist: "羅志祥", appleMusicId: null },             // 《轉角＊遇到愛》片尾曲
+  { no: '9325', title: "再痛也沒關係", artist: "陳勢安", appleMusicId: null },       // 《花是愛》片尾曲
+  { no: '9326', title: "轉身之後", artist: "Bii", appleMusicId: null },              // 《鍾無艷》片尾曲
+  { no: '9327', title: "背叛", artist: "曹格", appleMusicId: null },                 // 《戀愛女王》片尾曲
+  { no: '9328', title: "當", artist: "動力火車", appleMusicId: null },               // 《還珠格格》片頭曲
+  { no: '9329', title: "葉子", artist: "阿桑", appleMusicId: null },                 // 《薔薇之戀》片尾曲
+  { no: '9330', title: "無所謂", artist: "5566", appleMusicId: null },               // 《MVP情人》片頭曲
+  { no: '9331', title: "我難過", artist: "5566", appleMusicId: null },               // 《MVP情人》片尾曲
+  { no: '9332', title: "不要不要", artist: "卓文萱", appleMusicId: null },           // 《小資女孩向前衝》片頭曲
+  { no: '9333', title: "心願便利貼", artist: "元若藍", appleMusicId: null },         // 《命中注定我愛你》片尾曲
+  { no: '9334', title: "彩虹的微笑", artist: "王心凌", appleMusicId: null },         // 《微笑PASTA》片頭曲
+  { no: '9335', title: "情非得已", artist: "庾澄慶", appleMusicId: null },           // 《流星花園》片頭曲
+  { no: '9336', title: "孤單北半球", artist: "林依晨", appleMusicId: null },         // 《愛情合約》片尾曲
+  { no: '9337', title: "櫻花草", artist: "Sweety", appleMusicId: null },             // 《星蘋果樂園》片尾曲
+  { no: '9338', title: "記得我愛你", artist: "周渝民", appleMusicId: null },         // 《戰神》片尾曲
+  { no: '9339', title: "風雲變色", artist: "5566", appleMusicId: null },             // 《紫禁之巔》片頭曲
+  { no: '9340', title: "花的嫁紗", artist: "王心凌", appleMusicId: null },           // 《天國的嫁衣》片頭曲
+  { no: '9341', title: "給我你的愛", artist: "TANK", appleMusicId: null },           // 《終極一班》片尾曲
+  { no: '9342', title: "越來越愛", artist: "飛輪海", appleMusicId: null },           // 《愛就宅一起》片頭曲
+  { no: '9343', title: "帶我走", artist: "楊丞琳", appleMusicId: null },             // 《不良笑花》片尾曲
+  { no: '9344', title: "惡作劇", artist: "王藍茵", appleMusicId: null },             // 《惡作劇之吻》片尾曲
+  { no: '9345', title: "手掌心", artist: "丁噹", appleMusicId: null },               // 《蘭陵王》片尾曲
+  { no: '9346', title: "你，好不好？", artist: "周興哲", appleMusicId: null },       // 《遺憾拼圖》片尾曲
+  { no: '9347', title: "三國戀", artist: "TANK", appleMusicId: null },               // 《終極三國》片尾曲
+  { no: '9348', title: "兜圈", artist: "林宥嘉", appleMusicId: null },               // 《必娶女人》片尾曲
+  { no: '9349', title: "臭男人", artist: "黃義達", appleMusicId: null },             // 《惡魔在身邊》片頭曲
+  { no: '9350', title: "祝我生日快樂", artist: "溫嵐", appleMusicId: null },          // 《愛情魔髮師》片尾曲
+  { no: '9351', title: "飛龍在天", artist: "江宏恩", appleMusicId: null },           // 《飛龍在天》片頭曲
+  { no: '9352', title: "右手邊", artist: "光良", appleMusicId: null },               // 《舞動奇蹟》片尾曲
+  { no: '9353', title: "迷魂計", artist: "183Club", appleMusicId: null },            // 《愛情魔髮師》片頭曲
+  { no: '9354', title: "勇敢的幸福", artist: "立威廉", appleMusicId: null },         // 《綠光森林》片尾曲
+  { no: '9355', title: "怎麼辦", artist: "S.H.E", appleMusicId: null },              // 《鬥牛要不要》片頭曲
+  { no: '9356', title: "存在", artist: "5566", appleMusicId: null },                 // 《綠光森林》片頭曲
+  { no: '9357', title: "伯樂", artist: "林宥嘉", appleMusicId: null },               // 《必娶女人》片頭曲
+  { no: '9358', title: "一個人想著一個人", artist: "曾沛慈", appleMusicId: null },   // 《終極一班2》片尾曲
+  { no: '9359', title: "家家酒", artist: "家家", appleMusicId: null },               // 《含苞欲墜的每一天》片頭曲
+  { no: '9360', title: "分手快樂", artist: "梁靜茹", appleMusicId: null },            // 《麻辣鮮師》片尾曲
 ];
 
 

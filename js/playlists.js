@@ -153,14 +153,14 @@ male:[
   lyrics:["王心凌 心電心","F4 流星雨","林俊傑 江南","張韶涵 遺失的美好","丁噹 我愛他","五月天 突然好想你","張棟樑 北極星的眼淚","孫燕姿 遇見","郭靜 心牆","光良 童話","李聖傑 手放開","S.H.E 美麗新世界","S.H.E 波斯貓","S.H.E 五月天","梁靜茹 燕尾蝶","梁靜茹 小手拉大手","梁靜茹 暖暖","盧廣仲 刻在我心底的名字","鄭宜農 千千萬萬","理想混蛋 不是因為天氣晴朗才愛你"],};
 const names={
   vagabond:'走啊聽團！音樂祭夢幻陣容',
-  drama:'那些年你看過的經典偶像劇',
+  drama:'那些年你看過的經典電視劇',
   she:'S.H.E 鐵粉爭霸戰',
   fish:'梁靜茹精選情歌',
   jay:'周杰倫到底在唱什麼咧',
   lyrics:'多語K歌🎤中英日台通通有',
   helloNico:'Hello Nico 神秘歌單',
-  male:'入門挑戰 ► 男歌手們',
-  female:'新手挑戰 ► 女歌手們'};
+  male:'男歌手暖身賽',
+  female:'女歌手練習場'};
 
 document.querySelectorAll('.tb[data-k]').forEach(button => {
   const name = names[button.dataset.k];
