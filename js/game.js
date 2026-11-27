@@ -602,6 +602,36 @@ function stopAll() {
   clearBufferUI();
 }
 
+// 暫存最近 10 次播放失敗，方便事後追查（不影響遊戲紀錄）
+function saveAudioPlayError(error) {
+  const key = 'sf_audio_play_errors';
+  const record = {
+    time: new Date().toISOString(),
+    mode: isLyricsMode() ? 'lyrics' : 'title',
+    theme,
+    question: qDone + 1,
+    song: cur ? `${cur.artist} - ${cur.title}` : '',
+    errorName: error?.name || 'UnknownError',
+    errorMessage: error?.message || String(error || ''),
+    readyState: audio.readyState,
+    networkState: audio.networkState,
+    mediaError: audio.error?.code || null,
+    paused: audio.paused,
+    currentTime: audio.currentTime,
+    src: audio.currentSrc || audio.src
+  };
+
+  try {
+    const history = JSON.parse(localStorage.getItem(key) || '[]');
+    history.push(record);
+    localStorage.setItem(key, JSON.stringify(history.slice(-10)));
+  } catch (storageError) {
+    console.warn('無法保存播放錯誤紀錄：', storageError);
+  }
+
+  console.error('歌曲播放失敗：', record, error);
+}
+
 function playNow() {
   const myReq = reqId;
   const myPlay = ++audioPlayId;
@@ -630,7 +660,8 @@ function playNow() {
 
       runTimer();
     })
-    .catch(() => {
+    .catch((error) => {
+      saveAudioPlayError(error);
       if (myReq !== reqId || myPlay !== audioPlayId || !active) return;
       $('tap').style.display = 'flex';
     });
