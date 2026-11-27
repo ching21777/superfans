@@ -249,12 +249,12 @@ const SONG_DATABASE = [
     title: "おどるポンポコリン",
     genre: "櫻桃小丸子主題曲",
     playUntil: 10,
-    type: "next",
-    prompt: "ピーヒャラ　ピーヒャラ　おへそがちらり",
-    answer: "タッタタラリラ",
+    type: "fill",
+    prompt: "ピーヒャラ {{blank}} おへそがちらり",
+    answer: "ピーヒャラ",
     distractors: [
       "パッパパラパ",
-      "ピーヒャラ",
+      "タッタタラリラ",
       "お腹がへったよ"
     ]
   },
@@ -297,7 +297,7 @@ const SONG_DATABASE = [
     distractors: [
       "愛ㄞ～～",
       "愛ㄞ～",
-      "愛ㄞ～～～～"
+      "愛ㄞ"
     ]
   },
   {
@@ -330,30 +330,30 @@ const SONG_DATABASE = [
   },
   {
     no: '034',
-    title: "浪人情歌",
-    genre: "KTV必點經典",
-    playUntil: 20,
+    title: "子曰",
+    genre: "儒家思想饒舌歌",
+    playUntil: 17.5,
     type: "next",
-    prompt: "不要再想妳 不要再愛妳",
-    answer: "讓時間悄悄的飛逝",
+    prompt: "搞不懂就問人 搞得懂就答人",
+    answer: "沒有人懂 還可以問神",
     distractors: [
-      "讓往事隨風而飄散",
-      "抹去我倆的過去",
-      "就當作是一場夢境"
+      "己所不欲 他勿施於人",
+      "正人君子 樑上君子",
+      "要打破砂鍋問到底"
     ]
   },
   {
     no: '035',
-    title: "突然的自我",
-    genre: "全場大合唱",
-    playUntil: 19,
-    type: "fill",
-    prompt: "聽見妳說 朝陽起又落\n晴雨難測 {{blank}}",
-    answer: "道路是腳步多",
+    title: "匿名的好友",
+    genre: "偶像劇《海派甜心》插曲",
+    playUntil: 22,
+    type: "previous",
+    prompt: "從此匿名的朋友",
+    answer: "不能握的手",
     distractors: [
-      "往事已隨風過",
-      "人生路不好走",
-      "心事誰人知曉"
+      "不能牽的手",
+      "不能放的手",
+      "不能勾的手"
     ]
   },
   {
@@ -565,7 +565,35 @@ const SONG_DATABASE = [
       "唯一的夢",
       "難忘的人"
     ]
-  }
+  },
+    {
+    no: '051',
+    title: "浪人情歌",
+    genre: "KTV必點經典",
+    playUntil: 20,
+    type: "next",
+    prompt: "不要再想妳 不要再愛妳",
+    answer: "讓時間悄悄的飛逝",
+    distractors: [
+      "讓往事隨風而飄散",
+      "抹去我倆的過去",
+      "就當作是一場夢境"
+    ]
+  },
+  {
+    no: '052',
+    title: "突然的自我",
+    genre: "全場大合唱",
+    playUntil: 19,
+    type: "fill",
+    prompt: "聽見妳說 朝陽起又落\n晴雨難測 {{blank}}",
+    answer: "道路是腳步多",
+    distractors: [
+      "往事已隨風過",
+      "人生路不好走",
+      "心事誰人知曉"
+    ]
+  },
 ];
 
 const HELLO_NICO_DATABASE = [
