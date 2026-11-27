@@ -820,10 +820,7 @@ function submitAnswer() {
     return;
   }
 
-  // 答錯立即中斷連擊
-  choiceMiss = true;
-  combo = 0;
-  updCombo();
+  // 自由輸入答錯不會中斷連擊；答題次數仍會影響本題得分
 
   lastInputAt = Date.now();   // 答錯後輸入框被清空，但仍算有在作答
 
