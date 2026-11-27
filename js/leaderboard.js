@@ -144,7 +144,7 @@ function loadHistory() {
             sub: `<span>${r.time} ． Combo ${r.combo}</span>`,
             best: i === 0
           })
-        : lbEmptyRow('尚無紀錄', '', `0${i + 1}`);
+        : lbEmptyRow('尚無戰績', '', `0${i + 1}`);
     }).join('');
 
     return `
@@ -180,7 +180,7 @@ function renderBoard() {
             sub: `<span>⏱ ${r.time}</span><span>🔥 ${r.combo}</span>`,
             best: i === 0
           })
-        : lbEmptyRow('尚無紀錄', '', `0${i + 1}`);
+        : lbEmptyRow('尚無戰績', '', `0${i + 1}`);
     }).join('');
 
     return `
