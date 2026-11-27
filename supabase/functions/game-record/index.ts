@@ -147,6 +147,9 @@ export default {
           const isDemo = game.is_demo;
           const scoringVersion = game.scoring_version;
           const scoringSnapshot = game.scoring_snapshot;
+          // 舊版尚未上傳的草稿可能沒有裝置欄位，允許以 NULL 補傳
+          const deviceType = game.device_type ?? null;
+          const browser = game.browser ?? null;
 
           if (
             typeof id !== "string" ||
@@ -158,6 +161,9 @@ export default {
             !isObject(scoringSnapshot) ||
             JSON.stringify(scoringSnapshot).length > MAX_SNAPSHOT_CHARS ||
             !validNullableText(playlistKey, 100) ||
+            !validNullableText(deviceType, 30) ||
+            !validNullableText(browser, 50) ||
+            (deviceType !== null && !["mobile", "tablet", "desktop"].includes(deviceType)) ||
             (isDemo && playlistKey !== null)
           ) {
             return json({ error: "Invalid game data" }, 400);
@@ -186,6 +192,8 @@ export default {
             is_demo: isDemo,
             scoring_version: scoringVersion,
             scoring_snapshot: scoringSnapshot,
+            device_type: deviceType,
+            browser,
           };
 
           const { error: insertError } = await db
@@ -208,7 +216,7 @@ export default {
           const { data: existing, error: readError } = await db
             .from("game_records")
             .select(
-              "id, auth_user_id, player_id, game_mode, playlist_key, is_demo, scoring_version, scoring_snapshot",
+              "id, auth_user_id, player_id, game_mode, playlist_key, is_demo, scoring_version, scoring_snapshot, device_type, browser",
             )
             .eq("id", id)
             .maybeSingle();
@@ -222,6 +230,8 @@ export default {
             existing.playlist_key === playlistKey &&
             existing.is_demo === isDemo &&
             existing.scoring_version === scoringVersion &&
+            existing.device_type === deviceType &&
+            existing.browser === browser &&
             stableStringify(existing.scoring_snapshot) ===
               stableStringify(scoringSnapshot);
 
