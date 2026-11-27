@@ -22,7 +22,6 @@ const CFG = {
   CHOICE_COMBO_RATE: .5,
   CHOICE_BASE_RATE: .75,
   PAUSE_MAX: 1,
-  CHOICE_COST: 0,
   MAX_TIME: 20,
   TEXT_BUFFER: 10,
   REVEAL_MS: 5000,
@@ -828,11 +827,6 @@ function toChoice() {
   $('pause-btn').disabled = true;
   $('pause-sub').textContent = '不可併用';
 
-  if (CFG.CHOICE_COST) {
-    setScore(Math.max(0, score - CFG.CHOICE_COST));
-    tag('l', '使用錦囊 🪙' + CFG.CHOICE_COST, '#ffc857');
-  }
-
   const pool = uniq(songPool().map(s => s.slice(s.indexOf(' ') + 1)))
     .filter(t => sanitize(t) !== sanitize(cur.title));
 
@@ -1593,11 +1587,6 @@ $('inp').classList.remove('shake', 'final-wrong');
   $('tap').style.display = 'none';
 
   $('choice-btn').disabled = isLyricsMode();
-  $('choice-sub').textContent = isLyricsMode()
-    ? '可用一次'
-    : CFG.CHOICE_COST
-      ? `花 ${CFG.CHOICE_COST} 金幣`
-      : '分數打折';
   $('items').style.display = '';
   applyItemMode();
 
