@@ -457,12 +457,15 @@
     const browserSource = brandNames + ' ' + ua;
 
     let deviceType = 'desktop';
-    if (/iPad|Tablet|PlayBook|Silk/i.test(ua) ||
+    if (/iPad|Tablet|PlayBook/i.test(ua) ||
         (/Macintosh/i.test(ua) && navigator.maxTouchPoints > 1)) {
       deviceType = 'tablet';
     } else if (uaData?.mobile === true ||
-        (/Android/i.test(ua) && !/Mobile/i.test(ua)) === false && /Android|iPhone|iPod|Windows Phone|Mobile/i.test(ua)) {
+        /iPhone|iPod|Windows Phone|Mobile/i.test(ua) ||
+        (/Android/i.test(ua) && /Mobile/i.test(ua))) {
       deviceType = 'mobile';
+    } else if (/Android/i.test(ua)) {
+      deviceType = 'tablet';
     }
 
     let browser = 'Other';
@@ -618,13 +621,3 @@
     recoverDrafts();
     flushPending();
   });
-  document.addEventListener('visibilitychange', () => {
-    if (document.visibilityState === 'hidden') {
-      onHidden();
-    } else {
-      saveDraft({ hidden: false, hiddenAt: null });
-      recoverDrafts();
-      flushPending();
-    }
-  });
-})();
