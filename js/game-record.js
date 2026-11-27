@@ -448,6 +448,35 @@
     saveDraft();
   }
 
+  // 只記錄裝置類型與瀏覽器名稱，不蒐集 IP 或精確裝置型號
+  function getDeviceInfo() {
+    const ua = navigator.userAgent || '';
+    const uaData = navigator.userAgentData;
+    const brands = (uaData && Array.isArray(uaData.brands)) ? uaData.brands : [];
+    const brandNames = brands.map(item => item.brand || '').join(' ');
+    const browserSource = brandNames + ' ' + ua;
+
+    let deviceType = 'desktop';
+    if (/iPad|Tablet|PlayBook|Silk/i.test(ua) ||
+        (/Macintosh/i.test(ua) && navigator.maxTouchPoints > 1)) {
+      deviceType = 'tablet';
+    } else if (uaData?.mobile === true ||
+        (/Android/i.test(ua) && !/Mobile/i.test(ua)) === false && /Android|iPhone|iPod|Windows Phone|Mobile/i.test(ua)) {
+      deviceType = 'mobile';
+    }
+
+    let browser = 'Other';
+    if (/EdgA?|EdgiOS|Edge\//i.test(browserSource)) browser = 'Edge';
+    else if (/OPR\//i.test(browserSource)) browser = 'Opera';
+    else if (/SamsungBrowser/i.test(browserSource)) browser = 'Samsung Internet';
+    else if (/Firefox|FxiOS/i.test(browserSource)) browser = 'Firefox';
+    else if (/CriOS/i.test(browserSource)) browser = 'Chrome';
+    else if (/Chrome/i.test(browserSource)) browser = 'Chrome';
+    else if (/Safari/i.test(browserSource)) browser = 'Safari';
+
+    return { device_type: deviceType, browser };
+  }
+
   function startGame(options) {
     recoverDrafts();   // 開新局前，先把之前中斷的遊戲補記起來
     currentGame = {
@@ -468,7 +497,8 @@
         playlist_key: options.playlist_key,
         is_demo: !!options.is_demo,
         scoring_version: options.scoring_version,
-        scoring_snapshot: options.scoring_snapshot
+        scoring_snapshot: options.scoring_snapshot,
+        ...getDeviceInfo()
       }
     };
     enqueue('start', startBody);
