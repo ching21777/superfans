@@ -20,7 +20,7 @@ const CFG = {
   COMBO_MAX: 99,
   CHOICE_SPEED_RATE: .5,
   CHOICE_COMBO_RATE: .5,
-  CHOICE_BASE_RATE: .75,
+  CHOICE_BASE_RATE: .5,
   PAUSE_MAX: 1,
   MAX_TIME: 20,
   TEXT_BUFFER: 10,
@@ -709,7 +709,7 @@ function calcScore(isChoice, tLeft, comboNow, lostCombo, attempts, usedHint = fa
   const rates = [1, 0.79, 0.57, 0.36, 0.14];
   const attemptRate = rates[Math.min(attempts, 5) - 1] || 0.14;
 
-  const base = Math.round(CFG.BASE * attemptRate * (isChoice ? 0.4 : 1));
+  const base = Math.round(CFG.BASE * attemptRate * (isChoice ? CFG.CHOICE_BASE_RATE : 1));
 
   // 速度分數
   let speed = Math.round(
