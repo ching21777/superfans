@@ -29,9 +29,12 @@ const CFG = {
   TYPING_GRACE: 3   // 20 秒前幾秒內有動作，視為還在作答
 };
 
-const GRADES = isArtistPlaylist
-  ? GRADES_ARTIST
-  : GRADES_MIX;
+// 單一歌手／團體專屬歌單使用鐵粉評級；其餘使用大眾評級
+const ARTIST_PLAYLISTS = new Set(['she', 'fish', 'helloNico']);
+
+function getGrades() {
+  return ARTIST_PLAYLISTS.has(theme) ? GRADES_ARTIST : GRADES_MIX;
+}
 
 const GRADES_ARTIST = [
   {k:'SSS', min:.90, title:'鐵粉界傳說', desc:'音樂一下就秒殺全場，歌手本人都為你鼓掌。'},
@@ -729,7 +732,7 @@ function maxScore(n = total) {
 function grade(s) {
   const mx = maxScore(),
         r = mx > 0 ? s / mx : 0;
-  return GRADES.find(g => r >= g.min);
+  return getGrades().find(g => r >= g.min);
 }
 
 /* 接歌詞道具：隨機刪掉一個錯誤選項（分數 ×0.8，不影響連擊） */
@@ -1246,7 +1249,7 @@ updHintBtn();
       playlist_key: demo ? null : theme,
       is_demo: demo,
       scoring_version: 'v1',
-      scoring_snapshot: { CFG: { ...CFG }, GRADES: GRADES.map(g => ({ ...g })) }
+      scoring_snapshot: { CFG: { ...CFG }, GRADES: getGrades().map(g => ({ ...g })) }
     });
   }
   totalAnswerTime = 0;
