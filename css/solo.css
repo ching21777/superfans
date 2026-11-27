@@ -345,6 +345,38 @@ body {
     0 5px 10px rgba(0,0,0,.3);
 }
 
+.mc {
+  position: relative;
+  width: 100%;
+  max-width: 440px;
+  max-height: 96dvh;
+  overflow: auto;
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-3);
+  padding: var(--sp-5);
+  text-align: center;
+  border-radius: var(--r-md);
+  box-shadow:
+    inset 0 2px 1px rgba(255,255,255,.95),
+    inset 0 -2px 1px rgba(100,90,95,.2),
+    0 3px 0 rgba(70,65,70,.7),
+    0 8px 20px rgba(0,0,0,.45);
+  animation: pop var(--t-base) cubic-bezier(.2,1.4,.4,1);
+}
+
+/* 試玩結束與退出確認視窗統一樣式 */
+#m-demo .mc,
+#m-confirm .mc {
+  max-width: 340px;
+}
+
+#m-demo .mc > p,
+#m-confirm .mc > p {
+  font-weight: 700;
+  color: var(--text-sub);
+  font-size: var(--fs-sm);
+}
 
 /* ---- 膠囊標籤共用樣式 ---- */
 
@@ -1458,25 +1490,7 @@ box-shadow:
   background: var(--overlay);
 }
 
-.mc {
-  position: relative;
-  width: 100%;
-  max-width: 440px;
-  max-height: 96dvh;
-  overflow: auto;
-  display: flex;
-  flex-direction: column;
-  gap: var(--sp-3);
-  padding: var(--sp-5);
-  text-align: center;
-  border-radius: var(--r-md);
-  box-shadow:
-    inset 0 2px 1px rgba(255,255,255,.95),
-    inset 0 -2px 1px rgba(100,90,95,.2),
-    0 3px 0 rgba(70,65,70,.7),
-    0 8px 20px rgba(0,0,0,.45);
-  animation: pop var(--t-base) cubic-bezier(.2,1.4,.4,1);
-}
+
 
 .mt {
   font-family: var(--serif);

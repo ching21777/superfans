@@ -429,10 +429,11 @@ function isLyricsMode() {
 }
 
 function unlockAudio() {
-  audio.src = SILENT;
-  const p = audio.play();
-  if (p) p.then(() => audio.pause()).catch(() => {});
+  const silentAudio = new Audio();
+  silentAudio.src = SILENT;
 
+  const p = silentAudio.play();
+  if (p) p.then(() => silentAudio.pause()).catch(() => {});
 }
 
 // 累計目前這一段作答時間
