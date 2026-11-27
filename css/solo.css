@@ -255,7 +255,7 @@ body {
 }
 
 
-/* HOME：低調金屬 */
+/* 退出 */
 .quit-btn {
   display: none;
   padding: var(--sp-1) var(--sp-4);
@@ -1257,14 +1257,24 @@ box-shadow:
    04. 遊戲流程與畫面
 ======================================== */
 
+.start-data-notice {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 0px;
+    padding-top: 9px;
+    color: var(--text-faint);
+    font-size: 9px;
+    letter-spacing: 1.5px;
+}
+
 .copyright-notice {
   margin: 6px auto 0;
   padding: 0 16px 12px;
   font-size: 10px;
-  line-height: 1.6;
-  color: rgba(255, 255, 255, 0.4);
-  text-align: center;
   letter-spacing: 0.3px;
+  line-height: 1.6;
+  color: var(--text-faint);
+  text-align: center;
 }
 
 .theme-divider {

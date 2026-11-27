@@ -170,12 +170,18 @@
       <ul class="lb-list lb-summary-list" id="hist"></ul>
     </section>
 
+    <div class="start-data-notice">
+  ※ 本遊戲會記錄作答資料與成績，供統計及體驗改善使用。
+</div>
+
     <div class="col">
       <button class="bevel go btn-lg" onclick="toTheme()">START</button>
       <button class="bevel" onclick="startDemo()">試玩模式</button>
     </div>
 
-    <div class="copyright-notice">Personal Project ． Beta Version</div>
+    <div class="copyright-notice">
+  Personal Project ． Beta Version
+</div>
   </div>
 </div>
 
@@ -292,8 +298,8 @@
 <!-- ==================== 試玩結束 ==================== -->
 <div class="ov" id="m-demo">
   <div class="mc">
-    <div class="mt" style="color:var(--magenta)">試玩結束！</div>
-    <p style="line-height:1.6;color:var(--text-sub)">接下來選歌單，總共 10 首連番出擊，準備好迎戰了嗎？</p>
+    <div class="mt" style="color:var(--magenta)">試玩結束 ٩(｡•ω•｡)و</div>
+    <p style="line-height:1.6;color:var(--text-sub)">計分模式共 10 首歌，你準備好了嗎？</p>
     <div class="actions-pair">
       <button class="bevel" onclick="startDemo()">再練一回</button>
       <button class="bevel go" onclick="toTheme()">正式上場</button>
@@ -304,10 +310,10 @@
 <!-- ==================== 確認中斷 ==================== -->
 <div class="ov" id="m-confirm">
   <div class="mc" style="max-width:340px">
-    <div class="mt" style="color:var(--magenta)">確定要離開嗎？</div>
-    <p style="font-weight:700;color:var(--text-sub);font-size:var(--fs-sm)">離開後將返回主選單，這局成績不會保留。</p>
+    <div class="mt" style="color:var(--magenta)">要退出遊戲嗎？</div>
+    <p style="font-weight:700;color:var(--text-sub);font-size:var(--fs-sm)">退出後返回主選單，本局成績不計入排行榜。</p>
     <div class="actions-pair">
-      <button class="bevel" onclick="doQuit()">放棄這局</button>
+      <button class="bevel" onclick="doQuit()">退出</button>
       <button class="bevel go" onclick="cancelQuit()">繼續玩</button>
     </div>
   </div>
@@ -350,7 +356,7 @@
     </div>
 
     <div class="actions-stack">
-      <button class="bevel go btn-lg" onclick="startGame()">再玩一次</button>
+      <button class="bevel go btn-lg" onclick="startGame()">再玩一局</button>
       <button class="bevel text" onclick="toTheme()">換其他歌單</button>
     </div>
   </div>

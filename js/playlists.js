@@ -107,10 +107,10 @@ const names={
   she:'S.H.E 鐵粉爭霸戰',
   fish:'梁靜茹精選情歌',
   jay:'周杰倫到底在唱什麼咧',
-  lyrics:'多語K歌🎤中英日台通通有',
+  lyrics:'多語KTV🎤中英日台開唱',
   helloNico:'Hello Nico 神秘歌單',
-  male:'男歌手暖身賽',
-  female:'女歌手練習場'};
+  male:'男歌手代表作',
+  female:'女歌手代表作'};
 
 document.querySelectorAll('.tb[data-k]').forEach(button => {
   const name = names[button.dataset.k];

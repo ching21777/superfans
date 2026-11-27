@@ -41,15 +41,14 @@
   // 下面的編號是依規則排的「範例」，請換成你的真實編號。
   const SONGS = [
     { k: 'drama',    no: '20112' },
-    { k: 'she',      no: '30113' },
-    { k: 'fish',     no: '30213' },
+    { k: 'she',      no: '30213' },
+    { k: 'fish',     no: '30112' },
     { k: 'vagabond', no: '＊＊＊', mode: 1, level: 3, status: 'soon' },
-    { k: '你一定聽過的西洋歌曲', no: '＊＊＊', mode: 1, level: 2, status: 'soon' },
     { k: 'lyrics',   no: '00321' },
     { k: 'male',   no: '00111' },
     { k: 'female', no: '00211' },
-    { k: 'jay',          no: '＊＊＊', mode: 2, level: 3, status: 'soon' },
-    { k: 'LIVE 演唱會預習歌單', no: '＊＊＊', mode: 2, level: 3, status: 'soon' },
+    { k: 'jay',          no: '＊＊＊', mode: 2, level: 3, status: 'soon', visible: false },
+    { k: '叫不出名字的西洋歌', no: '＊＊＊', mode: 2, level: 3, status: 'soon' },
   ];
 
   // ---- 以下是程式 ----
@@ -113,7 +112,7 @@
     if (soon) btn.setAttribute('aria-disabled', 'true');
     btn.appendChild(el('span', 'sb-no', it.no));
     btn.appendChild(el('span', 'sb-name', it.name || readName(it.k) || it.k));
-    btn.appendChild(el('span', 'sb-stars', soon ? '即將上架' : stars(it.level)));
+    btn.appendChild(el('span', 'sb-stars', soon ? '待解鎖' : stars(it.level)));
     return btn;
   }
 
@@ -171,7 +170,10 @@
     if (hosts.some(h => !h)) { console.warn('[catalog] 找不到 data-sb-page'); return; }
     hosts.forEach(h => { h.replaceChildren(); h.classList.remove('cont'); });
 
-    const parsed  = SONGS.map(parse).filter(Boolean);
+    const parsed = SONGS
+  .filter(s => s.visible !== false)
+  .map(parse)
+  .filter(Boolean);
     const visible = MODES.filter(m => parsed.some(s => s.mode === m.id));
     const useTabs = visible.length >= TAB_THRESHOLD;
 
