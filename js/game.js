@@ -218,6 +218,11 @@ function sanitize(s) {
     .replace(/[\s\-_()（）\[\]【】.,?!'"]/g, '');
 }
 
+// 自由輸入答案：統一全形／半形與英文大小寫後再比對
+function normalizeAnswer(s) {
+  return sanitize((s || '').normalize('NFKC'));
+}
+
 // 歌曲比對：保留 Live、Remix 等版本資訊
 function normalizeMatchText(s) {
   return (s || '').toLowerCase()
@@ -852,7 +857,7 @@ function submitAnswer() {
   if (!v) return;
 
   questionAttempts++;
-  const isCorrect = sanitize(v) === sanitize(cur.title);
+  const isCorrect = normalizeAnswer(v) === normalizeAnswer(cur.title);
   recordAnswerEvent(v, isCorrect, 'text');
 
   if (isCorrect) {
