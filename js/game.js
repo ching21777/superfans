@@ -225,39 +225,57 @@ function normalizeMatchText(s) {
     .replace(/[\s\-_.,?!'"]/g, '');
 }
 
+// Apple Music 查詢逾時，避免單首歌曲讓遊戲無限等待
+async function fetchAppleMusic(url) {
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), 8000);
+
+  try {
+    const response = await fetch(url, { signal: controller.signal });
+    if (!response.ok) {
+      const error = new Error(`Apple Music API 回應 ${response.status}`);
+      error.status = response.status;
+      throw error;
+    }
+    return await response.json();
+  } finally {
+    clearTimeout(timeout);
+  }
+}
+
 // 依 Apple Music ID 取得歌曲；失敗時退回歌名搜尋
 async function getAppleMusicTrack(song) {
   // 有 appleMusicId：優先查指定歌曲
   if (song?.appleMusicId) {
     try {
-      const response = await fetch(
+      const data = await fetchAppleMusic(
         `https://itunes.apple.com/lookup?id=${encodeURIComponent(song.appleMusicId)}&country=TW`
       );
-      const data = await response.json();
-
       const track = (data.results || []).find(x => x.previewUrl);
-
       if (track) return track;
     } catch (error) {
+      // API 限流時不要再追加搜尋請求，避免持續撞上 429
+      if (error.status === 429) {
+        console.warn('Apple Music API 暫時限流，略過歌曲：', song.title);
+        return null;
+      }
       console.warn('Apple Music ID 查詢失敗，改用歌名搜尋：', song.title);
     }
   }
 
   // 沒有 ID，或 ID 查不到可播放音訊：使用原本搜尋方式
   try {
-    const response = await fetch(
+    const data = await fetchAppleMusic(
       `https://itunes.apple.com/search?term=${encodeURIComponent(song.artist + ' ' + song.title)}&entity=song&limit=10&country=TW`
     );
-    const data = await response.json();
-
     const results = (data.results || []).filter(x => x.previewUrl);
 
     return results.find(x =>
       normalizeMatchText(x.artistName).includes(normalizeMatchText(song.artist)) &&
       normalizeMatchText(x.trackName) === normalizeMatchText(song.title)
     ) || null;
-
   } catch (error) {
+    console.warn('Apple Music 歌曲搜尋失敗：', song.title, error);
     return null;
   }
 }
@@ -635,9 +653,21 @@ function saveAudioPlayError(error) {
 function playNow() {
   const myReq = reqId;
   const myPlay = ++audioPlayId;
+  let playTimeout;
 
-  return audio.play()
+  const playback = new Promise((resolve, reject) => {
+    playTimeout = setTimeout(() => {
+      const error = new Error('歌曲播放逾時');
+      error.name = 'PlaybackTimeoutError';
+      reject(error);
+    }, 8000);
+
+    audio.play().then(resolve, reject);
+  });
+
+  return playback
     .then(() => {
+      clearTimeout(playTimeout);
       // 題目或播放流程已更新：忽略舊回呼，避免重啟計時器
       if (myReq !== reqId || myPlay !== audioPlayId || !active) return;
 
@@ -661,9 +691,19 @@ function playNow() {
       runTimer();
     })
     .catch((error) => {
+      clearTimeout(playTimeout);
       saveAudioPlayError(error);
       if (myReq !== reqId || myPlay !== audioPlayId || !active) return;
-      $('tap').style.display = 'flex';
+
+      // 瀏覽器禁止自動播放時，保留手動播放入口
+      if (error?.name === 'NotAllowedError' || error?.name === 'SecurityError') {
+        $('tap').style.display = 'flex';
+        return;
+      }
+
+      // 音源失效或播放逾時：跳過本首，繼續補下一首
+      console.warn('歌曲無法播放，改載入下一首。', cur?.title, error);
+      loadQuestion();
     });
 }
 
@@ -1220,11 +1260,12 @@ function begin(demo) {
   // 歌詞題目只使用目前仍在 TRACKS 的歌曲，TEST 中的歌曲不會進入遊戲
   const availableTrackNos = new Set(TRACKS.map(song => song.no));
 
+  // 歌名模式保留完整候選歌單，歌曲載入失敗時才能從後續歌曲補滿題數
   queue = isLyricsMode()
     ? shuffle([
         ...(theme === 'helloNico' ? HELLO_NICO_DATABASE : SONG_DATABASE)
       ].filter(item => availableTrackNos.has(item.no))).slice(0, total)
-    : shuffle(uniq(songPool())).slice(0, total);
+    : shuffle(uniq(songPool()));
 
   // 沒有可用題目時，留在原畫面，不進入遊戲或倒數
   if (!queue.length) {
