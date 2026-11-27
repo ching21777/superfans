@@ -780,7 +780,7 @@ function calcScore(isChoice, tLeft, comboNow, lostCombo, attempts, usedHint = fa
     : usedHint && isChoice
       ? 0.2
       : usedHint
-        ? 0.8
+        ? 0.9
         : 1;
 
   const totalScore = base + speed + bonus;
