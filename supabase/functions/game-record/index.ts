@@ -150,6 +150,8 @@ export default {
           // 舊版尚未上傳的草稿可能沒有裝置欄位，允許以 NULL 補傳
           const deviceType = game.device_type ?? null;
           const browser = game.browser ?? null;
+          // 舊版草稿可能沒有環境欄位，允許以 NULL 補傳
+          const environment = game.environment ?? null;
 
           if (
             typeof id !== "string" ||
@@ -163,6 +165,7 @@ export default {
             !validNullableText(playlistKey, 100) ||
             !validNullableText(deviceType, 30) ||
             !validNullableText(browser, 50) ||
+            (environment !== null && !["production", "test", "beta"].includes(environment)) ||
             (deviceType !== null && !["mobile", "tablet", "desktop"].includes(deviceType)) ||
             (isDemo && playlistKey !== null)
           ) {
@@ -194,6 +197,7 @@ export default {
             scoring_snapshot: scoringSnapshot,
             device_type: deviceType,
             browser,
+            environment,
           };
 
           const { error: insertError } = await db
@@ -216,7 +220,7 @@ export default {
           const { data: existing, error: readError } = await db
             .from("game_records")
             .select(
-              "id, auth_user_id, player_id, game_mode, playlist_key, is_demo, scoring_version, scoring_snapshot, device_type, browser",
+              "id, auth_user_id, player_id, game_mode, playlist_key, is_demo, scoring_version, scoring_snapshot, device_type, browser, environment",
             )
             .eq("id", id)
             .maybeSingle();
@@ -232,6 +236,7 @@ export default {
             existing.scoring_version === scoringVersion &&
             existing.device_type === deviceType &&
             existing.browser === browser &&
+            existing.environment === environment &&
             stableStringify(existing.scoring_snapshot) ===
               stableStringify(scoringSnapshot);
 
