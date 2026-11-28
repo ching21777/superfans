@@ -56,8 +56,7 @@ jobs:
           path = Path("_site/beta/index.html")
           html = path.read_text()
           needle = " +\n    '<script src=\"./dev/dev.js"
-          if html.count(needle) != 1:
-              raise SystemExit("Expected exactly one dev.js loader after catalog.js")
+          assert html.count(needle) == 1, "Expected exactly one dev.js loader after catalog.js"
           start = html.index(needle)
           end = html.index("\n", start + len(needle))
           html = html[:start] + html[end:]
