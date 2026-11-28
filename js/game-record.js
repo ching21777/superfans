@@ -1,5 +1,6 @@
 (() => {
   const SUPABASE_URL = 'https://uxyigjfgxagtvdoyjhkq.supabase.co';
+  const ENVIRONMENT = 'test';
   const SUPABASE_KEY = 'sb_publishable_XObXgkUfWibailjzU_Qtlw_UhYEvHgi';
   const PLAYER_KEY = 'sf_player_id';
   const DB_NAME = 'super-fans-records';
@@ -501,6 +502,7 @@
         is_demo: !!options.is_demo,
         scoring_version: options.scoring_version,
         scoring_snapshot: options.scoring_snapshot,
+        environment: ENVIRONMENT,
         ...getDeviceInfo()
       }
     };
