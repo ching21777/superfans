@@ -1,4 +1,0 @@
-project_id = "super-fans"
-
-[functions.game-record]
-verify_jwt = true
