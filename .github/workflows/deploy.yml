@@ -5,6 +5,7 @@ on:
     branches:
       - main
       - test
+      - beta
   workflow_dispatch:
 
 permissions:
@@ -33,16 +34,23 @@ jobs:
           ref: test
           path: test-source
 
+      - name: Checkout beta branch
+        uses: actions/checkout@v4
+        with:
+          ref: beta
+          path: beta-source
+
       - name: Build website
         run: |
-          mkdir -p _site/test
+          mkdir -p _site/test _site/beta
           rsync -a --exclude='.git' main-source/ _site/
           rsync -a --exclude='.git' test-source/ _site/test/
+          rsync -a --exclude='.git' beta-source/ _site/beta/
 
-          # 只在測試版注入開發工具
-          if [ -f _site/test/dev/dev.js ]; then
-            sed -i 's|</body>|<script src="./dev/dev.js"></script>\n</body>|' _site/test/index.html
-          fi
+          # test 保留 index.html 原本載入的開發工具，不再重複注入
+          # beta 不發布開發工具，也移除 HTML 中的載入程式
+          rm -rf _site/beta/dev
+          sed -i '/dev\/dev\.js/d' _site/beta/index.html
 
       - name: Configure Pages
         uses: actions/configure-pages@v5
