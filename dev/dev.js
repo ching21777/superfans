@@ -1797,19 +1797,7 @@ playClip = function (my, done, leaveEarly = false) {
     if (shouldRun) runDevSimulation();
   };
 
-  
-// 測試環境：跳過開始前的倒數
 
-const oldCountdown = countdown;
-
-countdown = function (callback) {
-  if (devSession || devSingleSong) {
-    callback();
-    return;
-  }
-
-  return oldCountdown(callback);
-};
 
   // 逐題模擬
 
