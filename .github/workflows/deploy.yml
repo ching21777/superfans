@@ -52,17 +52,15 @@ jobs:
           rm -rf _site/beta/dev
           python - <<'PY'
           from pathlib import Path
-          import re
 
           path = Path("_site/beta/index.html")
           html = path.read_text()
-          html, count = re.subn(
-              r" \\+\\n\\s*'<script src=\"\\./dev/dev\\.js[^\\n]*",
-              "",
-              html
-          )
-          if count != 1:
-              raise SystemExit(f"Expected to remove one dev.js loader, found {count}")
+          needle = " +\\n    '<script src=\"./dev/dev.js"
+          if html.count(needle) != 1:
+              raise SystemExit("Expected exactly one dev.js loader after catalog.js")
+          start = html.index(needle)
+          end = html.index("\\n", start + len(needle))
+          html = html[:start] + html[end:]
           path.write_text(html)
           PY
 
