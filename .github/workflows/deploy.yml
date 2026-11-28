@@ -50,7 +50,18 @@ jobs:
           # test 保留 index.html 原本載入的開發工具，不再重複注入
           # beta 不發布開發工具，也移除 HTML 中的載入程式
           rm -rf _site/beta/dev
-          sed -i '/dev\/dev\.js/d' _site/beta/index.html
+          python - <<'PY'
+          from pathlib import Path
+
+          path = Path("_site/beta/index.html")
+          html = path.read_text()
+          html = html.replace(
+              """      '<script src="js/catalog.js?v=' + APP_VERSION + '"><\\/script>' +
+              '<script src="./dev/dev.js?v=' + APP_VERSION + '"><\\/script>'""",
+              """      '<script src="js/catalog.js?v=' + APP_VERSION + '"><\\/script>'"""
+          )
+          path.write_text(html)
+          PY
 
       - name: Configure Pages
         uses: actions/configure-pages@v5
