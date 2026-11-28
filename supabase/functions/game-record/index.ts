@@ -4,6 +4,8 @@ import { withSupabase } from "npm:@supabase/server@1";
 const UUID_RE =
   /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
+const BETA_CLIENT_VERSION = "20261128-01";
+
 // ---- 上限（超過一律視為不合理資料）----
 const MAX_BODY_BYTES = 1024 * 1024;
 const MAX_EVENTS_PER_QUESTION = 500;
@@ -150,8 +152,13 @@ export default {
           // 舊版尚未上傳的草稿可能沒有裝置欄位，允許以 NULL 補傳
           const deviceType = game.device_type ?? null;
           const browser = game.browser ?? null;
-          // 舊版草稿可能沒有環境欄位，允許以 NULL 補傳
           const environment = game.environment ?? null;
+
+          // Beta 僅接受本次重置後的前端版本；舊分頁與舊離線佇列永久拒絕。
+          if (environment === "beta" &&
+            body.client_version !== BETA_CLIENT_VERSION) {
+            return json({ error: "Outdated Beta client; reload the page" }, 409);
+          }
 
           if (
             typeof id !== "string" ||

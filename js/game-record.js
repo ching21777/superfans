@@ -6,6 +6,9 @@
   const DB_NAME = 'super-fans-records';
   const STORE_NAME = 'operations';
   const VERSION = '2026-11-24-locks';
+  const RESET_VERSION = '20261128-01';
+  const CLIENT_VERSION = RESET_VERSION;
+  const RESET_KEY = 'sf_data_reset_version';
   const LOCK_PREFIX = 'sf-game-';
   const DRAFT_PREFIX = 'sf_game_draft:';   // 每一局各存一份草稿，不會互相覆蓋
   const MAX_SERVER_RETRIES = 10;          // 伺服器連續 5xx 超過這個次數，就把該筆搬到失敗區
@@ -13,6 +16,81 @@
   const FAILED_KEEP_MS = 14 * 24 * 3600 * 1000;  // 失敗區保留 14 天
   const STALE_DRAFT_MS = 30000;           // 草稿閒置超過這個時間，才視為「上一局已中斷」
   const STALE_DRAFT_VISIBLE_MS = 10 * 60 * 1000; // 沒有隱藏紀錄的草稿，要閒置更久才補記
+
+  // 首次套用此版本時，清除舊成績與待上傳佇列；保留玩家 ID、登入狀態及遊戲設定。
+  function runDataReset() {
+    try {
+      if (localStorage.getItem(RESET_KEY) === RESET_VERSION) {
+        return Promise.resolve();
+      }
+
+      localStorage.removeItem('song_king_board_v2');
+      localStorage.removeItem('song_king_solo_history');
+      localStorage.removeItem('sf_audio_play_errors');
+
+      for (let i = localStorage.length - 1; i >= 0; i--) {
+        const key = localStorage.key(i);
+        if (key && key.startsWith(DRAFT_PREFIX)) {
+          localStorage.removeItem(key);
+        }
+      }
+    } catch (error) {
+      return Promise.reject(error);
+    }
+
+    return new Promise((resolve, reject) => {
+      let request;
+      try {
+        request = indexedDB.open(DB_NAME, 1);
+      } catch (error) {
+        reject(error);
+        return;
+      }
+
+      request.onupgradeneeded = () => {
+        const db = request.result;
+        if (!db.objectStoreNames.contains(STORE_NAME)) {
+          db.createObjectStore(STORE_NAME, { keyPath: 'id' });
+        }
+      };
+
+      request.onerror = () => reject(request.error);
+      request.onsuccess = () => {
+        const db = request.result;
+        let tx;
+
+        try {
+          tx = db.transaction(STORE_NAME, 'readwrite');
+          tx.objectStore(STORE_NAME).clear();
+        } catch (error) {
+          db.close();
+          reject(error);
+          return;
+        }
+
+        tx.oncomplete = () => {
+          db.close();
+          try {
+            localStorage.setItem(RESET_KEY, RESET_VERSION);
+            resolve();
+          } catch (error) {
+            reject(error);
+          }
+        };
+        tx.onerror = () => {
+          db.close();
+          reject(tx.error);
+        };
+        tx.onabort = () => {
+          db.close();
+          reject(tx.error || new Error('IndexedDB reset aborted'));
+        };
+      };
+    });
+  }
+
+  // resetReady 未成功前，任何舊佇列都不得讀取或上傳。
+  const resetReady = runDataReset();
 
   let client = null;
   let dbPromise = null;
@@ -172,8 +250,11 @@
       createdAt: Date.now(),
       order: Date.now() * 1000 + (opCounter++ % 1000)
     };
+    const safeBody = { ...body, client_version: CLIENT_VERSION };
+    const safeOperation = { ...operation, body: safeBody };
     queueChain = queueChain.then(async () => {
-      await putOperation(operation);
+      await resetReady;
+      await putOperation(safeOperation);
       flushPending();
     }).catch(error => {
       console.warn('[GameRecord] 暫存失敗：', error);
@@ -220,6 +301,13 @@
   }
 
   async function flushPending() {
+    try {
+      await resetReady;
+    } catch (error) {
+      console.error('[GameRecord] 本機資料重置未完成，已停止上傳：', error);
+      return;
+    }
+
     if (flushing) {
       flushRequested = true;
       return;
@@ -248,7 +336,6 @@
             await recoverSession(supabase);
             failure = await sendOnce(supabase, operation);
           }
-
           if (!failure) {
             await deleteOperation(operation.id);
             continue;
@@ -348,6 +435,13 @@
 
   // 找出所有「已中斷」的草稿，補記成 abandoned
   async function recoverDrafts() {
+    try {
+      await resetReady;
+    } catch (error) {
+      console.error('[GameRecord] 本機資料重置未完成，略過舊草稿恢復：', error);
+      return;
+    }
+
     const keys = [];
     try {
       for (let i = 0; i < localStorage.length; i++) {
