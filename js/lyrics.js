@@ -77,7 +77,7 @@ const SONG_DATABASE = [
     ]
   },
   {
-    no: '016',
+    no: '207',
     title: "美麗新世界",
     genre: "亞洲女子天團",
     playUntil: 19,
@@ -147,7 +147,7 @@ const SONG_DATABASE = [
     ]
   },
   {
-    no: '021',
+    no: '302',
     title: "勇氣",
     genre: "療癒系天后",
     playUntil: 19,
