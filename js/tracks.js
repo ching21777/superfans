@@ -179,7 +179,7 @@ const TRACKS = [
 { no: "9308", title: "帶我走", artist: "楊丞琳", appleMusicId: 320615259 },
 { no: "9309", title: "遺失的美好", artist: "張韶涵", appleMusicId: 542329727 },
 { no: "9310", title: "隱形的翅膀", artist: "張韶涵", appleMusicId: 535741167 },
-{ no: "9311", title: "梁山伯與茱麗葉", artist: "卓文萱 & 曹格", appleMusicId: 560999719 },
+{ no: "9311", title: "梁山伯與茱麗葉", artist: "卓文萱&曹格", appleMusicId: 560999719 },
 { no: "9312", title: "不要不要", artist: "卓文萱", appleMusicId: 540694497 },
 { no: "9313", title: "好的事情", artist: "嚴爵", appleMusicId: 1108812268 },
 { no: "9314", title: "勢在必行", artist: "Bii", appleMusicId: 535084848 },
@@ -223,13 +223,12 @@ const TRACKS = [
 
 
 const TEST = [
-  { no: '034', title: '浪人情歌', artist: '伍佰 & China Blue', appleMusicId: null },
-  { no: '035', title: '突然的自我', artist: '伍佰 & China Blue', appleMusicId: null },
+  { no: '051', title: '浪人情歌', artist: '伍佰 & China Blue', appleMusicId: null },
+  { no: '052', title: '突然的自我', artist: '伍佰 & China Blue', appleMusicId: null },
   { no: '036', title: '愛情限時批', artist: '伍佰 & 萬芳', appleMusicId: null },
   { no: '037', title: '淚橋', artist: '伍佰 & China Blue', appleMusicId: null },
   { no: '038', title: '世界第一等', artist: '伍佰 & China Blue', appleMusicId: null },
   { no: '039', title: '樹枝孤鳥', artist: '伍佰 & China Blue', appleMusicId: null },
-  { no: '040', title: '痛哭的人', artist: '伍佰 & China Blue', appleMusicId: null },
   { no: '041', title: '衝衝衝', artist: '伍佰 & China Blue', appleMusicId: null },
   { no: '042', title: '再度重相逢', artist: '伍佰 & China Blue', appleMusicId: null },
   { no: '043', title: '白鴿', artist: '伍佰 & China Blue', appleMusicId: null },
@@ -238,6 +237,5 @@ const TEST = [
   { no: '046', title: '心愛的再會啦', artist: '伍佰 & China Blue', appleMusicId: null },
   { no: '047', title: '晚風', artist: '伍佰 & China Blue', appleMusicId: null },
   { no: '048', title: '夏夜晚風', artist: '伍佰 & China Blue', appleMusicId: null },
-  { no: '049', title: '被動', artist: '伍佰 & China Blue', appleMusicId: null },
   { no: '050', title: '一生最愛的人', artist: '伍佰 & China Blue', appleMusicId: null }
 ];
