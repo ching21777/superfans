@@ -1,0 +1,404 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <title>Super Fans｜鐵粉猜歌王</title>
+
+  <!-- Logo 專用字型 -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@400;500;600;700;900&display=swap" rel="stylesheet">
+
+  <!-- 資源版本：更新前端 CSS / JS 時，只需修改這一行 -->
+  <script>
+    const APP_VERSION = '20261127-01';
+    document.write(
+      '<link rel="stylesheet" href="css/solo.css?v=' + APP_VERSION + '">' +
+      '<link rel="stylesheet" href="css/lyrics.css?v=' + APP_VERSION + '">' +
+      '<link rel="stylesheet" href="css/leaderboard.css?v=' + APP_VERSION + '">' +
+      '<link rel="stylesheet" href="css/catalog.css?v=' + APP_VERSION + '">'
+    );
+  </script>
+
+</head>
+<body>
+
+<!-- ==================== 遊戲畫面 ==================== -->
+<div class="app">
+
+  <header class="header">
+    <h1 class="logo">Super Fans</h1>
+    <div class="header-actions">
+      <div class="mode-badge" id="mode" style="display:none">Loading</div>
+
+      <button class="rules-open" onclick="show('m-rules')" aria-label="計分方式" title="計分方式">
+        <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="12" cy="12" r="10"/>
+          <line x1="12" y1="11" x2="12" y2="16"/>
+          <circle cx="12" cy="8" r=".8" fill="currentColor" stroke="none"/>
+        </svg>
+      </button>
+
+      <button class="quit-btn" id="quit-btn" onclick="confirmQuit()">退出</button>
+    </div>
+  </header>
+
+  <div class="progress">
+    <div class="question-number" id="qno">&nbsp;</div>
+    <div class="progress-grid" id="pgrid"></div>
+  </div>
+
+  <div class="game-status">
+    <div class="score-row">
+      <div class="feedback-tags l" id="tags-l"></div>
+      <div class="score" id="score">0</div>
+      <div class="feedback-tags r" id="tags-r"></div>
+    </div>
+    <div class="combo" id="combo">🔥 0 COMBO</div>
+  </div>
+
+  
+
+  <!-- 舞台：唱片 / 歌詞卡 / 揭曉 -->
+  <div class="stage" id="stage">
+    <div class="cwrap">
+      <div class="cw">
+        <div class="cd" id="cd"><div class="disc" id="disc"></div></div>
+        <div class="case" id="case">
+          <div class="q">?</div>
+          <img id="art" alt="">
+        </div>
+      </div>
+    </div>
+
+    <div id="lyric-stage">
+      <div class="ls-wait" id="ls-wait" style="visibility:hidden">
+        <i class="ls-lamp"></i>
+        <span id="ls-wait-text">播放中</span>
+        <div class="ls-stars" id="ls-stars"><span>★</span><span>★</span><span>★</span></div>
+      </div>
+
+      <div id="lyric-prompt" class="lyric-card" style="display:none">
+        <div class="lc-prev" id="lyric-prev"></div>
+        <div class="lyric-cover" aria-hidden="true">
+          <span class="lyric-cover-label">SUPER FANS</span>
+          <span class="lyric-cover-title">LYRICS</span>
+          <span class="lyric-cover-line"></span>
+        </div>
+      </div>
+
+      <div class="ls-listen">
+        <div class="ls-ring" id="ls-ring">
+          <div class="ls-vinyl" id="ls-vinyl"></div>
+          <div class="ls-core"><b>♫</b></div>
+        </div>
+        <div class="ls-genre" id="ls-genre"></div>
+        <div class="ls-text" id="ls-text"></div>
+      </div>
+    </div>
+
+    <div class="timeout-overlay" id="timeout-overlay">
+      <div class="timeout-title">TIME'S UP!</div>
+      <div class="timeout-sub">時間到！</div>
+    </div>
+
+    <div class="banner" id="banner">
+      <b id="b-title"></b><span id="b-artist"></span><small id="b-meta"></small>
+    </div>
+
+    <div class="tap" id="tap"><button class="bevel go">🔊 點一下開始播放</button></div>
+  </div>
+
+  <!-- 作答區 -->
+  <div class="ibox" id="ibox">
+    <div class="timer-row" id="trow">
+    <div class="timer-content">
+      <div class="timer-track">
+        <div class="timer-buffer" id="tbuffer"></div>
+        <div class="timer-fill" id="tbar"></div>
+        <div class="timer-penalty" id="tpenalty"></div>
+      </div>
+      <div class="timer-labels">
+        <span class="timer-label buffer-label" id="tbuffer-label">打字限定 +10s</span>
+        <span class="timer-label normal-label" id="tnum">正常作答｜剩餘 20s</span>
+      </div>
+    </div>
+  </div>
+
+    <div id="type-sec">
+      <div class="irow">
+        <input type="text" id="inp" placeholder="輸入完整歌名（不分大小寫、空格）"
+               autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false" enterkeyhint="send">
+        <button class="bevel go" style="padding:0 var(--sp-4)" onclick="submitAnswer()">送出</button>
+        <span id="buffer-hint" class="buffer-hint"></span>
+      </div>
+    </div>
+
+    <div id="choice-sec" style="display:none">
+      <div class="ogrid" id="ogrid"></div>
+    </div>
+
+    <div class="items" id="items">
+      <button class="item" id="choice-btn" onclick="toChoice()">
+        <span class="ic">🆘</span><span class="tx"><b>改選擇題</b><small id="choice-sub">剩5次</small></span>
+      </button>
+      <button class="item" id="pause-btn" onclick="doHint()">
+        <span class="ic">💡</span><span class="tx"><b>首字提示</b><small id="pause-sub">剩5次</small></span>
+      </button>
+    </div>
+
+    <div id="next-sec" style="display:none"></div>
+  </div>
+
+</div>
+
+
+<!-- ==================== 主選單 ==================== -->
+<div class="ov" id="m-start" style="display:flex">
+  <div class="mc">
+    <div class="logo">Super Fan<span id="secret-trigger">s</span></div>
+
+    <!-- 我的戰績：成就區 + 各模式最佳一筆（內容由 loadHistory() 產生）-->
+    <section class="lb-summary">
+      <div class="lb-head">
+  <div>
+    <button class="lb-link" onclick="openBoard()" style="display:none">完整榜單 ›</button>
+  </div>
+</div>
+      <div class="lb-hero" id="lb-hero" hidden></div>
+      <ul class="lb-list lb-summary-list" id="hist"></ul>
+    </section>
+
+    <div class="start-data-notice">
+  ※ 本遊戲會記錄作答資料與成績，供統計及改善體驗用。
+</div>
+
+    <div class="col">
+      <button class="bevel go btn-lg" onclick="toTheme()">START</button>
+      <button class="bevel" onclick="startDemo()">試玩模式</button>
+    </div>
+
+    <div class="copyright-notice">
+  Personal Project ． Beta Version
+</div>
+  </div>
+</div>
+
+<!-- ==================== 完整榜單（新增）==================== -->
+<div class="ov" id="m-board" onclick="if(event.target===this)hide('m-board')">
+  <div class="mc" role="dialog" aria-modal="true" aria-labelledby="lb-title">
+    <button class="x" onclick="hide('m-board')" aria-label="關閉">✖</button>
+    <div class="lb-title" id="lb-title">完整榜單</div>
+    <div class="lb-tabs" id="lb-tabs" role="tablist"></div>
+    <div class="lb-pages" id="lb-pages"></div>
+    <div class="lb-swipe-hint">‹ 左右滑動切換模式 ›</div>
+  </div>
+</div>
+
+<!-- ==================== 隱藏歌單 ==================== -->
+<div class="ov" id="m-secret" style="display:none">
+  <div class="mc">
+    <div class="logo">Secret Songs</div>
+    <div class="col">
+      <button class="bevel go btn-lg" onclick="pickTheme('helloNico')">✬✬✬｜Hello Nico 神秘歌單 ➔</button>
+      <button class="bevel" onclick="hide('m-secret'); show('m-start')">返回</button>
+    </div>
+  </div>
+</div>
+
+<!-- ==================== 遊戲規則 ==================== -->
+
+<div class="ov" id="m-rules">
+  <div class="mc rules-dialog">
+    <button class="x" onclick="hide('m-rules')">✖</button>
+    <div class="rules-title">玩法說明</div>
+    <div class="rules">
+
+  <p><b>─── 🎵 歌名搶答 ───</b></p>
+  <p>1. 輸入完整歌名作答，不分大小寫與空格。</p>
+  <p>2. 越快答對，得分越高；連續答對 Combo 加分。</p>
+  <p>3. 道具：🆘改選擇題或使用💡首字提示（不可併用），使用後得分降低。</p>
+
+  <p><b>─── 🎤 歌詞接唱 ───</b></p>
+  <p>1. 選出正確歌詞。</p>
+  <p>2. 越快答對，得分越高；連續答對 Combo 加分。</p>
+  <p>3. 道具：✂️刪除 1 個選項或💡揭開前後句歌詞，使用後得分降低。</p>
+
+    </div>
+  </div>
+</div>
+
+
+<!-- ==================== 選歌單 ==================== -->
+<div class="ov" id="m-theme">
+  <div class="mc">
+    <button class="x" onclick="hide('m-theme'); show('m-start')">✖</button>
+    <div class="logo">選歌單</div>
+    <div class="theme-subtitle">歌名搶答</div>
+
+    <div class="col">
+      <button class="tb" data-k="drama"    onclick="pickTheme('drama')">✬｜<span class="theme-name"></button>
+      <button class="tb" data-k="she"      onclick="pickTheme('she')">✬✬｜<span class="theme-name"></button>
+      <button class="tb" data-k="fish"     onclick="pickTheme('fish')">✬✬｜<span class="theme-name"></button>
+            <button class="tb" data-k="vagabond" onclick="pickTheme('vagabond')">✬✬✬｜<span class="theme-name"></button>
+
+      <div class="theme-divider"></div>
+      <div class="theme-subtitle">歌詞接唱</div>
+
+      <button class="tb" data-k="lyrics" onclick="pickTheme('lyrics')">✬｜<span class="theme-name"></button>
+      <!-- <button class="tb" data-k="helloNico" onclick="pickTheme('helloNico')">✬✬✬｜<span class="theme-name"> ➔</button> -->
+    </div>
+  </div>
+</div>
+
+<!-- ==================== 點歌目錄 ==================== -->
+<div class="ov" id="m-catalog" onclick="if(event.target===this)closeCatalog()">
+
+  <div class="songbook" role="dialog" aria-modal="true" aria-label="點歌目錄">
+    <div class="sb-book">
+  <button class="x sb-close" type="button" onclick="closeCatalog()" aria-label="關閉">✖</button>
+
+  <div class="sb-corner tl"></div>
+  <div class="sb-corner tr"></div>
+  <div class="sb-corner bl"></div>
+  <div class="sb-corner br"></div>
+
+  <div class="sb-pages">
+    <div class="sb-page left">
+      <header class="sb-topline">
+        <span class="sb-brand">SONG BOOK</span>
+        <span> </span>
+      </header>
+
+          <h1 class="sb-title">點歌本</h1>
+          <p class="sb-subtitle">點選歌單開始遊戲</p>
+          <div data-sb-page="0"></div>
+        </div>
+
+        <div class="sb-page right">
+          <div data-sb-page="1"></div>
+
+
+
+          <footer class="sb-foot">
+            <span>※ 試聽音檔取自 Apple Music，歌曲版權歸原權利人所有。</span>
+          </footer>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="sb-toast" id="sb-toast" role="status"></div>
+</div>
+
+<!-- ==================== 試玩結束 ==================== -->
+<div class="ov" id="m-demo">
+  <div class="mc">
+    <div class="mt" style="color:var(--magenta)">試玩結束 ٩(｡•ω•｡)و</div>
+    <p>計分模式共 10 首歌，你準備好了嗎？</p>
+    <div class="actions-pair">
+      <button class="bevel" onclick="startDemo()">再練一回</button>
+      <button class="bevel go" onclick="toTheme()">正式上場</button>
+    </div>
+  </div>
+</div>
+
+<!-- ==================== 確認中斷 ==================== -->
+<div class="ov" id="m-confirm">
+  <div class="mc">
+    <div class="mt" style="color:var(--magenta)">確定退出？</div>
+    <p>退出後返回主選單，本局成績不計入排行榜。</p>
+    <div class="actions-pair">
+      <button class="bevel" onclick="doQuit()">退出</button>
+      <button class="bevel go" onclick="cancelQuit()">繼續玩</button>
+    </div>
+  </div>
+</div>
+
+<!-- ==================== 結算畫面 ==================== -->
+<div class="ov" id="m-result">
+  <div class="mc" id="res-card">
+    <button class="x" onclick="show('m-start');hide('m-result');loadHistory()">✖</button>
+    <div class="conf" id="conf"></div>
+
+    <!-- 主視覺：等級、封號、評語、專輯牆 -->
+    <div class="result-hero">
+      <div class="result-heading">
+        <div id="r-badge">SSS</div>
+        <div class="mt" id="r-title"></div>
+      </div>
+      <p class="result-desc" id="r-desc"></p>
+      <div class="gallery-frame"><div class="gal" id="gal"></div></div>
+    </div>
+
+    <!-- 數據：分數、PR、連擊、時間 -->
+    <div class="result-stats">
+      <div class="stat-main">
+        <span class="label">🪙 SCORE</span>
+        <span class="val" id="r-score">0</span>
+      </div>
+
+      <div class="pr-gauge" id="pr-gauge">
+        <div class="pr-gauge-inner">
+          <span class="pr-value" id="rocket-pr-val">0</span>
+          <span class="pr-caption">PR</span>
+        </div>
+      </div>
+
+      <div class="stat-side">
+        <div class="stat-item"><span class="label">🔥 COMBO</span><span class="val" id="r-combo">0</span></div>
+        <div class="stat-item"><span class="label">⏱ TIME</span><span class="val" id="r-time">00:00</span></div>
+      </div>
+    </div>
+
+    <div class="actions-stack">
+      <button class="bevel go btn-lg" onclick="startGame()">再玩一局</button>
+      <button class="bevel text" onclick="toTheme()">換其他歌單</button>
+    </div>
+  </div>
+</div>
+
+<div class="ov playlist-intro" id="playlist-intro">
+  <div class="playlist-intro-content">
+    <div class="playlist-intro-ring">
+      <svg viewBox="0 0 184 184" aria-hidden="true">
+        <defs>
+          <linearGradient id="playlist-ring-gradient" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" stop-color="#FFFFFF"></stop>
+            <stop offset="48%" stop-color="#A9A9B1"></stop>
+            <stop offset="100%" stop-color="#F4F4F6"></stop>
+          </linearGradient>
+        </defs>
+        <circle class="playlist-ring-track" cx="92" cy="92" r="84"></circle>
+        <circle class="playlist-ring-progress" cx="92" cy="92" r="84"></circle>
+      </svg>
+      <div class="playlist-intro-center">
+        <img class="playlist-intro-art" id="playlist-intro-art" alt="" aria-hidden="true">
+        <div class="playlist-intro-name" id="playlist-intro-name"></div>
+        <button class="playlist-intro-back" onclick="cancelPlaylistIntro()">← 返回</button>
+      </div>
+    </div>
+  </div>
+</div>
+<audio id="wrong-sound" src="audio/error-008.ogg" preload="auto"></audio>
+
+<!-- ==================== Scripts ==================== -->
+<!-- 順序：題庫 → 排行榜（只定義函式）→ 遊戲主程式 → 開發工具 -->
+<script>
+  // 依序載入並套用共用版本號；Supabase CDN 不需加版本參數
+  document.write(
+    '<script src="js/tracks.js?v=' + APP_VERSION + '"><\/script>' +
+    '<script src="js/playlists.js?v=' + APP_VERSION + '"><\/script>' +
+    '<script src="js/lyrics.js?v=' + APP_VERSION + '"><\/script>' +
+    '<script src="js/leaderboard.js?v=' + APP_VERSION + '"><\/script>' +
+    '<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"><\/script>' +
+    '<script src="js/game-record.js?v=' + APP_VERSION + '"><\/script>' +
+    '<script src="js/game.js?v=' + APP_VERSION + '"><\/script>' +
+    '<script src="js/catalog.js?v=' + APP_VERSION + '"><\/script>' +
+    '<script src="./dev/dev.js?v=' + APP_VERSION + '"><\/script>'
+  );
+</script>
+
+</body>
+</html>

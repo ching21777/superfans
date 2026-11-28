@@ -1,0 +1,787 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Who's the Song King｜誰是猜歌王</title>
+<style>
+:root{
+  --cobalt:#1b2a6b; --cobalt-d:#101a4a; --paper:#f6f1e4; --paper-d:#e6dfcb; --ink:#1a1a2e;
+  --magenta:#d6246e; --cyan:#19a7d8; --yellow:#f5c518; --muted:#9aa5d6;
+  --serif:"Noto Serif TC","Source Han Serif TC","Songti TC","PMingLiU",serif;
+  --sans:-apple-system,BlinkMacSystemFont,"PingFang TC","Noto Sans TC","Microsoft JhengHei",sans-serif;
+}
+*{box-sizing:border-box;margin:0;padding:0;font-family:var(--sans)}
+html,body{height:100%}
+body{
+  height:100vh;height:100dvh;display:flex;flex-direction:column;overflow:hidden;color:var(--ink);
+  background:radial-gradient(circle at 1px 1px,rgba(255,255,255,.07) 1.2px,transparent 1.5px) 0 0/10px 10px,
+              radial-gradient(ellipse 80% 60% at 50% 0%,#2b3f9a,var(--cobalt) 65%,var(--cobalt-d));
+}
+
+/* Masthead */
+.mast{flex:none;display:flex;align-items:center;justify-content:space-between;gap:16px;padding:10px clamp(20px,3vw,44px)}
+.logo{font-family:var(--serif);font-style:italic;font-weight:900;font-size:clamp(1.6rem,3.4vw,2.6rem);color:var(--paper);
+  text-shadow:2px 2px 0 var(--magenta),4px 4px 0 var(--cobalt-d);letter-spacing:1px}
+.logo small{font-family:var(--serif);font-style:normal;font-size:.42em;font-weight:700;color:var(--yellow);text-shadow:none;margin-left:14px;letter-spacing:4px}
+.tabs{display:flex;gap:8px}
+.tab-btn{font-size:.9rem;font-weight:700;padding:6px 16px;border:2px solid var(--paper);background:transparent;color:var(--paper);cursor:pointer;border-radius:3px;transition:.15s}
+.tab-btn:hover{background:rgba(255,255,255,.12)}
+.tab-btn.active{background:var(--paper);color:var(--cobalt-d)}
+
+/* Three-column stage */
+.grid{flex:1;min-height:0;display:grid;grid-template-columns:minmax(0,1fr) auto minmax(0,1fr);gap:clamp(14px,1.8vw,30px);padding:6px clamp(20px,3vw,44px) 14px;align-items:center}
+.card{background:var(--paper);border:2px solid var(--ink);border-radius:4px;box-shadow:6px 6px 0 rgba(8,12,40,.45);overflow:hidden}
+.card-h{padding:8px 16px;font-family:var(--serif);font-weight:900;font-size:1.15rem;letter-spacing:3px;color:var(--paper);background:var(--magenta);border-bottom:2px solid var(--ink)}
+.card-h.cy{background:var(--cyan);color:var(--ink);display:flex;justify-content:space-between;align-items:center;font-size:.95rem;padding:5px 10px 5px 14px;letter-spacing:2px}
+
+/* Left: CD shelf and turntable */
+.left{align-self:start;justify-self:end;width:clamp(220px,34vh,340px);display:flex;flex-direction:column;gap:16px}
+.cats{display:flex;flex-wrap:wrap;gap:6px;padding:8px 10px;max-height:5.6em;overflow:auto;border-bottom:2px dashed #b9b19a}
+.cat{font-size:.78rem;font-weight:700;padding:3px 10px;border:1.5px solid var(--ink);border-radius:999px;background:transparent;color:var(--ink);cursor:pointer}
+.cat:hover{background:#e6dfcb}
+.cat.active{background:var(--ink);color:var(--paper)}
+.shelf{display:grid;grid-template-columns:repeat(6,1fr);gap:7px 5px;padding:10px;background:#e8e1cc;box-shadow:inset 0 3px 6px rgba(0,0,0,.15)}
+.slot{position:relative;aspect-ratio:1;border:1px dashed #b3ab94;border-radius:2px}
+.slot.filled{border:1.5px solid var(--ink);background:var(--cobalt-d);box-shadow:2px 2px 0 rgba(8,12,40,.35)}
+.slot img{width:100%;height:100%;object-fit:cover;display:block}
+.slot.pending img{visibility:hidden}
+.slot.just{animation:pop .35s}
+.fly{position:fixed;z-index:55;pointer-events:none;object-fit:cover;border:2px solid var(--ink);box-shadow:4px 4px 0 rgba(0,0,0,.35)}
+.deck{position:relative}
+.turn{position:relative;z-index:1;aspect-ratio:1.5;background:var(--paper-d);border:2px solid var(--ink);border-radius:6px;box-shadow:inset 2px 2px 0 #fff;margin-bottom:-2px}
+.turn::after{content:"33⅓";position:absolute;right:8%;bottom:7%;font-size:.65rem;font-weight:800;color:#7b7660;letter-spacing:1px}
+.platter{position:absolute;left:6%;top:8%;height:84%;aspect-ratio:1;border-radius:50%;background:#2a2a35;border:2px solid var(--ink)}
+.vinyl{position:absolute;inset:6%;border-radius:50%;
+  background:conic-gradient(from 20deg,transparent 0 40%,rgba(255,255,255,.14) 50%,transparent 60% 90%,rgba(255,255,255,.08) 95%,transparent),
+              repeating-radial-gradient(circle,#15131a 0 2px,#23212b 2px 3px);
+  animation:spin 2.4s linear infinite;animation-play-state:paused}
+.deck.on .vinyl{animation-play-state:running}
+.vinyl .lab{position:absolute;left:34%;top:34%;width:32%;height:32%;border-radius:50%;background:var(--magenta);border:2px solid var(--yellow)}
+.pivot{position:absolute;right:6%;top:10%;width:9%;aspect-ratio:1;border-radius:50%;background:#c9c5b5;border:2px solid var(--ink)}
+.arm{position:absolute;right:10.5%;top:16.5%;width:62%;height:5px;background:#555;border:1px solid var(--ink);border-radius:3px;transform-origin:right center;transform:rotate(-58deg);transition:transform .9s cubic-bezier(.4,0,.2,1)}
+.deck.on .arm{transform:rotate(-3deg)}
+.tabletop{height:14px;margin:0 -8px;background:linear-gradient(#c8925a,#a8703d);border:2px solid var(--ink);border-radius:3px;box-shadow:5px 5px 0 rgba(8,12,40,.45)}
+/* Rank tools */
+.rank-tools{display:flex;gap:6px}
+.rank-toggle.on{background:var(--ink);color:var(--paper)}
+.rank .adj{display:none;gap:4px}
+.rank-card.editing .adj{display:flex}
+.adj button{width:24px;height:24px;border:1.5px solid var(--ink);background:#fff;font-weight:800;border-radius:50%;cursor:pointer;line-height:1;color:var(--ink)}
+/* Side cards sit at the top */
+.side{align-self:start;justify-self:start;width:100%;max-width:380px}
+.qhead{display:flex;align-items:baseline;justify-content:center;gap:6px 18px;flex-wrap:wrap;min-height:2.4rem}
+.qno{font-family:var(--serif);font-weight:900;font-size:clamp(1.6rem,3.8vh,2.6rem);color:var(--paper);text-shadow:2px 2px 0 var(--magenta)}
+.qno span{font-size:.55em;color:var(--muted);margin-left:6px;text-shadow:none}
+.status{font-size:clamp(.95rem,1.5vw,1.2rem);font-weight:700;color:var(--yellow)}
+.pool{padding:6px 12px 8px;font-size:.8rem;color:#6b6b80}
+.tracks{list-style:none;padding:8px 16px 8px;min-height:calc(6 * 1.9em + 20px)}
+.tracks li{display:flex;gap:10px;font-size:.95rem;line-height:1.9;border-bottom:1px solid #d8d0ba;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.tracks li b{font-family:var(--serif);color:var(--magenta);min-width:1.8em}
+.tracks li.empty{color:#a8a08c;border:none}
+
+/* Center: jewel case + CD (固定容器寬度，防止左右撐開) */
+.center{display:flex;flex-direction:column;align-items:center;gap:14px;width:100%;max-width:550px;min-width:0}
+.case-wrap{--s:clamp(180px,38vh,470px);position:relative;width:calc(var(--s) * 1.3);height:var(--s)}
+.cd{position:absolute;top:3%;left:calc(var(--s) * .06);width:calc(var(--s) * .94);height:calc(var(--s) * .94);transition:left .8s cubic-bezier(.3,.9,.3,1);z-index:0}
+.cd.on{left:calc(var(--s) * .34)}
+.disc{width:100%;height:100%;border-radius:50%;border:2px solid var(--ink);
+  background:radial-gradient(circle,var(--cobalt-d) 0 9%,#e9e9ef 9.5% 14%,transparent 14.5%),
+             conic-gradient(from 0deg,#d8d8e4,#f7f7fb,#b7c2e6,#f7f7fb,#e8d3ea,#f7f7fb,#c9e6ef,#d8d8e4);
+  animation:spin 5s linear infinite;animation-play-state:paused}
+.disc.spinning{animation-play-state:running}
+@keyframes spin{to{transform:rotate(360deg)}}
+.case{position:absolute;left:0;top:0;width:var(--s);height:var(--s);z-index:1;border:3px solid var(--ink);border-radius:3px;box-shadow:8px 8px 0 rgba(8,12,40,.5);overflow:hidden;
+  background:linear-gradient(135deg,var(--magenta),#6b2a8a 55%,var(--cobalt))}
+.case::after{content:"";position:absolute;inset:0;background:linear-gradient(115deg,rgba(255,255,255,.28),transparent 30%);pointer-events:none}
+.case .q{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-family:var(--serif);font-weight:900;font-size:calc(var(--s) * .55);color:var(--paper);text-shadow:4px 4px 0 var(--cobalt-d)}
+.case img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;opacity:0}
+.case.revealed img{opacity:1;animation:flip .7s ease-out}
+.case.revealed .q{display:none}
+@keyframes flip{from{transform:rotateY(90deg)}to{transform:rotateY(0)}}
+
+/* Booklet strip + player (維持原本大字，單行顯示超過自動變...) */
+.booklet{width:100%;text-align:center;padding:10px 20px;display:flex;flex-direction:column;justify-content:center;align-items:center;overflow:hidden}
+.booklet.hidden{visibility:hidden}
+.booklet .title{
+  font-family:var(--serif);
+  font-weight:900;
+  font-size:clamp(1.8rem,5vh + .8vw,3.6rem);
+  line-height:1.2;
+  width:100%;
+  max-width:100%;
+  white-space:nowrap;
+  overflow:hidden;
+  text-overflow:ellipsis;
+}
+.booklet .artist{
+  font-size:clamp(.95rem,1.5vw,1.2rem);
+  color:#55556a;
+  margin-top:4px;
+  width:100%;
+  max-width:100%;
+  /* 以 Nicholas 張棟樑 — 微笑PASTA (電視原聲帶) - Single 為基準固定尺寸 */
+  max-width: 480px; 
+  white-space:nowrap;
+  overflow:hidden;
+  text-overflow:ellipsis;
+}
+.booklet.show .title{animation:pop .45s cubic-bezier(.2,1.4,.4,1)}
+@keyframes pop{from{transform:scale(.75);opacity:0}to{transform:scale(1);opacity:1}}
+.player{width:100%;display:flex;align-items:center;gap:10px;padding:6px 10px;background:var(--paper-d);border:2px solid var(--ink);border-radius:3px;box-shadow:inset 1px 1px 0 #fff,3px 3px 0 rgba(8,12,40,.4);font-size:.85rem;font-weight:700}
+.bar{flex:1;height:10px;background:#fff;border:2px solid var(--ink);border-radius:2px;overflow:hidden}
+.bar i{display:block;height:100%;width:0;background:repeating-linear-gradient(90deg,var(--cyan) 0 8px,#0f7fa6 8px 10px)}
+
+/* Right: chart (compact, collapsible) */
+.card-h.cy{display:flex;justify-content:space-between;align-items:center;font-size:.95rem;padding:5px 10px 5px 14px;letter-spacing:2px}
+.rank-toggle{background:transparent;border:1px solid var(--ink);color:var(--ink);font-size:.75rem;font-weight:700;padding:2px 8px;border-radius:3px;cursor:pointer;letter-spacing:0}
+.rank{list-style:none}
+.rank li{position:relative;display:flex;align-items:center;gap:10px;padding:5px 12px;border-bottom:1px solid #d8d0ba;font-size:clamp(.9rem,1.25vw,1.1rem);font-weight:700;background:var(--paper)}
+.rank .n{font-family:var(--serif);font-weight:900;font-size:1.15em;min-width:1.1em;color:#8a8570;text-align:center}
+.rank .nm{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.rank .sc{font-family:var(--serif);font-weight:900;font-size:1.3em;min-width:1.4ch;text-align:right}
+.rank li.top{background:#f2e6b3}
+.rank li.top .n{color:var(--magenta)}
+.rank .sc.bump{animation:bump .5s cubic-bezier(.2,1.6,.4,1)}
+@keyframes bump{from{transform:scale(1.5)}to{transform:scale(1)}}
+.rank-card.collapsed .rank li:not(:first-child){display:none}
+
+/* Host dock — kept quiet */
+.dock{position:relative;flex:none;display:flex;flex-direction:column;align-items:center;gap:8px;padding:10px clamp(64px,8vw,120px);background:var(--cobalt-d);border-top:2px solid #0a1033;color:var(--muted);font-size:.8rem}
+.dock-row{display:grid;grid-template-columns:1fr auto 1fr;gap:14px;align-items:center;width:100%;max-width:900px}
+.dock-l{justify-self:end}.dock-c{display:flex;gap:10px}
+#btn-primary{min-width:11.5em}#btn-stop{min-width:5.5em}
+details.secs{position:relative}.secs summary{list-style:none;cursor:pointer;user-select:none}.secs summary::-webkit-details-marker{display:none}
+.bevel.mini{padding:5px 10px;font-size:.8rem;display:inline-block}
+.secs-pop{position:absolute;bottom:42px;left:50%;transform:translateX(-50%);z-index:20;white-space:nowrap;background:var(--paper);color:var(--ink);border:2px solid var(--ink);border-radius:4px;box-shadow:5px 5px 0 rgba(0,0,0,.4);padding:8px 12px;font-size:.85rem;font-weight:700}
+.secs-pop input{width:48px;padding:3px 4px;border:1px solid var(--ink);border-radius:3px;text-align:center;font-weight:700}
+.bevel{padding:7px 16px;font-size:.9rem;font-weight:700;color:var(--ink);background:#d7d3c6;border:2px solid;border-color:#fff #6c6a60 #6c6a60 #fff;cursor:pointer;border-radius:2px}
+.bevel:active:not(:disabled){border-color:#6c6a60 #fff #fff #6c6a60}
+.bevel.go{background:var(--magenta);color:#fff}
+.bevel.reveal{background:var(--cyan)}
+.bevel.next{background:var(--yellow)}
+.award{display:flex;flex-wrap:wrap;gap:8px;align-items:center;justify-content:center;min-height:38px;visibility:hidden}.award.on{visibility:visible}
+.award-head{font-weight:700;color:var(--muted)}
+.award-grid{display:flex;flex-wrap:wrap;gap:8px}
+.btn-award{display:flex;align-items:center;gap:8px;padding:6px 14px 6px 10px;border-radius:999px;background:rgba(255,255,255,.07);border:1.5px solid var(--c);color:var(--paper);font-size:.9rem;font-weight:700;cursor:pointer;transition:background .15s,transform .15s}
+.btn-award:hover{background:rgba(255,255,255,.2);transform:translateY(-2px)}
+.btn-award .dot{width:10px;height:10px;border-radius:50%;background:var(--c)}
+.btn-award b{font-weight:800;color:var(--c)}
+.btn-skip{padding:7px 12px;font-size:.85rem;color:var(--muted);background:transparent;border:1px dashed var(--muted);cursor:pointer;border-radius:2px}
+button:disabled{opacity:.4;cursor:not-allowed}
+button:focus-visible,input:focus-visible,summary:focus-visible{outline:2px solid var(--yellow);outline-offset:2px}
+.settings{position:absolute;right:clamp(20px,3vw,44px);top:12px}
+.settings summary{list-style:none;cursor:pointer;width:32px;height:32px;display:flex;align-items:center;justify-content:center;border:1px solid var(--muted);border-radius:50%;user-select:none}
+.settings summary::-webkit-details-marker{display:none}
+.settings-body{position:absolute;right:0;bottom:42px;z-index:20;width:340px;padding:14px;background:var(--paper);color:var(--ink);border:2px solid var(--ink);border-radius:4px;box-shadow:6px 6px 0 rgba(0,0,0,.4);font-size:.85rem;display:flex;flex-direction:column;gap:10px}
+.settings-body input[type=number]{width:56px;padding:3px 6px;border:1px solid var(--ink);border-radius:3px;text-align:center}
+.names{display:grid;grid-template-columns:1fr 1fr;gap:6px}
+.names input{padding:4px 6px;border:1px solid #a8a08c;border-radius:3px;min-width:0}
+.log-box{background:#10153a;color:#8fe3a8;font-family:monospace;padding:6px 8px;border-radius:3px;height:70px;overflow-y:auto;font-size:.75rem}
+
+/* Motion */
+.case-wrap.enter{animation:enter .6s cubic-bezier(.2,1.2,.3,1)}
+@keyframes enter{from{transform:translateX(90px) rotate(5deg);opacity:0}to{transform:none;opacity:1}}
+.qno.pop{animation:pop .45s cubic-bezier(.2,1.4,.4,1)}
+.eq{display:flex;align-items:flex-end;gap:2px;height:14px}
+.eq i{width:3px;height:3px;background:var(--magenta)}
+.player.playing .eq i{animation:eq .6s ease-in-out infinite alternate}
+.eq i:nth-child(2){animation-delay:.15s!important}.eq i:nth-child(3){animation-delay:.3s!important}.eq i:nth-child(4){animation-delay:.1s!important}.eq i:nth-child(5){animation-delay:.25s!important}
+@keyframes eq{to{height:14px}}
+.crown{display:inline-block;animation:bob 1.6s ease-in-out infinite}
+@keyframes bob{0%,100%{transform:translateY(0) rotate(-6deg)}50%{transform:translateY(-3px) rotate(6deg)}}
+.conf{position:fixed;width:10px;height:14px;z-index:50;pointer-events:none;animation:confetti 1.5s cubic-bezier(.2,.7,.4,1) forwards}
+@keyframes confetti{0%{transform:translate(0,0) rotate(0);opacity:1}40%{transform:translate(calc(var(--dx)*.7),var(--dy)) rotate(calc(var(--rot)*.5));opacity:1}100%{transform:translate(var(--dx),calc(var(--dy) + 340px)) rotate(var(--rot));opacity:0}}
+.toast{position:fixed;left:50%;top:34%;z-index:60;pointer-events:none;transform:translateX(-50%);padding:14px 36px;background:var(--paper);border:3px solid var(--ink);border-left:14px solid var(--c);border-radius:4px;box-shadow:8px 8px 0 rgba(8,12,40,.5);font-family:var(--serif);font-weight:900;font-size:clamp(1.6rem,4vw,3rem);white-space:nowrap;animation:toast 1.7s ease forwards}
+@keyframes toast{0%{transform:translateX(-50%) scale(.3);opacity:0}15%{transform:translateX(-50%) scale(1.08);opacity:1}25%{transform:translateX(-50%) scale(1)}80%{opacity:1}100%{transform:translateX(-50%) translateY(-30px);opacity:0}}
+@media (max-width:900px){
+  body{height:auto;overflow:auto}
+  .grid{display:contents}
+  .center{order:1;padding:8px 14px 16px;max-width:none}
+  .dock{order:2;padding:10px 14px}
+  .side{order:3;align-self:stretch;max-width:none;width:auto;margin:14px}
+  .left{order:4;align-self:stretch;width:auto;margin:14px 14px 28px}
+  .deck{max-width:320px;width:100%;margin:0 auto}
+  .case-wrap{--s:clamp(150px,min(36vh,58vw),380px);margin:0 auto}
+  .dock-row{grid-template-columns:1fr;justify-items:center;gap:8px}
+  .dock-c{order:1}.dock-l{order:2;justify-self:center}.dock-r{display:none}
+  #btn-primary{min-width:9.5em}
+  .settings{right:10px}
+}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+</head>
+<body>
+
+<header class="mast">
+  <h1 class="logo">Who's the Song King<small>誰是猜歌王</small></h1>
+</header>
+
+<main class="grid">
+  <!-- 左：曲目表 -->
+  <aside class="left">
+    <section class="card">
+      <div class="card-h">CD 收藏架</div>
+      <div class="cats" id="cats"></div>
+      <div class="shelf" id="shelf"></div>
+      <div class="pool" id="pool-status">剩餘 30 首未出題</div>
+    </section>
+    <div class="deck" id="deck">
+      <div class="turn">
+        <div class="platter"><div class="vinyl"><span class="lab"></span></div></div>
+        <span class="pivot"></span><span class="arm"></span>
+      </div>
+      <div class="tabletop"></div>
+    </div>
+  </aside>
+
+  <!-- 中：專輯與播放器 -->
+  <section class="center">
+    <div class="qhead">
+      <div class="qno" id="q-no">第 1 題<span>/ 30</span></div>
+      <div class="status" id="stage-status-text">按下播放開始猜歌</div>
+    </div>
+    <div class="case-wrap">
+      <div class="cd" id="turntable"><div class="disc" id="vinyl-disc"></div></div>
+      <div class="case" id="case">
+        <div class="q">?</div>
+        <img id="artwork" alt="專輯封面">
+      </div>
+    </div>
+    <div class="player" id="player">
+      <span id="play-state">■</span><span class="eq"><i></i><i></i><i></i><i></i><i></i></span>
+      <div class="bar"><i id="prog-fill"></i></div>
+    </div>
+    <div class="card booklet hidden" id="answer-banner">
+      <div class="title" id="track-name">歌名</div>
+      <div class="artist" id="artist-name">歌手 — 專輯</div>
+    </div>
+  </section>
+
+  <!-- 右：熱門榜單 -->
+  <section class="card side rank-card" id="rank-card">
+    <div class="card-h cy"><span>熱門榜單</span><span class="rank-tools"><button class="rank-toggle" id="rank-edit" onclick="toggleEdit()" title="手動加減分">±</button><button class="rank-toggle" id="rank-toggle" onclick="toggleRank()">收合</button></span></div>
+    <ol class="rank" id="teams-container"></ol>
+  </section>
+</main>
+
+<!-- 關主控制列 -->
+<footer class="dock">
+  <div class="dock-row">
+    <div class="dock-l">
+      <details class="secs">
+        <summary class="bevel mini" title="調整播放秒數">⏱ <span id="secs-label">15 秒</span></summary>
+        <div class="secs-pop">第 <input type="number" id="start-sec" value="0" min="0" max="29" oninput="updateSecsLabel()"> 秒起，播 <input type="number" id="duration-sec" value="15" min="0.5" max="30" step="0.5" oninput="updateSecsLabel()"> 秒</div>
+      </details>
+    </div>
+    <div class="dock-c">
+      <button id="btn-primary" class="bevel go" onclick="handlePrimaryAction()">▶ 播放猜歌</button>
+      <button id="btn-stop" class="bevel" onclick="stopAudio()" disabled>■ 暫停</button>
+    </div>
+    <div class="dock-r"></div>
+  </div>
+  <div class="award" id="award-drawer">
+    <span class="award-head">誰搶到了？</span>
+    <div class="award-grid" id="award-buttons-container"></div>
+  </div>
+  <details class="settings">
+    <summary title="設定">⚙</summary>
+    <div class="settings-body">
+      <div>顯示組數 <input type="number" id="team-count" value="4" min="1" max="6" onchange="renderScoreboard()"></div>
+      <div class="names" id="name-inputs"></div>
+      <div id="error-msg" style="color:var(--magenta)"></div>
+      <button class="bevel mini" onclick="resetAll()">🔄 重設本場（清除已播曲目與分數）</button>
+      <div class="log-box" id="log"></div>
+    </div>
+  </details>
+</footer>
+
+<script>
+const playlists = {
+  drama: [
+    "許紹洋 花香",
+    "五月天 派對動物", "五月天 後來的我們",
+    "王心凌 愛你", "王心凌 彩虹的微笑",
+    "張棟樑 北極星的眼淚", "張棟樑 小烏龜",
+    "F4 流星雨",
+    "TANK 專屬天使",
+    "183 Club 迷魂計",
+    "飛輪海 只對你有感覺",
+    "楊丞琳 曖昧", "楊丞琳 理想情人",
+    "張韶涵 遺失的美好", "張韶涵 口袋的天空",
+    "孫燕姿 遇見",
+    "韋禮安 慢慢等", "韋禮安 如果可以",
+    "郭靜 心牆",
+    "田馥甄 小幸運",
+    "胡夏 那些年",
+    "周興哲 你好不好",
+    "盧廣仲 魚仔",
+    "A-Lin 幸福在歌唱",
+    "八三夭 想見你想見你想見你",
+    "丁噹 我愛他",
+    "解偉苓 放逐愛情",
+    "梁靜茹 沒有如果","梁靜茹 情歌",
+    "郁可唯 暖心",
+    "元若藍 心願便利貼","元若藍 九十九次我愛他",
+    "謝和弦 夠愛",
+    "林宥嘉 兜圈",
+  ],
+  group: [
+    "S.H.E 戀人未滿", "S.H.E Super Star", "S.H.E 波斯貓", "S.H.E SHERO", "S.H.E 美麗新世界", "S.H.E 熱帶雨林",
+    "5566 我難過", "5566 無所謂", "5566 守候", "5566 傳說", "5566 風雲變色",
+    "Energy 放手", "Energy 多愛我一天", "Energy 某年某月某一天", "Energy 星期五晚上",
+    "五月天 突然好想你", "五月天 我不願讓你一個人", "五月天 知足", "五月天 入陣曲",
+    "動力火車 我很好騙", "動力火車 外套",
+    "南拳媽媽 下雨天", "南拳媽媽 牡丹江", "南拳媽媽 What Can I Do",
+    "K ONE 背影",
+    "By2 我知道",
+    "蜜雪薇琪 獨立", "蜜雪薇琪 愛斯基摩",
+    "Sweety 櫻花草", "Sweety 愛是怎麼一回事",
+    "黑澀會美眉 123木頭人", "黑澀會美眉 晴天娃娃"
+  ]
+};
+
+// 0 = 準備播放, 1 = 播放中/已播放 (等待揭曉), 2 = 已揭曉 (等待加分)
+let flowState = 0;
+let currentPlaylistKey = 'drama';
+let availableSongs = [];
+let currentQuestion = null;
+let currentAudio = new Audio();
+let stopTimer = null;
+let bumpIndex = -1;
+let qNo = 0;
+let history = [];
+let played = [];        // 已收進架上的題目（歌單原始字串）
+let currentTerm = '';
+let reqId = 0;
+let storeReady = false;
+const store = {};         // 各歌單的進度：{ played, history }
+const LS_KEY = '90s-guess-song-v1';
+
+let teamScores = [0,0,0,0,0,0];
+let teamNames = ["第一組","第二組","第三組","第四組","第五組","第六組"];
+const teamColors = ["#d6246e","#19a7d8","#f5c518","#4caf7d","#8a5cc7","#e8833a"];
+
+const $ = id => document.getElementById(id);
+const esc = s => String(s).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+
+function log(msg){
+  const box = $('log');
+  box.innerHTML += `[${new Date().toLocaleTimeString()}] ${msg}<br>`;
+  box.scrollTop = box.scrollHeight;
+}
+
+const playlistNames = {drama:'經典電影偶像劇', group:'華語男女團體'};
+
+function renderCats(){
+  $('cats').innerHTML = Object.keys(playlists).map(k =>
+    `<button class="cat ${k === currentPlaylistKey ? 'active' : ''}" onclick="switchPlaylist('${k}')">${esc(playlistNames[k] || k)}</button>`).join('');
+}
+
+function switchPlaylist(key){
+  if (storeReady){
+    // 已揭曉但還沒收進架上的題目，離開前也算播過
+    if (currentQuestion && flowState === 2) recordCurrent();
+    persist();
+  }
+  currentQuestion = null;
+  currentPlaylistKey = key;
+  const st = store[key] || { played: [], history: [] };
+  played = [...st.played];
+  history = [...st.history];
+  availableSongs = playlists[key].filter(t => !played.includes(t));
+  storeReady = true;
+  renderCats();
+  renderShelf();
+  stopAudio();
+  log(`已切換至 [${playlistNames[key] || key}] 歌單（已播 ${played.length} 首）。`);
+  nextRandomQuestion();
+}
+
+function persist(){
+  if (!storeReady) return;
+  store[currentPlaylistKey] = { played: [...played], history: [...history] };
+  try {
+    localStorage.setItem(LS_KEY, JSON.stringify({
+      store, teamScores, teamNames, currentPlaylistKey, teamCount: $('team-count').value
+    }));
+  } catch (e) {}
+}
+
+function loadStore(){
+  try {
+    const d = JSON.parse(localStorage.getItem(LS_KEY) || 'null');
+    if (!d) return null;
+    Object.assign(store, d.store || {});
+    (d.teamScores || []).forEach((v, i) => teamScores[i] = v);
+    (d.teamNames || []).forEach((v, i) => teamNames[i] = v);
+    if (d.teamCount) $('team-count').value = d.teamCount;
+    return d.currentPlaylistKey;
+  } catch (e) { return null; }
+}
+
+function resetAll(){
+  if (!confirm('確定要清除所有已播曲目與分數，重新開始嗎？')) return;
+  try { localStorage.removeItem(LS_KEY); } catch (e) {}
+  Object.keys(store).forEach(k => delete store[k]);
+  teamScores.fill(0);
+  storeReady = false;
+  switchPlaylist(currentPlaylistKey);
+  renderScoreboard();
+  $('rank-card').classList.remove('editing');
+}
+
+async function nextRandomQuestion(){
+  const my = ++reqId;
+  stopAudio();
+  flowState = 0;
+  updatePrimaryButtonUI();
+
+  // 猜歌期間不顯示封面與答案
+  $('answer-banner').classList.add('hidden');
+  $('answer-banner').classList.remove('show');
+  $('case').classList.remove('revealed');
+  $('artwork').removeAttribute('src');
+  $('award-drawer').classList.remove('on');
+
+  if (availableSongs.length === 0){
+    $('stage-status-text').innerText = "🎉 本歌單題目已全部猜完！";
+    $('btn-primary').disabled = true;
+    return;
+  }
+
+  const idx = Math.floor(Math.random() * availableSongs.length);
+  const songTitle = availableSongs[idx];
+  currentTerm = songTitle;
+  availableSongs.splice(idx, 1);
+
+  $('pool-status').innerText = `剩餘 ${availableSongs.length} 首未出題`;
+  $('stage-status-text').innerText = "載入題目中...";
+  $('btn-primary').disabled = true;
+
+  try {
+    const res = await fetch(`https://itunes.apple.com/search?term=${encodeURIComponent(songTitle)}&entity=song&limit=1&country=TW`);
+    const data = await res.json();
+    if (my !== reqId) return;   // 期間已切換歌單或換題
+
+    if (data.results && data.results.length > 0){
+      const track = data.results[0];
+      currentQuestion = {
+        title: track.trackName,
+        artist: `${track.artistName} — ${track.collectionName}`,
+        artwork: track.artworkUrl100,
+        previewUrl: track.previewUrl
+      };
+      currentAudio.src = currentQuestion.previewUrl;
+      $('track-name').innerText = currentQuestion.title;
+      $('artist-name').innerText = currentQuestion.artist;
+      // 懸停時提示完整歌名與歌手
+      $('track-name').title = currentQuestion.title;
+      $('artist-name').title = currentQuestion.artist;
+      qNo = history.length + 1;
+      replay(document.querySelector('.case-wrap'), 'enter');
+      replay($('q-no'), 'pop');
+      $('q-no').innerHTML = `第 ${qNo} 題<span>/ ${playlists[currentPlaylistKey].length}</span>`;
+      $('stage-status-text').innerText = "準備就緒，等關主播放";
+      $('btn-primary').disabled = false;
+    } else {
+      nextRandomQuestion();
+    }
+  } catch (err){
+    log(`❌ 載入失敗: ${err.message}`);
+  }
+}
+
+function handlePrimaryAction(){
+  if (flowState === 0) playCurrentAudio();
+  else if (flowState === 1) revealAnswer();
+}
+
+function playCurrentAudio(){
+  if (!currentQuestion) return;
+  const startSec = parseFloat($('start-sec').value) || 0;
+  const durationSec = parseFloat($('duration-sec').value) || 15;
+
+  if (stopTimer) clearTimeout(stopTimer);
+  currentAudio.pause();
+  currentAudio.currentTime = startSec;
+
+  const executePlay = () => {
+    currentAudio.play().then(() => {
+      $('vinyl-disc').classList.add('spinning');
+      $('turntable').classList.add('on');
+      $('deck').classList.add('on');
+      $('play-state').innerText = '▶';
+      $('player').classList.add('playing');
+      const fill = $('prog-fill');
+      fill.style.transition = 'none';
+      fill.style.width = '0';
+      void fill.offsetWidth;
+      fill.style.transition = `width ${durationSec}s linear`;
+      fill.style.width = '100%';
+
+      $('stage-status-text').innerText = `🔊 播放中（${durationSec} 秒）`;
+      $('btn-stop').disabled = false;
+
+      flowState = 1;
+      updatePrimaryButtonUI();
+
+      stopTimer = setTimeout(() => {
+        stopAudio();
+        $('stage-status-text').innerText = "播放完畢，等待搶答！";
+      }, durationSec * 1000);
+    }).catch(err => {
+      if (err.name !== 'AbortError') log(`❌ 播放錯誤: ${err.message}`);
+    });
+  };
+
+  if (currentAudio.readyState >= 2) executePlay();
+  else currentAudio.addEventListener('canplay', executePlay, { once: true });
+}
+
+function stopAudio(){
+  if (stopTimer){ clearTimeout(stopTimer); stopTimer = null; }
+  if (currentAudio) currentAudio.pause();
+  $('vinyl-disc').classList.remove('spinning');
+  $('turntable').classList.remove('on');
+  $('deck').classList.remove('on');
+  $('play-state').innerText = '■';
+  $('player').classList.remove('playing');
+  const fill = $('prog-fill');
+  fill.style.transition = 'none';
+  fill.style.width = '0';
+  $('btn-stop').disabled = true;
+}
+
+function revealAnswer(){
+  stopAudio();
+  flowState = 2;
+  $('artwork').src = currentQuestion.artwork.replace('100x100', '600x600');
+  $('case').classList.add('revealed');
+  const banner = $('answer-banner');
+  banner.classList.remove('hidden', 'show');
+  void banner.offsetWidth;
+  banner.classList.add('show');
+  $('stage-status-text').innerText = "答案揭曉！";
+  renderAwardButtons();
+  $('award-drawer').classList.add('on');
+  updatePrimaryButtonUI();
+}
+
+// CD 收藏架：每揭曉一首就收一張進去，空格代表還沒出的題
+function renderShelf(pending = -1){
+  const total = playlists[currentPlaylistKey].length;
+  let html = '';
+  for (let i = 0; i < total; i++){
+    const h = history[i];
+    html += h
+      ? `<div class="slot filled ${i === pending ? 'pending' : ''}" title="${esc(h.title)}"><img src="${esc(h.art)}" alt=""></div>`
+      : '<div class="slot"></div>';
+  }
+  $('shelf').innerHTML = html;
+}
+
+function recordCurrent(){
+  const q = currentQuestion;
+  if (!q) return -1;
+  history.push({ title: q.title, art: q.artwork });
+  played.push(currentTerm);
+  currentQuestion = null;
+  return history.length - 1;
+}
+
+function shelve(){
+  const idx = recordCurrent();
+  if (idx < 0) return;
+  persist();
+  renderShelf(idx);
+  const slot = $('shelf').children[idx];
+  if (!slot) return;
+  const done = () => { slot.classList.remove('pending'); slot.classList.add('just'); };
+  const fly = document.createElement('img');
+  if (!fly.animate || matchMedia('(prefers-reduced-motion: reduce)').matches){ done(); return; }
+  const a = $('case').getBoundingClientRect(), b = slot.getBoundingClientRect();
+  const box = r => ({ left: r.left + 'px', top: r.top + 'px', width: r.width + 'px', height: r.height + 'px' });
+  fly.src = $('artwork').src;
+  fly.className = 'fly';
+  Object.assign(fly.style, box(a));
+  document.body.appendChild(fly);
+  const anim = fly.animate(
+    [{ ...box(a), transform: 'rotate(0deg)' }, { ...box(b), transform: 'rotate(-6deg)', offset: .85 }, { ...box(b), transform: 'rotate(0deg)' }],
+    { duration: 800, easing: 'cubic-bezier(.5,0,.2,1)', fill: 'forwards' });
+  anim.onfinish = () => { fly.remove(); done(); };
+}
+
+function finishQuestion(){
+  if (flowState === 2) shelve();
+  nextRandomQuestion();
+}
+
+function adjustScore(i, d){
+  teamScores[i] = Math.max(0, teamScores[i] + d);
+  if (d > 0) bumpIndex = i;
+  log(`✎ 手動調整 [${teamNames[i]}] ${d > 0 ? '+' : ''}${d} 分`);
+  renderRanking();
+}
+
+function toggleEdit(){
+  $('rank-card').classList.toggle('editing');
+  $('rank-edit').classList.toggle('on');
+}
+
+function updatePrimaryButtonUI(){
+  const btn = $('btn-primary');
+  btn.classList.remove('go', 'reveal', 'next');
+  if (flowState === 0){
+    btn.innerText = "▶ 播放猜歌";
+    btn.classList.add('go');
+  } else if (flowState === 1){
+    btn.innerText = "👁 公布答案";
+    btn.classList.add('reveal');
+  } else {
+    btn.innerText = "⏭ 跳過 / 下一題";
+    btn.classList.add('next');
+    btn.onclick = () => finishQuestion();
+    return;
+  }
+  btn.onclick = () => handlePrimaryAction();
+}
+
+function getTeamCount(){
+  return Math.max(1, Math.min(6, parseInt($('team-count').value) || 4));
+}
+
+function renderAwardButtons(){
+  const count = getTeamCount();
+  const box = $('award-buttons-container');
+  box.innerHTML = "";
+  for (let i = 0; i < count; i++){
+    const btn = document.createElement('button');
+    btn.className = 'btn-award';
+    btn.innerText = `${teamNames[i]} +1`;
+    btn.onclick = () => awardTeam(i);
+    box.appendChild(btn);
+  }
+  const none = document.createElement('button');
+  none.className = 'btn-skip';
+  none.innerText = '沒人答對';
+  none.onclick = () => awardTeam(-1);
+  box.appendChild(none);
+}
+
+function awardTeam(i){
+  if (i >= 0){
+    celebrate(i);
+    teamScores[i] += 1;
+    bumpIndex = i;
+    log(`🎉 [${teamNames[i]}] 答對！+1 分`);
+    renderScoreboard();
+  }
+  finishQuestion();
+}
+
+function replay(el, cls){
+  el.classList.remove(cls);
+  void el.offsetWidth;
+  el.classList.add(cls);
+}
+
+function updateSecsLabel(){
+  const d = parseFloat($('duration-sec').value) || 15;
+  $('secs-label').innerText = `${d} 秒`;
+}
+
+// 答對動畫：彩帶 + 大字橫幅
+function celebrate(i){
+  const r = $('case').getBoundingClientRect();
+  const cx = r.left + r.width / 2, cy = r.top + r.height / 2;
+  const colors = ['#d6246e','#19a7d8','#f5c518','#f6f1e4','#4caf7d'];
+  for (let k = 0; k < 44; k++){
+    const d = document.createElement('i');
+    d.className = 'conf';
+    d.style.left = cx + 'px';
+    d.style.top = cy + 'px';
+    d.style.background = colors[k % colors.length];
+    d.style.setProperty('--dx', ((Math.random() - .5) * innerWidth * .6) + 'px');
+    d.style.setProperty('--dy', (-80 - Math.random() * innerHeight * .4) + 'px');
+    d.style.setProperty('--rot', ((Math.random() - .5) * 900) + 'deg');
+    d.style.animationDelay = (Math.random() * .12) + 's';
+    document.body.appendChild(d);
+    setTimeout(() => d.remove(), 1800);
+  }
+  const t = document.createElement('div');
+  t.className = 'toast';
+  t.style.setProperty('--c', teamColors[i]);
+  t.textContent = `🎉 ${teamNames[i]} 答對！+1`;
+  document.body.appendChild(t);
+  setTimeout(() => t.remove(), 1800);
+}
+
+// 熱門榜單：依分數排序，領先者永遠在最上面，名次變動時會滑動換位
+function renderRanking(){
+  const count = getTeamCount();
+  const ul = $('teams-container');
+  const before = {};
+  ul.querySelectorAll('li').forEach(li => before[li.dataset.i] = li.getBoundingClientRect().top);
+
+  const order = [...Array(count).keys()].sort((a, b) => teamScores[b] - teamScores[a] || a - b);
+  const maxScore = teamScores[order[0]];
+  ul.innerHTML = order.map((i, pos) => {
+    const top = teamScores[i] > 0 && teamScores[i] === maxScore;
+    return `<li data-i="${i}" class="${top ? 'top' : ''}">
+      <span class="n">${pos + 1}</span>
+      ${top ? '<span class="crown">👑</span>' : ''}<span class="nm">${esc(teamNames[i])}</span>
+      <span class="sc ${bumpIndex === i ? 'bump' : ''}">${teamScores[i]}</span>
+      <span class="adj"><button onclick="adjustScore(${i}, -1)" aria-label="扣一分">−</button><button onclick="adjustScore(${i}, 1)" aria-label="加一分">+</button></span>
+    </li>`;
+  }).join('');
+
+  ul.querySelectorAll('li').forEach(li => {
+    const b = before[li.dataset.i];
+    if (b === undefined) return;
+    const d = b - li.getBoundingClientRect().top;
+    if (!d) return;
+    li.style.transition = 'none';
+    li.style.transform = `translateY(${d}px)`;
+    void li.offsetWidth;
+    li.style.transition = 'transform .5s ease';
+    li.style.transform = '';
+  });
+  bumpIndex = -1;
+  persist();
+}
+
+function toggleRank(){
+  const card = $('rank-card');
+  card.classList.toggle('collapsed');
+  $('rank-toggle').innerText = card.classList.contains('collapsed') ? '展開' : '收合';
+}
+
+function renderNameInputs(){
+  const count = getTeamCount();
+  const box = $('name-inputs');
+  box.innerHTML = "";
+  for (let i = 0; i < count; i++){
+    const inp = document.createElement('input');
+    inp.type = 'text';
+    inp.value = teamNames[i];
+    inp.setAttribute('aria-label', `第 ${i + 1} 組名稱`);
+    inp.oninput = () => { teamNames[i] = inp.value; renderRanking(); };
+    box.appendChild(inp);
+  }
+}
+
+function renderScoreboard(){
+  renderRanking();
+  renderNameInputs();
+}
+
+window.onload = function(){
+  const saved = loadStore();
+  updateSecsLabel();
+  renderScoreboard();
+  switchPlaylist(saved && playlists[saved] ? saved : 'drama');
+};
+</script>
+</body>
+</html>

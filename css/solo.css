@@ -1,0 +1,2640 @@
+/* ========================================
+   Super Fans 鐵粉猜歌王｜紅黑舞台 × 銀色金屬
+
+   CSS 目錄
+   01. 設定與狀態
+       色彩、字型、全域變數、基礎樣式
+
+   02. 共用功能
+       按鈕、面板、標題列、Logo、共用元件
+
+   03. 答題與計分
+       進度、分數、計時、唱片舞台、選項、道具
+
+   04. 遊戲流程與畫面
+       主選單、遊戲說明、彈窗、排行榜、結算、倒數
+
+   05. 畫面呈現
+       動畫、互動效果、特殊樣式、裝置適配
+======================================== */
+
+
+/* ========================================
+   01. 設定與狀態
+======================================== */
+
+/* ---- 全域變數 ---- */
+
+:root {
+  /* 底色與文字 */
+  --black: #171719;
+  --cobalt: #171719;
+  --cobalt-d: #0B0B0D;
+  --paper: #E8E7E7;
+  --ink: #242124;
+  --white: #FFFCFA;
+  --text-sub: #655F60;
+  --text-faint: #92898A;
+
+  /* 品牌色：只負責裝飾、Logo、主按鈕，不用在狀態提示 */
+  --purple-light: #A49AD1;
+  --magenta: #D51F3B;
+  --yellow: #D9B45B;
+  --red: #C52B43;
+  --red-dark: #791B30;
+  --red-light: #F06B79;
+
+  /* 危險色：低彩度暗磚紅（與品牌紅同源，但明度與彩度更沉穩） */
+  --danger: #B8424D;
+  --danger-light: #DF7B84;
+  --danger-dark: #7A232B;
+  --danger-deep: #471116;
+  --danger-bg: rgba(184, 66, 77, .15);
+  --danger-bg-faint: rgba(184, 66, 77, .03);
+  --danger-glow: rgba(184, 66, 77, .32);
+  --danger-glow-soft: rgba(184, 66, 77, .16);
+
+  /* 答題選項狀態：歌名搶答、歌詞接唱共用 */
+  --answer-correct-text: #2B2108;
+  --answer-correct-bg: linear-gradient(180deg, #FBEBB8 0%, #E7C56F 55%, #C49A3C 100%);
+  --answer-correct-shadow: inset 0 2px 1px rgba(255,255,255,.8), 0 4px 0 #8A6A22, 0 0 14px rgba(217,180,91,.6);
+  --answer-wrong-text: #77777D;
+  --answer-wrong-bg: linear-gradient(180deg, #A5A5AA 0%, #88888F 45%, #707078 100%);
+  --answer-wrong-shadow: inset 0 3px 5px rgba(0,0,0,.28), inset 0 -1px 1px rgba(255,255,255,.12), 0 1px 0 #55555C;
+  --answer-wrong-mark: #A56F74;
+
+  /* 唱片色 */
+  --disc-1: #B8B8BD;
+  --disc-2: #F4F1EF;
+  --disc-3: #77777F;
+  --disc-4: #D6C8C9;
+  --disc-5: #A9B7B8;
+
+  /* 半透明色 */
+  --overlay: rgba(8,7,10,.91);
+  --overlay-dark: rgba(8,7,10,.96);
+  --shadow-color: rgba(0,0,0,.3);
+  --gold-glow: rgba(217,180,91,.45);
+
+  /* 字體 */
+  --serif: "Source Han Serif TC", "Noto Serif TC", "Songti TC", "PMingLiU", serif;
+  --sans: -apple-system, BlinkMacSystemFont, "PingFang TC", "Noto Sans TC", "Microsoft JhengHei", sans-serif;
+
+  /* 字級 */
+  --fs-xs: .75rem;
+  --fs-sm: .875rem;
+  --fs-md: 1rem;
+  --fs-lg: 1.25rem;
+  --fs-xl: 1.75rem;
+  --fs-2xl: 3rem;
+  --fs-hero: 6rem;
+
+  /* 間距 */
+  --sp-1: 4px;
+  --sp-2: 8px;
+  --sp-3: 12px;
+  --sp-4: 16px;
+  --sp-5: 20px;
+
+  /* 圓角 */
+  --r-sm: 2px;
+  --r-md: 8px;
+  --r-lg: 12px;
+  --r-pill: 999px;
+
+  /* 陰影 */
+  --shadow-md: 0 4px 10px var(--shadow-color);
+
+  /* 按鈕 */
+  --btn-radius: 5px;
+  --btn-py: 6px;
+  --btn-px: 14px;
+  --btn-lg-py: 8px;
+  --btn-transition: .12s ease;
+
+  /* 動畫速度 */
+  --t-fast: .2s;
+  --t-base: .35s;
+  --t-slow: .8s;
+}
+
+
+/* ---- 全域基礎樣式 ---- */
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  font-family: var(--sans);
+  -webkit-tap-highlight-color: transparent;
+}
+
+html,
+body {
+  height: 100%;
+}
+
+body {
+  height: 100dvh;
+  overflow: hidden;
+  color: var(--ink);
+  background:
+    radial-gradient(circle at 1px 1px, rgba(255,255,255,.13) 1px, transparent 1.5px) 0 0/12px 12px,
+    radial-gradient(ellipse 75% 55% at 50% 0%, rgba(213,31,59,.3), transparent 72%),
+    radial-gradient(ellipse 80% 65% at 50% 100%, #292126, var(--black) 72%, var(--cobalt-d));
+}
+
+
+/* ---- 遊戲容器 ---- */
+
+.app {
+  width: 100%;
+  max-width: 480px;
+  height: 100dvh;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-2);
+  padding: env(safe-area-inset-top, 0) var(--sp-4) calc(var(--sp-3) + env(safe-area-inset-bottom, 0));
+}
+
+.col {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-2);
+}
+
+
+/* ---- 文字選取 ---- */
+
+/* 遊戲介面：禁止文字選取 */
+.app,
+.ov,
+#cdown {
+  -webkit-user-select: none;
+  user-select: none;
+}
+
+/* 輸入框保留正常選取與複製 */
+#inp {
+  -webkit-user-select: text;
+  user-select: text;
+}
+
+
+/* ========================================
+   02. 共用功能
+======================================== */
+
+/* ---- 按鈕：銀色立體按鍵 ---- */
+
+.bevel,
+.quit-btn,
+.tb {
+  padding: var(--btn-py) var(--btn-px);
+  font-size: var(--fs-md);
+  font-weight: 800;
+  color: #29282C;
+  background: linear-gradient(180deg, #FFFFFF 0%, #E6E6E8 18%, #C5C5C9 52%, #A3A3A9 100%);
+  border: 0;
+  border-radius: var(--btn-radius);
+  box-shadow:
+    inset 0 2px 1px rgba(255,255,255,.95),
+    inset 0 -2px 1px rgba(70,70,78,.35),
+    0 1px 0 rgba(255,255,255,.35),
+    0 4px 0 #66666E,
+    0 6px 9px rgba(0,0,0,.32);
+  cursor: pointer;
+  text-align: left;
+  transition:
+    transform var(--btn-transition),
+    box-shadow var(--btn-transition),
+    filter var(--btn-transition);
+}
+
+.bevel {
+  text-align: center;
+}
+
+/* 按下狀態 */
+.bevel:active:not(:disabled),
+.quit-btn:active:not(:disabled),
+.tb:active:not(:disabled) {
+  transform: translateY(3px);
+  box-shadow:
+    inset 0 2px 4px rgba(0,0,0,.22),
+    inset 0 1px 1px rgba(255,255,255,.35),
+    0 1px 0 rgba(255,255,255,.2),
+    0 1px 2px rgba(0,0,0,.25);
+}
+
+/* 停用狀態 */
+.bevel:disabled,
+.quit-btn:disabled,
+.tb:disabled {
+  background: linear-gradient(180deg, #B8B8BB, #89898E);
+  color: #66666B;
+  opacity: .5;
+  box-shadow:
+    inset 0 1px 2px rgba(255,255,255,.4),
+    0 2px 0 #55555A;
+  cursor: not-allowed;
+  transform: none;
+}
+
+/* 主要按鈕：深紅亮面 */
+.bevel.go {
+  color: #FFF7F5;
+  background: linear-gradient(180deg, #F08B96 0%, #D94A60 22%, #A9233B 65%, #79182D 100%);
+  box-shadow:
+    inset 0 2px 1px rgba(255,255,255,.48),
+    inset 0 -2px 1px rgba(75,0,15,.45),
+    0 1px 0 rgba(255,255,255,.25),
+    0 4px 0 #581525,
+    0 6px 10px rgba(0,0,0,.35);
+}
+
+
+/* 退出 */
+.quit-btn {
+  display: none;
+  padding: var(--sp-1) var(--sp-4);
+  font-size: var(--fs-xs);
+  color: rgba(255,255,255,.8);
+  background: linear-gradient(180deg, #55545A, #343338 65%, #242327);
+  box-shadow:
+    inset 0 1px 1px rgba(255,255,255,.22),
+    0 3px 0 #151518,
+    0 4px 6px rgba(0,0,0,.25);
+}
+
+/* ---- 按鈕尺寸 ---- */
+
+.bevel.btn-sm {
+  padding: var(--sp-1) var(--sp-3);
+  font-size: var(--fs-xs);
+}
+
+.bevel.btn-lg,
+.tap .bevel {
+  padding: var(--btn-lg-py) var(--btn-px);
+  font-size: var(--fs-lg);
+}
+
+.bevel.big {
+  flex: 1;
+}
+
+/* 文字按鈕：預設金色，給深色底用 */
+.bevel.text {
+  padding: var(--btn-py);
+  font-size: var(--fs-sm);
+  color: #E9C58D;
+  background: none;
+  box-shadow: none;
+}
+
+.bevel.text:active:not(:disabled) {
+  transform: none;
+  box-shadow: none;
+  opacity: .7;
+}
+
+/* 危險動作的文字按鈕：給淺色底用（淺底用深磚紅，確保對比） */
+.bevel.text.danger {
+  color: var(--danger-dark);
+}
+
+
+/* ---- 按鈕排列 ---- */
+
+/* A. 左右雙按鈕：左＝次要（銀），右＝主要（紅） */
+/* B. 上大下小：上＝主要大按鈕（紅），下＝文字按鈕 */
+
+.actions-pair {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--sp-2);
+}
+
+.actions-stack {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-1);
+}
+
+.actions-pair .bevel,
+.actions-stack .bevel {
+  width: 100%;
+}
+
+
+/* ---- 共用面板 ---- */
+
+.ibox,
+.banner,
+.mc {
+  padding: var(--sp-3);
+  background: linear-gradient(145deg, #F4F2F0 0%, #E2DFDE 55%, #C9C6C7 100%);
+  border: 0;
+  border-radius: var(--r-sm);
+  box-shadow:
+    inset 0 2px 1px rgba(255,255,255,.9),
+    inset 0 -2px 1px rgba(100,90,95,.18),
+    0 2px 0 rgba(75,70,75,.7),
+    0 5px 10px rgba(0,0,0,.3);
+}
+
+.mc {
+  position: relative;
+  width: 100%;
+  max-width: 440px;
+  max-height: 96dvh;
+  overflow: auto;
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-3);
+  padding: var(--sp-5);
+  text-align: center;
+  border-radius: var(--r-md);
+  box-shadow:
+    inset 0 2px 1px rgba(255,255,255,.95),
+    inset 0 -2px 1px rgba(100,90,95,.2),
+    0 3px 0 rgba(70,65,70,.7),
+    0 8px 20px rgba(0,0,0,.45);
+  animation: pop var(--t-base) cubic-bezier(.2,1.4,.4,1);
+}
+
+/* 試玩結束與退出確認視窗統一樣式 */
+#m-demo .mc,
+#m-confirm .mc {
+  max-width: 340px;
+}
+
+#m-demo .mc > p,
+#m-confirm .mc > p {
+  font-weight: 700;
+  color: var(--text-sub);
+  font-size: var(--fs-sm);
+}
+
+/* ---- 膠囊標籤共用樣式 ---- */
+
+.mode-badge,
+.combo {
+  border: 0;
+  border-radius: var(--r-pill);
+  font-weight: 800;
+}
+
+
+/* ---- 標題列 ---- */
+
+.header {
+  flex: none;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-top: var(--sp-2);
+}
+
+.header-actions {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-2);
+}
+
+
+/* ---- Logo ---- */
+
+.logo {
+  position: relative;
+  display: inline-block;
+  width: fit-content;
+  font-family: 'Noto Serif TC', var(--serif), serif;
+  font-style: italic;
+  font-weight: 700;
+  font-size: clamp(1.3rem, 2.8vw, 2rem);
+  letter-spacing: 1px;
+  color: transparent;
+  background-image:
+    radial-gradient(circle, #FFFFFF 0 1px, transparent 1.5px),
+    radial-gradient(circle, rgba(255,255,255,.8) 0 0.8px, transparent 1.2px),
+    linear-gradient(175deg,
+      #FFFFFF 0%, #B8B9C2 12%, #FFFFFF 20%, #777985 31%, #F9F9FA 40%, #A4A5AF 49%,
+      #FFFFFF 55%, #777985 67%, #E5E5E9 78%, #FFFFFF 88%, #92939D 100%);
+  background-size: 7px 7px, 11px 11px, 100% 100%;
+  background-position: 0 0, 3px 4px, 0 0;
+  background-clip: text;
+  -webkit-background-clip: text;
+  -webkit-text-stroke: .6px rgba(255,255,255,.8);
+  filter:
+    drop-shadow(0 1px 0 #6A1528)
+    drop-shadow(1px 2px 0 #3C101D)
+    drop-shadow(0 0 3px rgba(255,255,255,.45))
+    drop-shadow(0 0 8px rgba(213,31,59,.4));
+}
+
+.logo #secret-trigger {
+  font: inherit;
+  letter-spacing: inherit;
+  color: inherit;
+  background: inherit;
+  background-clip: inherit;
+  -webkit-background-clip: inherit;
+  -webkit-text-stroke: inherit;
+}
+
+/* 小型星芒 */
+.logo::before,
+.logo::after {
+  position: absolute;
+  color: #FFFFFF;
+  text-shadow: 0 0 2px #FFFFFF, 0 0 5px #FFFFFF, 0 0 9px #FFB9C9;
+  pointer-events: none;
+}
+
+.logo::before {
+  content: "✦";
+  rotate: 6deg;
+  bottom: 30%;
+  left: -3%;
+  font-size: .22em;
+}
+
+.logo::after {
+  content: "✧";
+  rotate: 12deg;
+  bottom: 40%;
+  right: -7.5%;
+  font-size: .36em;
+}
+
+
+/* ---- 模式標籤 ---- */
+
+.mode-badge {
+  padding: 0;
+  font-size: var(--fs-xs);
+  font-weight: 500;
+  letter-spacing: .5px;
+  color: rgba(232, 220, 224, .65);
+  background: none;
+  box-shadow: none;
+}
+
+
+/* ========================================
+   03. 答題與計分
+======================================== */
+
+/* ---- 答題進度 ---- */
+
+.progress {
+  flex: none;
+}
+
+.question-number {
+  margin-bottom: var(--sp-1);
+  font-family: var(--serif);
+  font-weight: 900;
+  font-size: var(--fs-sm);
+  color: var(--paper);
+}
+
+.progress-grid {
+  display: flex;
+  gap: var(--sp-1);
+}
+
+.progress-slot {
+  flex: 1;
+  position: relative;
+  max-width: 44px;
+  aspect-ratio: 1;
+  overflow: hidden;
+  border-radius: var(--r-sm);
+  background: linear-gradient(145deg, rgba(255,255,255,.16), rgba(0,0,0,.28));
+  box-shadow:
+    inset 0 2px 3px rgba(0,0,0,.45),
+    inset 0 -1px 1px rgba(255,255,255,.12);
+}
+
+.progress-slot.now,
+.progress-slot.gem-mint {
+  box-shadow:
+    inset 0 2px 3px rgba(0,0,0,.35),
+    inset 0 -1px 1px rgba(255,255,255,.2),
+    0 0 9px rgba(240,90,110,.7);
+}
+
+.progress-slot.near-mint {
+  box-shadow:
+    inset 0 2px 3px rgba(0,0,0,.35),
+    0 0 7px rgba(190,190,210,.5);
+}
+
+.progress-slot.good {
+  filter: sepia(30%) brightness(.9);
+}
+
+.progress-slot.poor {
+  filter: grayscale(80%) sepia(50%) brightness(.6);
+  opacity: .75;
+}
+
+.progress-slot img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+
+/* ---- 分數與連擊 ---- */
+
+.game-status {
+  flex: none;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  line-height: 1;
+}
+
+.score {
+  font-family: var(--serif);
+  font-weight: 900;
+  font-size: var(--fs-2xl);
+  color: var(--yellow);
+  text-shadow: 2px 2px 0 var(--red-dark), 4px 4px 0 rgba(0,0,0,.65);
+  transition: transform var(--t-fast);
+}
+
+/* 扣分：磚紅 */
+.score.penalty {
+  color: var(--danger);
+  text-shadow: 2px 2px 0 var(--danger-deep), 4px 4px 0 rgba(0,0,0,.65);
+  animation: score-penalty .4s ease;
+}
+
+.score.bump {
+  animation: bump .45s cubic-bezier(.2,1.6,.4,1);
+}
+
+.combo {
+  margin-top: var(--sp-2);
+  padding: var(--sp-1) var(--sp-3);
+  font-size: var(--fs-sm);
+  color: var(--ink);
+  background: linear-gradient(180deg, #F4F3F3, #BFC0C5);
+  opacity: .55;
+  box-shadow:
+    inset 0 1px 1px white,
+    0 2px 3px rgba(0,0,0,.25);
+}
+
+.combo.on {
+  opacity: 1;
+  color: var(--white);
+  background: linear-gradient(180deg, #F08B96, #A9233B);
+}
+
+.combo.pop {
+  animation: bump var(--t-base);
+}
+
+
+/* ---- 計時器 ---- */
+
+.timer-row {
+  flex: none;
+  width: 100%;
+}
+
+.timer-content { width: 100%; }
+
+/* 細軌道：兩段之間留 2px 縫隙當分界 */
+.timer-track {
+  display: flex;
+  gap: 2px;
+  width: 100%;
+  height: 6px;
+  background: transparent;
+  box-shadow: none;
+}
+
+.timer-track {
+  position: relative;
+}
+
+.timer-penalty {
+  position: absolute;
+  top: 0;
+  height: 100%;
+  background: repeating-linear-gradient(
+  135deg,
+  #E6E6EA 0 3px,
+  transparent 3px 5px
+);
+  pointer-events: none;
+  z-index: 3;
+  opacity: 0;
+}
+
+.timer-penalty.play {
+  animation: penalty-fade .15s ease-out forwards;
+}
+
+@keyframes penalty-fade {
+  from { opacity: 1; }
+  to { opacity: 0; }
+}
+
+.timer-fill, .timer-buffer {
+  flex: none;
+  height: 100%;
+  transition: background .3s ease;
+}
+
+/* 正常作答：亮銀 */
+.timer-fill {
+  width: 66.6667%;
+  border-radius: 2px var(--r-pill) var(--r-pill) 2px;
+  background: linear-gradient(180deg, #E6E6EA, #A9AAAF);
+}
+
+/* 打字限定：同色系較暗，不用紫色 */
+.timer-buffer {
+  width: 33.3333%;
+  border-radius: var(--r-pill) 2px 2px var(--r-pill);
+  background: linear-gradient(180deg, #6E6D74, #4A494F);
+}
+
+.timer-row.buffer-only .timer-buffer {
+  border-radius: var(--r-pill);
+  background: linear-gradient(180deg, #CFCFD4, #9A9AA1); /* 輪到它時提亮 */
+}
+
+/* 單段模式（試玩等） */
+.timer-row.single-mode .timer-buffer { display: none; }
+
+.timer-row.single-mode .timer-fill {
+  border-radius: 0;
+}
+
+/* 文字標籤全部隱藏（JS 照寫無妨） */
+.timer-labels { display: none; }
+
+/* 危險：整條轉磚紅 */
+.timer-row.danger { animation: shake .25s infinite; }
+
+.timer-row.danger .timer-fill,
+.timer-row.danger .timer-buffer {
+  background: linear-gradient(180deg, var(--danger-light), var(--danger));
+  box-shadow: 0 0 8px var(--danger-glow);
+}
+
+.timer-row.done { opacity: .3; }
+
+
+/* 時間軸貼齊面板上緣 */
+.ibox .timer-row {
+  margin: calc(-1 * var(--sp-3)) calc(-1 * var(--sp-3)) var(--sp-2);
+  width: auto;
+  overflow: hidden;
+  border-radius: var(--r-sm) var(--r-sm) 0 0;
+}
+
+.ibox .timer-track {
+  height: 8px;
+  gap: 0;
+  border-radius: 0;
+  box-shadow: none;
+}
+
+/* 貼邊後不需要膠囊圓角，改成直條 */
+.ibox .timer-fill,
+.ibox .timer-buffer,
+.ibox .timer-row.buffer-only .timer-buffer {
+  border-radius: 0;
+}
+
+/* 軌道：幾乎融入面板 */
+.ibox .timer-track {
+  background: rgba(0,0,0,.1);
+}
+
+/* 正常段：中灰，低調 */
+.ibox .timer-fill {
+  background: linear-gradient(180deg, #4A484E, #29282C);
+}
+
+/* 危險：磚紅 */
+.ibox .timer-row.danger .timer-fill,
+.ibox .timer-row.danger .timer-buffer {
+  background: linear-gradient(180deg, var(--danger-light), var(--danger));
+  box-shadow: none;
+}
+
+.ibox .timer-row.done {
+  display: none;
+}
+
+.ibox .timer-row.danger { animation: none; }
+
+.ibox .timer-row.danger .timer-track {
+  animation: timer-alarm .5s steps(1) infinite;
+}
+
+@keyframes timer-alarm {
+  50% { filter: brightness(.45); }
+}
+
+/* ---- +10s：完成作答倒數標籤 ---- */
+
+.irow {
+  position: relative;
+}
+
+.buffer-hint {
+  position: absolute;
+  top: -9px;
+  left: 10px;
+  z-index: 2;
+  min-width: 78px;
+  padding: 1px 8px;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: .5px;
+  text-align: center;
+  font-variant-numeric: tabular-nums;
+  color: var(--white);
+  background: linear-gradient(180deg, #9990AD, #89819F);
+  border-radius: var(--r-pill);
+  box-shadow: 0 1px 3px rgba(0,0,0,.3);
+  pointer-events: none;
+  opacity: 0;
+  transform: translateY(3px);
+  transition: opacity .25s, transform .25s;
+}
+
+.buffer-hint.show {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* 最後 3 秒：轉磚紅閃爍 */
+.buffer-hint.urgent {
+  color: var(--white);
+  background: linear-gradient(180deg, var(--danger-light), var(--danger));
+  animation: hintBlink .5s steps(1) infinite;
+}
+
+@keyframes hintBlink {
+  50% { filter: brightness(.7); }
+}
+
+
+/* ---- 時間到提示 ---- */
+
+.timeout-overlay {
+  position: absolute;
+  inset: 0;
+  z-index: 10;
+  display: none;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  gap: 8px;
+  text-align: center;
+  color: #F5C857;
+  background: rgba(12,10,16,.82);
+  border-radius: var(--r-lg);
+  animation: timeout-in .35s ease both;
+}
+
+.timeout-title {
+  font-size: clamp(32px, 8vw, 54px);
+  font-weight: 900;
+  letter-spacing: 3px;
+  text-shadow: 3px 3px 0 #7B172D;
+}
+
+.timeout-sub {
+  font-size: 20px;
+  font-weight: 800;
+  color: #FFFFFF;
+}
+
+
+/* ---- 唱片答題舞台 ---- */
+
+.stage {
+  position: relative;
+  flex: 1;
+  min-height: 0;
+  margin-bottom: var(--sp-3);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--sp-2);
+}
+
+.cwrap {
+  flex: 1;
+  min-height: 0;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.cw {
+  position: relative;
+  height: 100%;
+  max-height: 270px;
+  max-width: 100%;
+  aspect-ratio: 1.3;
+}
+
+.cd {
+  position: absolute;
+  top: 3%;
+  left: 4.6%;
+  width: 72.3%;
+  height: 94%;
+  transition: left var(--t-slow) cubic-bezier(.3,.9,.3,1);
+}
+
+.cd.on {
+  left: 26%;
+}
+
+.disc {
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  border: 1px solid rgba(255,255,255,.55);
+  background:
+    radial-gradient(circle, #171719 0 8%, #D51F3B 8.5% 10%, #D8D5D5 10.5% 14%, transparent 14.5%),
+    repeating-radial-gradient(circle, transparent 0 3px, rgba(0,0,0,.08) 4px 5px),
+    conic-gradient(var(--disc-1), var(--disc-2), var(--disc-3), var(--disc-2), var(--disc-4), var(--disc-2), var(--disc-5), var(--disc-1));
+  animation: spin 5s linear infinite;
+  animation-play-state: paused;
+}
+
+.disc.spin {
+  animation-play-state: running;
+}
+
+.case {
+  position: absolute;
+  left: 0;
+  top: 0;
+  z-index: 1;
+  height: 100%;
+  aspect-ratio: 1;
+  overflow: hidden;
+  border-radius: var(--r-sm);
+  background:
+    radial-gradient(circle at 20% 20%, rgba(255,255,255,.2), transparent 30%),
+    linear-gradient(135deg, var(--red-light), var(--red) 38%, var(--red-dark) 72%, var(--black));
+  box-shadow:
+    inset 0 2px 2px rgba(255,255,255,.4),
+    0 2px 0 rgba(255,255,255,.18),
+    0 8px 20px rgba(0,0,0,.45);
+}
+
+.case .q {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--serif);
+  font-weight: 900;
+  font-size: var(--fs-hero);
+  color: var(--paper);
+  text-shadow: 3px 3px 0 var(--red-dark), 5px 5px 0 rgba(0,0,0,.65);
+}
+
+.case img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  opacity: 0;
+}
+
+.case.rev img {
+  opacity: 1;
+  animation: flip .6s ease-out;
+}
+
+.case.rev .q {
+  display: none;
+}
+
+.tap {
+  display: none;
+  position: absolute;
+  inset: 0;
+  z-index: 5;
+  align-items: center;
+  justify-content: center;
+}
+
+
+/* ---- 答案回饋 ---- */
+
+.banner {
+  flex: none;
+  width: 100%;
+  display: none;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  text-align: center;
+  border-radius: var(--r-md);
+  cursor: default;
+  animation: pop var(--t-base) cubic-bezier(.2,1.4,.4,1);
+}
+
+.banner.show {
+  display: flex;
+}
+
+/* 答案標題：用酒紅，避免被誤讀成「答錯」 */
+.banner b {
+  font-family: var(--serif);
+  font-size: var(--fs-xl);
+  font-weight: 900;
+  line-height: 1.2;
+  color: var(--red);
+}
+
+.banner span {
+  font-size: var(--fs-sm);
+  font-weight: 700;
+  color: var(--text-sub);
+}
+
+.banner small {
+  font-size: var(--fs-xs);
+  color: var(--text-faint);
+}
+
+/* ---- 加分標籤 ---- */
+
+.score-row {
+  position: relative;
+  display: inline-block;
+}
+
+.feedback-tags {
+  position: absolute;
+  top: 60%;
+  transform: translateY(-20%);
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  pointer-events: none;
+}
+
+.feedback-tags.r {
+  left: 115%;
+  margin-left: var(--sp-3);
+  align-items: flex-start;
+}
+
+.feedback-tags.l {
+  right: 115%;
+  margin-right: var(--sp-3);
+  align-items: flex-end;
+}
+
+.feedback-tag {
+  font-family: var(--serif);
+  font-weight: 900;
+  font-size: var(--fs-md);
+  white-space: nowrap;
+  color: transparent;
+  background: linear-gradient(175deg, #FFFFFF 0%, #B8B9C2 20%, #FFFFFF 40%, #A4A5AF 60%, #FFFFFF 80%, #92939D 100%);
+  background-clip: text;
+  -webkit-background-clip: text;
+  -webkit-text-stroke: .4px rgba(255,255,255,.8);
+  filter:
+    drop-shadow(1px 2px 0 #3C101D)
+    drop-shadow(0 0 5px rgba(213,31,59,.4));
+  animation: tagup 1.5s ease-out forwards;
+}
+
+
+/* ---- 下一題按鈕與倒數條 ---- */
+
+.nbtn {
+  position: relative;
+  overflow: hidden;
+}
+
+.nbtn i {
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  background: rgba(255,255,255,.32);
+  animation: nb linear forwards;
+}
+
+.nbtn span {
+  position: relative;
+}
+
+
+/* ---- 輸入作答區 ---- */
+
+.ibox {
+  position: relative;
+  flex: none;
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-2);
+}
+
+.irow {
+  display: flex;
+  gap: var(--sp-2);
+}
+
+.irow input {
+  flex: 1;
+  min-width: 0;
+  padding: var(--sp-4) var(--sp-3);
+  font-size: 18px;
+  font-weight: 700;
+  border: 0;
+  border-radius: var(--r-sm);
+  outline: none;
+  background: linear-gradient(180deg, #FFFFFF, #E4E3E5);
+  box-shadow:
+    inset 0 2px 4px rgba(0,0,0,.16),
+    inset 0 1px 1px rgba(0,0,0,.08),
+    0 1px 0 rgba(255,255,255,.7);
+  transition: box-shadow .2s ease;
+}
+
+.irow input:focus {
+  box-shadow:
+    inset 0 2px 4px rgba(0,0,0,.16),
+    0 0 0 2px rgba(153,144,173,.85),
+    0 0 10px rgba(153,144,173,.3);
+}
+
+.irow input.shake {
+  animation: shake .3s ease;
+  box-shadow:
+    inset 0 2px 4px rgba(0,0,0,.16),
+    0 0 0 2px var(--danger-light),
+    0 0 10px var(--danger-glow-soft);
+}
+
+/* 結束時凍結：保留玩家打的字，打錯顯示磚紅框 */
+.irow input.final-wrong,
+.irow input.final-wrong:focus {
+  box-shadow:
+    inset 0 2px 4px rgba(0,0,0,.16),
+    0 0 0 2px var(--danger),
+    0 0 10px var(--danger-glow-soft);
+}
+
+/* ---- 選擇題 ---- */
+
+.ogrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--sp-2);
+}
+
+
+.opt {
+  padding: var(--sp-4) var(--sp-3);
+  font-size: var(--fs-md);
+  font-weight: 700;
+  text-align: left;
+  color: #29282C;
+  background: linear-gradient(180deg, #F8F8F9 0%, #E1E1E4 22%, #C2C2C7 60%, #A0A0A7 100%);
+  border: 0;
+  border-radius: var(--btn-radius);
+  box-shadow:
+    inset 0 2px 1px rgba(255,255,255,.9),
+    inset 0 -2px 1px rgba(70,70,78,.3),
+    0 1px 0 rgba(255,255,255,.25),
+    0 4px 0 #66666E,
+    0 6px 8px rgba(0,0,0,.28);
+  cursor: pointer;
+  transition:
+    transform var(--btn-transition),
+    box-shadow var(--btn-transition);
+}
+
+.opt:active:not(:disabled) {
+  transform: translateY(1px);
+  box-shadow:
+    inset 0 2px 4px rgba(0,0,0,.25),
+    0 1px 1px rgba(0,0,0,.2);
+}
+
+.opt:disabled {
+  color: #77777D;
+  background: linear-gradient(
+    180deg,
+    #D5D5D8 0%,
+    #B8B8BD 22%,
+    #A2A2A8 60%,
+    #898990 100%
+  );
+  box-shadow:
+    inset 0 1px 1px rgba(255,255,255,.6),
+    0 2px 0 #66666E;
+  cursor: not-allowed;
+}
+
+/* 答對：共用金色高亮 */
+.opt.correct {
+  color: var(--answer-correct-text);
+  background: var(--answer-correct-bg);
+  box-shadow: var(--answer-correct-shadow);
+}
+
+/* 答錯標記：共用低彩度磚紅，不做閃爍或淡出 */
+.opt .wrong-mark {
+  display: inline-block;
+  margin-left: .35em;
+  color: var(--answer-wrong-mark);
+  font-weight: 900;
+}
+
+/* 答錯：立即進入深灰內縮狀態，不經過淡灰過渡 */
+.opt:disabled.wrong,
+.opt:disabled.final-wrong,
+.opt:disabled.wrong-locked {
+  color: var(--answer-wrong-text);
+  background: var(--answer-wrong-bg);
+  transform: translateY(3px);
+  box-shadow: var(--answer-wrong-shadow);
+  cursor: not-allowed;
+}
+
+
+
+/* ---- 遊戲道具 ---- */
+
+.items {
+  display: flex;
+  gap: var(--sp-3);
+  padding-top: var(--sp-2);
+}
+
+/* ---- 提示道具：統一銀白金屬按鍵風格 ---- */
+.item {
+  position: relative;
+  flex: 1;
+  display: flex;
+  align-items: center;
+  gap: var(--sp-2);
+  padding: var(--sp-2) var(--sp-3);
+  text-align: left;
+
+  color: #414141;
+  background: linear-gradient(
+    180deg,
+    #eeeeee 0%,
+    #d8d8d8 25%,
+    #c5c5c5 65%,
+    #b5b5b5 100%
+  );
+
+  border: none;
+  border-radius: var(--r-sm);
+
+  box-shadow:
+    inset 0 2px 2px rgba(255,255,255,.95),
+    inset 0 -2px 3px rgba(120,120,120,.16),
+    0 3px 0 #aaa,
+    0 4px 7px rgba(0,0,0,.16);
+
+  cursor: pointer;
+  transition:
+    transform var(--btn-transition),
+    box-shadow var(--btn-transition),
+    background var(--btn-transition),
+    filter var(--btn-transition);
+}
+
+.item .ic {
+  flex: none;
+  width: 36px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  font-size: var(--fs-md);
+  color: #f0f0f0;
+background: linear-gradient(145deg, #77747D, #343238);
+box-shadow:
+  inset 0 2px 1px rgba(255,255,255,.3),
+  inset 0 -2px 2px rgba(0,0,0,.4),
+  0 2px 3px rgba(0,0,0,.2);
+}
+
+.item .tx {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  line-height: 1.2;
+}
+
+.item .tx b {
+  font-family: var(--serif);
+  font-size: var(--fs-sm);
+  font-weight: 900;
+}
+
+.item .tx small {
+  font-size: var(--fs-xs);
+  font-weight: 700;
+  color: var(--text-sub);
+}
+
+.item:active:not(:disabled) {
+  transform: translateY(3px);
+  box-shadow:
+    inset 0 2px 4px rgba(0,0,0,.2),
+    0 1px 1px rgba(0,0,0,.2);
+}
+
+.item:disabled {
+  color: #77777D;
+  background: linear-gradient(180deg, #D5D5D8 0%, #B8B8BD 45%, #A2A2A8 100%);
+  filter: grayscale(1);
+  opacity: .8;
+  box-shadow: none;
+  cursor: not-allowed;
+}
+
+
+/* ========================================
+   04. 遊戲流程與畫面
+======================================== */
+
+.start-data-notice {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 0px;
+    padding-top: 9px;
+    color: var(--text-faint);
+    font-size: 9px;
+    letter-spacing: 1.5px;
+}
+
+.copyright-notice {
+  margin: 6px auto 0;
+  padding: 0 16px 12px;
+  font-size: 10px;
+  letter-spacing: 0.3px;
+  line-height: 1.6;
+  color: var(--text-faint);
+  text-align: center;
+}
+
+.theme-divider {
+  height: 2px;
+  margin: 12px 8px;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    #A3A3A9 20%,
+    #D0D0D3 50%,
+    #A3A3A9 80%,
+    transparent 100%
+  );
+  opacity: 0.7;
+}
+
+/* ---- 通用彈窗 ---- */
+
+
+/* ---- 歌單開場：圓形金屬 Loading ---- */
+.playlist-intro {
+  z-index: 10000;
+}
+
+.playlist-intro-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 36px;
+}
+
+.playlist-intro-ring {
+  position: relative;
+  width: min(78vw, 280px);
+  aspect-ratio: 1;
+  display: grid;
+  place-items: center;
+}
+
+.playlist-intro-ring svg {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+  transform: rotate(-90deg);
+}
+
+.playlist-ring-track,
+.playlist-ring-progress {
+  fill: none;
+  stroke-width: 3.5;
+}
+
+.playlist-ring-track {
+  stroke: rgba(220,220,225,.2);
+}
+
+.playlist-ring-progress {
+  stroke: url(#playlist-ring-gradient);
+  stroke-linecap: round;
+  stroke-dasharray: 528;
+  stroke-dashoffset: 528;
+  filter: drop-shadow(0 0 4px rgba(235,235,240,.35));
+}
+
+.playlist-intro.is-active .playlist-ring-progress {
+  animation: playlist-ring-fill 3s linear forwards;
+}
+
+@keyframes playlist-ring-fill {
+  to { stroke-dashoffset: 0; }
+}
+
+.playlist-intro-center {
+  position: relative;
+  z-index: 1;
+  width: 82%;
+  aspect-ratio: 1;
+  padding: 26px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0;
+  overflow: hidden;
+  text-align: center;
+  border-radius: 50%;
+  background: linear-gradient(145deg, #343438 0%, #252529 48%, #19191D 100%);
+  box-shadow:
+    inset 0 2px 3px rgba(255,255,255,.12),
+    inset 0 -5px 10px rgba(0,0,0,.48),
+    0 2px 10px rgba(0,0,0,.28);
+}
+
+.playlist-intro-art,
+.playlist-intro-center::before {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+}
+
+.playlist-intro-art {
+  display: none;
+  opacity: 0;
+  object-fit: cover;
+  transition: opacity .45s ease;
+}
+
+.playlist-intro-center::before {
+  content: "";
+  z-index: 1;
+  pointer-events: none;
+  background: linear-gradient(
+    180deg,
+    rgba(0,0,0,.22) 0%,
+    rgba(0,0,0,.38) 30%,
+    rgba(0,0,0,.68) 55%,
+    rgba(0,0,0,.42) 75%,
+    rgba(0,0,0,.28) 100%
+  );
+}
+
+.playlist-intro-name {
+  position: relative;
+  z-index: 2;
+  width: 100%;
+  max-width: 100%;
+  color: #FFFFFF;
+  font-family: var(--serif);
+  font-size: clamp(18px, 5vw, 24px);
+  font-weight: 900;
+  line-height: 1.25;
+  white-space: normal;
+  overflow-wrap: normal;
+  word-break: normal;
+  text-wrap: balance;
+  text-shadow:
+    0 1px 2px rgba(0,0,0,1),
+    0 2px 6px rgba(0,0,0,.95),
+    0 0 12px rgba(0,0,0,.9);
+  transform: translateY(14px);
+}
+
+.playlist-intro-subtitle {
+  color: #B9B9BE;
+  font-size: var(--fs-sm);
+  letter-spacing: .16em;
+}
+
+.playlist-intro-back {
+  position: relative;
+  z-index: 2;
+  min-width: 0;
+  margin-top: 14px;
+  padding: 8px 12px;
+  background: none;
+  border: 0;
+  box-shadow: none;
+  color: #B9B9BE;
+  font-size: var(--fs-sm);
+  cursor: pointer;
+  transition: color .2s ease;
+}
+
+.playlist-intro-back:hover {
+  color: #F1F0EF;
+}
+
+.ov {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  padding: var(--sp-4);
+  overflow: auto;
+  background: var(--overlay);
+}
+
+
+
+.mt {
+  font-family: var(--serif);
+  font-size: var(--fs-lg);
+  font-weight: 900;
+}
+
+/* 關閉按鈕 */
+.x {
+  position: absolute;
+  top: var(--sp-2);
+  right: var(--sp-3);
+  z-index: 2;
+  width: 30px;
+  height: 30px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 16px;
+  font-weight: 600;
+  line-height: 1;
+  color: #777078;
+  background: rgba(0,0,0,.05);
+  border: 0;
+  border-radius: 50%;
+  cursor: pointer;
+  transition: background var(--t-fast);
+}
+
+
+/* ---- 中場休息數據 ---- */
+
+.stats {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--sp-2);
+  font-size: var(--fs-sm);
+  font-weight: 700;
+  line-height: 1.6;
+  color: var(--text-sub);
+}
+
+.stats > div {
+  padding: var(--sp-2);
+  border-radius: var(--r-sm);
+  background: rgba(255,255,255,.5);
+  box-shadow: inset 0 1px 3px rgba(0,0,0,.12);
+}
+
+
+/* ---- 規則文字 ---- */
+
+.rules {
+  width: 100%;
+  padding: 16px;
+  text-align: left;
+  font-size: var(--fs-sm);
+  line-height: 1.8;
+  border-radius: var(--r-sm);
+  background: linear-gradient(145deg, #F2F0EF, #D6D3D3);
+  box-shadow:
+    inset 0 2px 4px rgba(0,0,0,.1),
+    0 1px 0 rgba(255,255,255,.6);
+}
+
+.rules p {
+  margin-bottom: 12px;
+}
+
+.rules p:last-child {
+  margin-bottom: 0;
+}
+
+
+/* ---- 開始畫面 ---- */
+
+#m-start .mc {
+  max-height: none;
+  overflow: visible;
+  gap: 14px;
+  padding: 20px 28px 20px;
+  border-radius: var(--r-lg);
+  background:
+    radial-gradient(ellipse at 50% 0%, rgba(213,31,59,.2), transparent 60%),
+    linear-gradient(145deg, #2A2A2E 0%, #1B1B1E 55%, #121214 100%);
+  border: 1px solid rgba(255,255,255,.14);
+  box-shadow:
+    inset 0 1px 2px rgba(255,239,208,.2),
+    inset 0 0 24px rgba(196,139,157,.08),
+    0 0 0 1px rgba(0,0,0,.4),
+    0 12px 30px rgba(0,0,0,.45);
+}
+
+#m-start .logo {
+  margin-inline: auto;
+  font-size: 48px;
+  margin-bottom: 8px;
+  font-size: 40px;
+  line-height: 1.2;
+  margin-bottom: 0;
+}
+
+/* 開始畫面按鈕 */
+#m-start .col {
+  width: 100%;
+  gap: 12px;
+}
+
+#m-start .col .bevel {
+  width: 100%;
+}
+
+/* 歌單畫面共用 Logo 尺寸 */
+#m-theme .logo {
+  margin-inline: auto;
+  font-size: 48px;
+}
+
+
+/* ---- 排行榜 ---- */
+
+.history-panel {
+  margin-bottom: 2px;
+  padding: 14px;
+  text-align: left;
+  border: 1px solid rgba(218,177,111,.4);
+  border-radius: var(--r-md);
+  background:
+    linear-gradient(135deg, rgba(255,230,198,.08), rgba(255,255,255,.02)),
+    #30232F;
+  box-shadow:
+    inset 0 1px 1px rgba(255,255,255,.08),
+    0 4px 10px rgba(0,0,0,.2);
+}
+
+.history-heading {
+  margin-bottom: 12px;
+  font-size: var(--fs-md);
+  font-weight: 900;
+  letter-spacing: 1px;
+  color: #F0D6A4;
+  text-shadow: 0 1px 5px rgba(240,214,164,.25);
+}
+
+.history-heading::before {
+  content: "✦ ";
+  color: #E9BFCB;
+}
+
+.history-heading::after {
+  content: " ✦";
+  color: #E9BFCB;
+}
+
+.hist {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+}
+
+.hi {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 5px;
+  padding: 9px 4px;
+  font-size: var(--fs-xs);
+  color: #E8DCE0;
+  border-bottom: 1px solid rgba(218,177,111,.2);
+}
+
+.hi:last-child {
+  border-bottom: 0;
+}
+
+/* 左右資訊區 */
+.hi-main,
+.hi-info {
+  display: inline-flex;
+  align-items: center;
+  white-space: nowrap;
+}
+
+.hi-main {
+  gap: 5px;
+}
+
+.hi-info {
+  justify-content: flex-end;
+  gap: 7px;
+  color: #C8B8BF;
+}
+
+/* 等級 */
+.hi .g {
+  display: inline-block;
+  width: 36px;
+  flex-shrink: 0;
+  text-align: left;
+  margin-right: 0;
+  font-family: var(--serif);
+  font-size: var(--fs-md);
+  font-weight: 900;
+  color: #E9A8B9;
+}
+
+/* 分數 */
+.hi b {
+  margin-right: 4px;
+  font-family: var(--serif);
+  font-size: var(--fs-sm);
+  color: #F0D6A4;
+}
+
+.hi .rank {
+  display: inline-block;
+  width: 30px;
+  font-weight: 900;
+  letter-spacing: 1px;
+  color: #E9C58D;
+}
+
+/* 歌單標籤 */
+.playlist-tag {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  margin-left: 0;
+  padding: 3px 7px;
+  border-radius: 2px;
+  background: transparent;
+  border: 1px solid rgba(255,255,255,.25);
+  color: rgba(255,255,255,.65);
+  font-size: 10px;
+  font-weight: normal;
+  line-height: 1;
+}
+
+.hi.empty {
+  color: rgba(232,220,224,.45);
+}
+
+.hi.empty .rank {
+  color: rgba(233,197,141,.55);
+}
+
+/* 排行榜：窄螢幕資訊換到第二行 */
+@media (max-width: 420px) {
+  .hi {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 4px;
+  }
+
+  .hi-main {
+    width: 100%;
+    min-width: 0;
+  }
+
+  .hi-main > span:last-child {
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .hi-info {
+    width: 100%;
+    justify-content: flex-start;
+    padding-left: 41px;
+  }
+}
+
+
+/* ---- 規則入口與規則視窗 ---- */
+
+.rules-open {
+  width: 30px;
+  height: 30px;
+  padding: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  background: transparent;
+  color: rgba(255,255,255,.55);
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
+.rules-open svg {
+  display: block;
+  width: 19px;
+  height: 19px;
+}
+
+.rules-open svg path,
+.rules-open svg circle,
+.rules-open svg rect,
+.rules-open svg line,
+.rules-open svg polyline,
+.rules-open svg polygon {
+  stroke-width: 2.5; /* 可依需求調整為 2.5、3 等 */
+  stroke-linecap: round; /* 可選：讓線條端點變圓滑 */
+  stroke-linejoin: round; /* 可選：讓轉角變圓滑 */
+}
+
+.rules-dialog {
+  max-width: 400px;
+  max-height: none;
+  overflow: visible;
+  gap: 18px;
+  padding: 28px 22px 22px;
+}
+
+.rules-title {
+  letter-spacing: 2px;
+  text-align: center;
+  color: var(--red);
+  font-family: var(--serif);
+  font-size: var(--fs-lg);
+  font-weight: 900;
+}
+
+
+/* ---- 歌單畫面 ---- */
+
+.theme-subtitle {
+  margin-top: -6px;
+  margin-bottom: 2px;
+  font-size: var(--fs-md);
+  font-weight: 900;
+  color: var(--text-sub);
+  text-align: left;
+  letter-spacing: 1px;
+}
+
+/* ---- 開發用測試按鈕 ---- */
+
+#test-btn {
+  align-self: center;
+  opacity: .55;
+}
+
+
+/* ---- 結算畫面 ---- */
+
+#m-result {
+  background:
+    radial-gradient(ellipse at 50% 25%, rgba(126,55,83,.28), transparent 65%),
+    linear-gradient(145deg, #211821 0%, #17131B 55%, #100F14 100%);
+}
+
+#m-result .mc {
+  gap: 14px;
+  padding: 22px 16px 16px;
+  overflow-x: hidden;
+  color: #F3E9EC;
+  border: 1px solid rgba(231,205,158,.45);
+  background:
+    radial-gradient(ellipse at 50% 0%, rgba(213,31,59,.3), transparent 62%),
+    linear-gradient(160deg, #3A2B3A 0%, #241B28 60%, #1A151D 100%);
+  box-shadow:
+    0 12px 35px rgba(0,0,0,.5),
+    inset 0 1px 0 rgba(255,255,255,.12);
+}
+
+/* SS / SSS 金光 */
+#m-result .mc.gold {
+  box-shadow:
+    0 0 28px var(--gold-glow),
+    0 12px 35px rgba(0,0,0,.5),
+    inset 0 1px 0 rgba(255,255,255,.15);
+}
+
+#m-result .x {
+  color: #E8DCE0;
+  background: rgba(255,255,255,.1);
+}
+
+
+/* ---- 結算紙花 ---- */
+
+.conf {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.cf {
+  position: absolute;
+  top: -14px;
+  width: 8px;
+  height: 14px;
+  background: var(--c);
+  opacity: .9;
+  animation: fall 2s linear forwards;
+}
+
+
+/* ---- 結算主視覺 ---- */
+
+.result-hero {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+}
+
+.result-heading {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+}
+
+#r-badge {
+  padding-right: .1em;
+  font-family: var(--serif);
+  font-style: italic;
+  font-weight: 900;
+  font-size: clamp(3.5rem, 18vw, 5rem);
+  line-height: 1;
+  letter-spacing: 2px;
+  color: transparent;
+  background: linear-gradient(180deg, #FFF6D6 0%, #F0D68F 30%, #B38B3E 55%, #F7E2A6 75%, #987638 100%);
+  background-clip: text;
+  -webkit-background-clip: text;
+  filter:
+    drop-shadow(0 2px 0 #5A3C12)
+    drop-shadow(0 0 14px rgba(217,180,91,.45));
+}
+
+#m-result .result-heading .mt {
+  font-size: var(--fs-lg);
+  letter-spacing: 2px;
+  color: #F0D6A4;
+}
+
+.result-desc {
+  padding: 0 4px;
+  font-size: var(--fs-sm);
+  line-height: 1.5;
+  text-align: center;
+  color: #CDBFC6;
+}
+
+
+/* ---- 結算專輯牆 ---- */
+
+.gallery-frame {
+  width: 100%;
+  padding: 15px 30px;
+}
+
+/* 6 + 4 排列：用 12 欄，每張佔 2 欄，第二排從第 3 欄開始置中 */
+.gal {
+  display: grid;
+  grid-template-columns: repeat(12, 1fr);
+  gap: 8px;
+}
+
+.gp {
+  position: relative;
+  grid-column: span 2;
+  aspect-ratio: 1;
+  overflow: hidden;
+  border-radius: 2px;
+  background: #1C1720;
+  box-shadow: 0 1px 4px rgba(0,0,0,.55);
+}
+
+.gp:nth-child(7) {
+  grid-column: 3 / span 2;
+}
+
+.gp img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+/* 答題品質 → 封面亮度 */
+.gp.gem-mint {
+  z-index: 1;
+  box-shadow: 0 0 0 1px #F0D68F, 0 0 10px rgba(240,214,143,.8);
+}
+
+.gp.gem-mint img {
+  filter: brightness(1.12) saturate(1.2);
+}
+
+.gp.near-mint {
+  box-shadow:
+    0 0 0 1px rgba(220,220,235,.55),
+    0 1px 4px rgba(0,0,0,.55);
+}
+
+.gp.good img {
+  filter: brightness(.72) saturate(.75) sepia(.3);
+}
+
+.gp.poor img {
+  filter: brightness(.4) grayscale(1);
+}
+
+
+/* ---- 結算數據 ---- */
+
+.result-stats {
+  display: grid;
+  grid-template-columns: 1fr auto auto;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 14px;
+  color: #E8DCE0;
+  border: 1px solid rgba(231,205,158,.2);
+  border-radius: 10px;
+  background: rgba(255,255,255,.06);
+  box-shadow: none;
+}
+
+.result-stats .label {
+  display: block;
+  font-size: 10px;
+  font-weight: 900;
+  letter-spacing: 1px;
+  color: #B9A9B2;
+}
+
+.result-stats .val {
+  font-family: var(--serif);
+  font-weight: 900;
+  color: #F0D6A4;
+}
+
+.stat-main {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  text-align: left;
+}
+
+.stat-main .val {
+  font-size: clamp(2rem, 9vw, 2.8rem);
+  line-height: 1.05;
+}
+
+.stat-side {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding-left: 12px;
+  border-left: 1px solid rgba(231,205,158,.2);
+}
+
+.stat-side .stat-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 10px;
+}
+
+.stat-side .val {
+  font-size: var(--fs-md);
+  color: #E8DCE0;
+}
+
+
+/* ---- PR 圓環 ---- */
+
+.pr-gauge {
+  --pr: 0%;
+  width: 56px;
+  height: 56px;
+  padding: 6px;
+  border: 1px solid rgba(231,205,158,.35);
+  border-radius: 50%;
+  background: conic-gradient(#A84D68 0 var(--pr), #77717C var(--pr) 100%);
+  box-shadow: none;
+}
+
+.pr-gauge-inner {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid rgba(255,255,255,.4);
+  border-radius: 50%;
+  background: linear-gradient(145deg, #56505C, #29232C);
+}
+
+.pr-value {
+  font-family: var(--serif);
+  font-size: 15px;
+  font-weight: 900;
+  line-height: 1;
+  color: #F3D99E;
+}
+
+.pr-caption {
+  margin-top: 2px;
+  font-size: 8px;
+  font-weight: 800;
+  letter-spacing: .5px;
+  color: rgba(255,255,255,.7);
+}
+
+
+/* ---- 結算頁：窄螢幕調整 ---- */
+
+@media (max-width: 420px) {
+  #m-result .mc {
+    padding: 20px 12px 12px;
+  }
+
+  .result-stats {
+    gap: 8px;
+    padding: 8px 10px;
+  }
+
+  .stat-side {
+    padding-left: 8px;
+  }
+
+  .pr-gauge {
+    width: 50px;
+    height: 50px;
+  }
+}
+
+
+/* ---- 倒數畫面 ---- */
+
+#cdown {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--serif);
+  font-weight: 900;
+  font-size: calc(var(--fs-hero) * 1.33);
+  color: var(--red-light);
+  background: var(--overlay-dark);
+  text-shadow: 3px 3px 0 var(--red-dark), 5px 5px 0 rgba(0,0,0,.8);
+}
+
+
+/* ========================================
+   05. 畫面呈現
+======================================== */
+
+/* ---- 動畫 ---- */
+
+@keyframes bump {
+  50% {
+    transform: scale(1.25);
+    color: var(--white);
+  }
+}
+
+@keyframes score-penalty {
+  0% {
+    transform: scale(1);
+  }
+
+  15% {
+    transform: scale(1.15) translateX(-2px);
+  }
+
+  30% {
+    transform: scale(1.15) translateX(2px);
+  }
+
+  45% {
+    transform: scale(1.12) translateX(-2px);
+  }
+
+  60% {
+    transform: scale(1.12) translateX(2px);
+  }
+
+  75% {
+    transform: scale(1.15);
+  }
+
+  100% {
+    transform: scale(1);
+  }
+}
+
+@keyframes shake {
+  0%,
+  100% {
+    transform: translateX(0);
+  }
+
+  25% {
+    transform: translateX(-4px);
+  }
+
+  50% {
+    transform: translateX(4px);
+  }
+
+  75% {
+    transform: translateX(-4px);
+  }
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes flip {
+  from {
+    transform: rotateY(90deg);
+  }
+}
+
+@keyframes nb {
+  from {
+    width: 0;
+  }
+
+  to {
+    width: 100%;
+  }
+}
+
+@keyframes pop {
+  from {
+    transform: scale(.7);
+    opacity: 0;
+  }
+}
+
+@keyframes timeout-in {
+  from {
+    opacity: 0;
+    transform: scale(.92);
+  }
+
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes tagup {
+  0% {
+    opacity: 0;
+    transform: translateY(8px) scale(.7);
+  }
+
+  15% {
+    opacity: 1;
+    transform: translateY(0) scale(1.1);
+  }
+
+  70% {
+    opacity: 1;
+  }
+
+  100% {
+    opacity: 0;
+    transform: translateY(-16px);
+  }
+}
+
+@keyframes msg {
+  0% {
+    opacity: 0;
+    transform: translate(-50%, -30%) scale(.6);
+  }
+
+  15% {
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(1.06);
+  }
+
+  80% {
+    opacity: 1;
+    transform: translate(-50%, -50%);
+  }
+
+  100% {
+    opacity: 0;
+    transform: translate(-50%, -70%);
+  }
+}
+
+@keyframes fall {
+  to {
+    transform: translateY(500px) rotate(720deg);
+    opacity: 0;
+  }
+}
+
+
+/* ---- 滑鼠互動效果 ---- */
+
+/* 只在有滑鼠的裝置生效 */
+@media (hover: hover) {
+  .bevel:hover:not(:disabled),
+  .quit-btn:hover:not(:disabled),
+  .tb:hover:not(:disabled),
+  .item:hover:not(:disabled) {
+    filter: brightness(1.1);
+  }
+
+  .opt:hover:not(:disabled) {
+    filter: brightness(1.25);
+  }
+
+  .item:hover:not(:disabled) {
+    transform: translateY(-1px);
+  }
+
+  .banner:hover {
+    filter: brightness(1.03);
+  }
+
+  .x:hover {
+    background: rgba(0,0,0,.1);
+  }
+
+  #m-result .x:hover {
+    background: rgba(255,255,255,.18);
+  }
+
+  .rules-open:hover {
+    filter: brightness(1.2);
+  }
+}
+
+
+/* ---- 鍵盤焦點 ---- */
+
+button:focus:not(:focus-visible) {
+  outline: none;
+}
+
+button:focus-visible {
+  outline: 2px solid var(--purple-light);
+  outline-offset: 3px;
+}
+
+
+/* ---- 彈窗按鈕特殊樣式 ---- */
+
+/* 主要：紅 */
+.ov .bevel.go {
+  background: linear-gradient(180deg, #D4465C 0%, #A9233B 100%);
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,.25),
+    0 3px 0 #581525,
+    0 4px 10px rgba(0,0,0,.3);
+}
+
+/* 次要與歌單：黑色金屬 */
+.ov .bevel:not(.go):not(.text),
+.ov .tb {
+  color: #F3ECEE;
+  background: linear-gradient(180deg, #4A484F 0%, #1E1D21 100%);
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,.22),
+    0 0 0 1px rgba(255,255,255,.1),
+    0 3px 0 #0B0B0D,
+    0 4px 10px rgba(0,0,0,.35);
+}
+
+/* 彈窗按鈕按下去 */
+.ov .bevel:not(.text):active:not(:disabled),
+.ov .tb:active:not(:disabled) {
+  transform: translateY(2px);
+  box-shadow: inset 0 2px 4px rgba(0,0,0,.3);
+}
+
+/* 結算頁：主要按鈕字級較小、字距拉開 */
+#m-result .bevel.go {
+  font-size: var(--fs-md);
+  letter-spacing: 2px;
+}
+
+
+/* ---- 歌單選取狀態 ---- */
+
+/* 保留原本後面定義的紫色霓虹效果 */
+.tb:hover {
+  color: #F8F6FF;
+  background: linear-gradient(180deg, #8478BD 0%, #5C5190 100%);
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,.3),
+    0 0 0 1px rgba(255,255,255,.1),
+    0 3px 0 #30294E,
+    0 0 12px rgba(115,100,190,.3);
+}
+
+
+/* ---- 桌面版適配 ---- */
+
+@media (min-width: 520px) {
+  .app {
+    border-inline: 1px solid rgba(255,255,255,.12);
+    background: rgba(0,0,0,.16);
+  }
+}
+
+
+/* ---- 手機版適配 ---- */
+
+@media (max-width: 519px) {
+
+  /* 手機鍵盤：依實際可視區域調整遊戲容器 */
+  .app {
+    position: fixed;
+    top: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    height: 100vh;
+    height: 100dvh;
+    min-height: 0;
+    overflow: hidden;
+  }
+
+  /* 手機版 Logo */
+  #m-theme .logo {
+    font-size: 28px;
+  }
+
+  /* 手機版：三個答題階段統一唱片尺寸 */
+  .cw {
+    max-height: 150px;
+  }
+
+  /* 進度專輯：縮小為方形標記 */
+  .progress-grid {
+    display: flex;
+    align-items: flex-start;
+    flex-wrap: nowrap;
+    gap: 6px;
+  }
+
+  .progress-slot {
+    flex: 0 1 clamp(20px, 8vw, 32px);
+    width: clamp(20px, 8vw, 32px);
+    height: auto;
+    max-width: none;
+    aspect-ratio: 1 / 1;
+    box-sizing: border-box;
+  }
+
+  /* 唱片舞台：優先使用剩餘空間 */
+  .stage {
+    flex: 1 1 0;
+    min-height: 0;
+    margin-bottom: 0;
+  }
+
+  .cwrap {
+    min-height: 0;
+  }
+
+  /* 下一題：至少 44px 高 */
+  .nbtn {
+    min-height: 44px;
+    padding: 10px 16px;
+  }
+
+
+
+  /* 規則 ⓘ：30px → 44px */
+  .rules-open {
+    width: 44px;
+    height: 44px;
+  }
+
+  .rules-open svg {
+    width: 22px;
+    height: 22px;
+  }
+
+  /* 關閉按鈕：加大點擊範圍 */
+  .x {
+    width: 44px;
+    height: 44px;
+    font-size: 18px;
+  }
+}
+
+
+/* ---- 手機鍵盤開啟 ---- */
+
+/* 輸入區留在原排版位置，只用 transform 上移到鍵盤上方 */
+@media (max-width: 519px) {
+  .app.keyboard-open .ibox {
+    z-index: 20;
+    transform: translateY(
+      calc(-1 * var(--keyboard-inset, 0px) + env(safe-area-inset-bottom, 0px))
+    );
+  }
+}
+
+
+/* 隱藏歌單｜深藍配色 */
+#m-secret .mc {
+  background: #3f2840;
+  color: #F5F1E8;
+  border: 1px solid rgba(216, 154, 211, 0.35);
+  box-shadow: 0 8px 24px rgba(0,0,0,.4);
+}
+
+#m-secret .logo {
+  color: #D8C49A;
+}
+
+#m-secret .bevel.go {
+  color: #F5F1E8;
+  background: #337577;
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,.12),
+    0 3px 6px rgba(0,0,0,.25);
+}
+#m-secret .bevel:not(.go) {
+  background: #222;
+  color: #FFF;
+}
+
+/* 測試用：預覽手動播放按鈕（?previewTap=1） */
+html.preview-tap .tap {
+  display: flex !important;
+}
+
+
+
+/* 手動播放按鈕：立體銀白金屬 */
+.tap .bevel.go {
+  background: linear-gradient(
+    180deg,
+    #ffffff 0%,
+    #eeeeee 18%,
+    #d8d8d8 52%,
+    #c5c5c5 100%
+  );
+
+  color: #383838;
+  border: none;
+  outline: none;
+  border-radius: 7px;
+
+  letter-spacing: .5px;
+  font-weight: 600;
+  text-shadow: 0 1px 0 rgba(255,255,255,.8);
+
+  box-shadow:
+    inset 0 2px 2px rgba(255,255,255,.95),
+    inset 0 -2px 3px rgba(120,120,120,.18),
+    0 3px 0 #aaa,
+    0 4px 7px rgba(0,0,0,.16);
+
+  transform: translateY(0);
+  transition: all .15s ease;
+}
+
+/* 滑鼠移入 */
+.tap .bevel.go:hover {
+  background: linear-gradient(
+    180deg,
+    #ffffff 0%,
+    #f5f5f5 25%,
+    #dedede 100%
+  );
+}
+
+/* 按下 */
+.tap .bevel.go:active {
+  transform: translateY(2px);
+  box-shadow:
+    inset 0 2px 4px rgba(100,100,100,.15),
+    0 1px 0 #aaa,
+    0 2px 4px rgba(0,0,0,.12);
+}
+
+
+
+
+
+/* 主標題：輕微內嵌感 */
+.item .tx b {
+  color: #414141;
+  text-shadow: 0 1px 0 rgba(255,255,255,.85);
+}
+
+/* 副標題：較淡、較小，保留辨識度 */
+.item .tx small {
+  color: #777;
+  text-shadow: 0 1px 0 rgba(255,255,255,.7);
+}
+
+/* 滑鼠移入：只提亮，不額外加框 */
+@media (hover: hover) {
+  .item:hover:not(:disabled) {
+    filter: brightness(1.04);
+    transform: translateY(-1px);
+  }
+}
+
+/* 按下：整顆按鍵微微下沉 */
+.item:active:not(:disabled) {
+  transform: translateY(2px);
+  box-shadow:
+    inset 0 2px 4px rgba(100,100,100,.14),
+    0 1px 0 #aaa,
+    0 2px 4px rgba(0,0,0,.12);
+}
+
+/* 停用：保留金屬底色，但降低亮度與文字對比 */
+.item:disabled {
+  color: #888;
+  background: linear-gradient(180deg, #e4e4e4 0%, #d0d0d0 55%, #c2c2c2 100%);
+  filter: grayscale(.0);
+  opacity: .72;
+  box-shadow:
+    inset 0 1px 2px rgba(255,255,255,.75),
+    0 1px 2px rgba(0,0,0,.08);
+}
+
+.item:disabled .ic {
+  color: #888;
+  background: linear-gradient(145deg, #D0D0D3, #B5B5BA);
+  box-shadow: none;
+}
+
+.item:disabled .tx b,
+.item:disabled .tx small {
+  color: #888;
+  text-shadow: none;
+}
+
